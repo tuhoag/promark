@@ -1,0 +1,161 @@
+Organizations:
+  - &OrdererOrg
+    Name: ordererMSP
+    ID: ordererMSP
+    MSPDir: ../organizations/ordererOrganizations/promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('ordererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('ordererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('ordererMSP.admin')"
+
+
+  - &Adv1
+    Name: adv0MSP
+    ID: adv0MSP
+    MSPDir: ../organizations/peerOrganizations/adv0.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('adv0MSP.admin', 'adv0MSP.peer', 'adv0MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('adv0MSP.admin', 'adv0MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('adv0MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('adv0MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+
+  - &Bus1
+    Name: bus0MSP
+    ID: bus0MSP
+    MSPDir: ../organizations/peerOrganizations/bus0.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus0MSP.admin', 'bus0MSP.peer', 'bus0MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus0MSP.admin', 'bus0MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus0MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus0MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    LifecycleEndorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+    Endorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses:
+    - orderer.promark.com:7050
+
+  EtcdRaft:
+    Consenters:
+      - Host: orderer.promark.com
+        Port: 7050
+        ClientTLSCert: ../organizations/ordererOrganizations/promark.com/orderers/orderer.promark.com/tls/server.crt
+        ServerTLSCert: ../organizations/ordererOrganizations/promark.com/orderers/orderer.promark.com/tls/server.crt
+
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+
+Channel: &ChannelDefaults
+  Policies:
+    # Who may invoke the 'Deliver' API
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    # Who may invoke the 'Broadcast' API
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    # Who may modify elements at this config level
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+  TwoOrgsOrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *Adv1
+          - *Bus1
+
+  TwoOrgsChannel:
+    Consortium: SampleConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Adv1
+        - *Bus1
+      Capabilities:
+        <<: *ApplicationCapabilities
