@@ -20,7 +20,7 @@ function joinChannel() {
     peer channel join -b $block_path
     res=$?
     { set +x; } 2>/dev/null
-    cat log.txt
+    #cat log.txt
 
 }
 

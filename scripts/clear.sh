@@ -15,3 +15,6 @@ rm -rf volumes
 
 # remove channels
 rm -rf channels
+
+# remove log
+rm -rf $PWD/log.txt

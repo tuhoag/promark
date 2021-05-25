@@ -50,11 +50,18 @@ function packageChaincode() {
 function installChaincode() {
     $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 0 0
     $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 0 0
+}
+
+function approveChaincode {
 
     $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 0 0
     $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 0 0
 
-    $SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHAINCODE_NAME 1 1
+    $SCRIPTS_DIR/commit-checkreadiness.sh $CHAINCODE_NAME $CHANNEL_NAME
+}
+
+function commitChaincode() {
+    $SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME 1 1
 }
 
 MODE=$1
@@ -92,6 +99,10 @@ elif [ $MODE = "chaincode" ]; then
         packageChaincode
     elif [ $SUB_MODE = "install" ]; then
         installChaincode
+    elif [ $SUB_MODE = "approve" ]; then
+        approveChaincode
+    elif [ $SUB_MODE = "commit" ]; then
+        commitChaincode
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
