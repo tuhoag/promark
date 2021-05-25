@@ -19,6 +19,35 @@ type Campaign struct {
 	Business   string `json:"Business"`
 }
 
+// Asset describes basic details of what makes up a simple asset
+type Asset struct {
+	ID    string `json:"ID"`
+	Value int    `json:value`
+	Owner string `json:"owner"`
+}
+
+func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
+	assets := []Asset{
+		{ID: "asset1", Value: 5, Owner: "Tomoko"},
+		{ID: "asset2", Value: 5, Owner: "Brad"},
+	}
+
+	for _, asset := range assets {
+		assetJSON, err := json.Marshal(asset)
+		if err != nil {
+			return err
+		}
+
+		err = ctx.GetStub().PutState(asset.ID, assetJSON)
+		if err != nil {
+			return fmt.Errorf("failed to put to world state. %v", err)
+		}
+	}
+
+	return nil
+}
+
+
 func CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name string, advertiser string, business string) error {
 	existing, err := ctx.GetStub().GetState(id)
 

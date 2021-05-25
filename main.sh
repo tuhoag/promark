@@ -64,6 +64,10 @@ function commitChaincode() {
     $SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME 1 1
 }
 
+function invokeInitLedger() {
+    $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME 1 1
+}   
+
 MODE=$1
 
 if [ $MODE = "restart" ]; then
@@ -93,6 +97,7 @@ elif [ $MODE = "channel" ]; then
         echo "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "chaincode" ]; then
+    # deployCC "campaign"
     SUB_MODE=$2
 
     if [ $SUB_MODE = "package" ]; then
@@ -106,7 +111,15 @@ elif [ $MODE = "chaincode" ]; then
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
-    # deployCC "campaign"
+elif [ $MODE = "trans" ]; then
+    SUB_MODE=$2
+
+    if [ $SUB_MODE = "init" ]; then
+        invokeInitLedger
+    else
+        echo "Unsupported $MODE $SUB_MODE command."
+    fi
+
 else
     echo "Unsupported $MODE command."
 fi
