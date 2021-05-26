@@ -47,6 +47,67 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 	return nil
 }
 
+// GetAllAssets returns all assets found in world state
+func (s *SmartContract) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]*Asset, error) {
+	// range query with empty string for startKey and endKey does an
+	// open-ended query of all assets in the chaincode namespace.
+	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+	if err != nil {
+		return nil, err
+	}
+	// close the resultsIterator when this function is finished
+	defer resultsIterator.Close()
+
+	var assets []*Asset
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		var asset Asset
+		err = json.Unmarshal(queryResponse.Value, &asset)
+		if err != nil {
+			return nil, err
+		}
+		assets = append(assets, &asset)
+	}
+
+	return assets, nil
+}
+
+// Create a new asset
+func (s *SmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, id string, value int, owner string) error {
+	existing, err := ctx.GetStub().GetState(id)
+
+	if err != nil {
+		return errors.New("Unable to read the world state")
+	}
+
+	if existing != nil {
+		return fmt.Errorf("Cannot create asset since its id %s is existed", id)
+	}
+
+	asset := Asset{
+		ID:    id,
+		Value: value,
+		Owner: owner,
+	}
+
+	assetJSON, err := json.Marshal(asset)
+	if err != nil {
+		return err
+	}
+
+	err = ctx.GetStub().PutState(id, assetJSON)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 
 func CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name string, advertiser string, business string) error {
 	existing, err := ctx.GetStub().GetState(id)

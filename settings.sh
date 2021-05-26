@@ -29,5 +29,9 @@ export PATH=$FABRIC_BIN_PATH:$PATH
 export CHAINCODE_LANGUAGE=golang
 export CHAINCODE_PACKAGE_DIR=$CHAINCODE_SRC_PATH
 
+# Adding for chaincodeCheckReadiness function
 export MAX_RETRY="2"
 export DELAY="3"
+
+#For external service
+export EXTERNAL_SERVCE_PORT=8080

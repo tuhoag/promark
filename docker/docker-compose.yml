@@ -9,6 +9,18 @@ networks:
     test:
 
 services:
+    external.promark.com:
+        container_name: crypto.promark.com
+        build:
+            dockerfile: external-service-dockerfile
+        ports:
+            - "5000:5000"
+        networks:
+            - test
+        volumes:
+            - ../services/ext/:/code
+        command: bash run.sh           
+
     orderer.promark.com:
         container_name: orderer.promark.com
         extends:

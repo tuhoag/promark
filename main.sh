@@ -68,6 +68,15 @@ function invokeInitLedger() {
     $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME 1 1
 }   
 
+function invokeCreateCamp() {
+    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 1
+} 
+
+function createExternalService() {
+    $SCRIPTS_DIR/external-service.sh $LOG_LEVEL
+}
+
+
 MODE=$1
 
 if [ $MODE = "restart" ]; then
@@ -116,10 +125,13 @@ elif [ $MODE = "trans" ]; then
 
     if [ $SUB_MODE = "init" ]; then
         invokeInitLedger
+    elif [ $SUB_MODE = "add" ]; then
+        invokeCreateCamp
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
-
+elif [ $MODE = "external" ]; then
+    createExternalService
 else
     echo "Unsupported $MODE command."
 fi
