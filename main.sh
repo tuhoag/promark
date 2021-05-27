@@ -76,6 +76,12 @@ function createExternalService() {
     $SCRIPTS_DIR/external-service.sh $LOG_LEVEL
 }
 
+function buildExternalService() {
+
+    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache external.promark.com 2>&1
+    #FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache external-db.promark.com 2>&1
+}
+
 
 MODE=$1
 
@@ -130,8 +136,16 @@ elif [ $MODE = "trans" ]; then
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
-elif [ $MODE = "external" ]; then
-    createExternalService
+elif [ $MODE = "service" ]; then
+    SUB_MODE=$2
+
+    if [ $SUB_MODE = "run" ]; then
+        createExternalService
+    elif [ $SUB_MODE = "build" ]; then
+        buildExternalService
+    else 
+        echo "Unsupported $MODE $SUB_MODE command."
+    fi
 else
     echo "Unsupported $MODE command."
 fi

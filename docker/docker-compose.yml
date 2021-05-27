@@ -10,16 +10,32 @@ networks:
 
 services:
     external.promark.com:
-        container_name: crypto.promark.com
+        container_name: external.promark.com
         build:
+            context: .
             dockerfile: external-service-dockerfile
         ports:
             - "5000:5000"
         networks:
             - test
         volumes:
-            - ../services/ext/:/code
-        command: bash run.sh           
+            - ../services/ext:/code
+        command: /bin/sh run.sh
+        environment:
+            - API_PORT=5000
+
+    #external-db.promark.com:
+    #    container_name: external-db.promark.com
+    #    build:
+    #        context: .
+    #        dockerfile: external-db-service-dockerfile
+    #    ports:
+    #        - "6379:6379"
+    #    networks:
+    #        - test
+    #    volumes:
+    #        - ../services/ext:/rd
+           
 
     orderer.promark.com:
         container_name: orderer.promark.com
