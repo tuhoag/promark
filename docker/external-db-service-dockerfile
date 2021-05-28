@@ -1,4 +1,0 @@
-FROM redis:alpine
-RUN mkdir /rd
-WORKDIR /rd
-EXPOSE 6379

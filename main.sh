@@ -79,9 +79,7 @@ function createExternalService() {
 function buildExternalService() {
 
     FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache external.promark.com 2>&1
-    #FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache external-db.promark.com 2>&1
 }
-
 
 MODE=$1
 
@@ -102,6 +100,7 @@ elif [ $MODE = "up" ]; then
 elif [ $MODE = "monitor" ]; then
     monitor
 elif [ $MODE = "channel" ]; then
+
     SUB_MODE=$2
 
     if [ $SUB_MODE = "create" ]; then

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -88,10 +90,25 @@ func (s *SmartContract) CreateAsset(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("Cannot create asset since its id %s is existed", id)
 	}
 
+	// try to call to web service: start
+	response, err := http.Get("http://external.promark.com:5000/")
+
+	if err != nil {
+	 	return fmt.Errorf(err.Error())
+	}
+
+	responseData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return fmt.Errorf(err.Error())
+	}
+	//end
+
+	message := string(responseData)
+
 	asset := Asset{
 		ID:    id,
 		Value: value,
-		Owner: owner,
+		Owner: message,
 	}
 
 	assetJSON, err := json.Marshal(asset)

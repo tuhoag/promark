@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import time
 import os
 
@@ -5,7 +7,11 @@ import redis
 from flask import Flask
 
 app = Flask(__name__)
-cache = redis.Redis(host='0.0.0.0', port=6379)
+
+# redis_url = os.getenv('REDISTOGO_URL')
+# print('redis_url:', redis_url)
+
+cache = redis.Redis(host='0.0.0.0', port=os.environ["REDIS_PORT"])
 app.config["DEBUG"] = True
 
 def get_hit_count():
@@ -21,9 +27,8 @@ def get_hit_count():
 
 @app.route('/')
 def hello():
-    #count = get_hit_count()
-    #return 'Hello World! you have seen {} times\n'.format(count)
-    return 'Hello world!'
+    count = get_hit_count()
+    return "Hello"
 
 if __name__ == "__main__":
     print("Start listening in port: {port}".format(port=os.environ["API_PORT"]))
