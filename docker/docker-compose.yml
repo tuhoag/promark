@@ -41,7 +41,29 @@ services:
             - ../channels/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
             - ../organizations/ordererOrganizations/${PROJECT_NAME}.com/orderers/orderer.${PROJECT_NAME}.com/msp:/var/hyperledger/orderer/msp
             - ../organizations/ordererOrganizations/${PROJECT_NAME}.com/orderers/orderer.${PROJECT_NAME}.com/tls/:/var/hyperledger/orderer/tls
-
+    
+    couchdb0.adv0.promark.com:
+        container_name: couchdb0.adv0.promark.com
+        image: couchdb:3.1.1
+        environment:
+        - COUCHDB_USER=admin
+        - COUCHDB_PASSWORD=adminpw
+        ports:
+        - "5984:5984"
+        networks:
+        - test
+        
+    couchdb1.bus0.promark.com:
+        container_name: couchdb1.bus0.promark.com
+        image: couchdb:3.1.1
+        environment:
+        - COUCHDB_USER=admin
+        - COUCHDB_PASSWORD=adminpw
+        ports:
+        - "7984:5984"
+        networks:
+        - test
+        
     peer0.adv0.promark.com:
         container_name: peer0.adv0.promark.com
         extends:
@@ -53,6 +75,7 @@ services:
             - test
         depends_on:
             - orderer.${COMPOSE_PROJECT_NAME}.com
+            - couchdb0.adv0.promark.com
         environment:
             - CORE_PEER_ID=peer0.adv0.${COMPOSE_PROJECT_NAME}.com
             - CORE_PEER_ADDRESS=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7051
@@ -62,6 +85,11 @@ services:
             - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7051
             - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7051
             - CORE_PEER_LOCALMSPID=adv0MSP
+
+            - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.adv0.promark.com:5984
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
 
         volumes:
             - /var/run/docker.sock:/host/var/run/docker.sock
@@ -80,6 +108,7 @@ services:
             - test
         depends_on:
             - orderer.${COMPOSE_PROJECT_NAME}.com
+            - couchdb1.bus0.promark.com
         environment:
             - CORE_PEER_ID=peer0.bus0.${PROJECT_NAME}.com
             - CORE_PEER_ADDRESS=peer0.bus0.${PROJECT_NAME}.com:7051
@@ -89,6 +118,12 @@ services:
             - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.bus0.${PROJECT_NAME}.com:7051
             - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.bus0.${PROJECT_NAME}.com:7051
             - CORE_PEER_LOCALMSPID=bus0MSP
+
+            - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1.bus0.promark.com:5984
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+
         volumes:
             - /var/run/docker.sock:/host/var/run/docker.sock
             - ../organizations/peerOrganizations/bus0.${PROJECT_NAME}.com/peers/peer0.bus0.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
