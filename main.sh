@@ -81,6 +81,10 @@ function buildExternalService() {
     FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache external.promark.com 2>&1
 }
 
+function invokeQueryById() {
+    $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 1
+}
+
 MODE=$1
 
 if [ $MODE = "restart" ]; then
@@ -132,6 +136,8 @@ elif [ $MODE = "trans" ]; then
         invokeInitLedger
     elif [ $SUB_MODE = "add" ]; then
         invokeCreateCamp
+    elif [ $SUB_MODE = "query" ]; then
+        invokeQueryById
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi

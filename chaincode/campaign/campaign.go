@@ -119,3 +119,37 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	return nil
 }
 
+func (s *SmartContract) QueryLedgerById(ctx contractapi.TransactionContextInterface, id string) ([]*Campaign, error) {
+	queryString := fmt.Sprintf(`{"selector":{"id":{"$lte": "%s"}}}`, id)
+
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resultsIterator.Close()
+
+	var campaigns []*Campaign
+
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+
+		if err != nil {
+			return nil, err
+		}
+
+		var campaign Campaign
+		err = json.Unmarshal(queryResponse.Value, &campaign)
+		if err != nil {
+			return nil, err
+		}
+
+		campaigns = append(campaigns, &campaign)
+	}
+
+	resultsIterator.Close()
+
+	return campaigns, nil
+}
+
+
