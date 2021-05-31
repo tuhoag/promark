@@ -21,26 +21,19 @@ type Campaign struct {
 	Business   string `json:"Business"`
 }
 
-// Asset describes basic details of what makes up a simple asset
-type Asset struct {
-	ID    string `json:"ID"`
-	Value int    `json:value`
-	Owner string `json:"owner"`
-}
-
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
-	assets := []Asset{
-		{ID: "asset1", Value: 5, Owner: "Tomoko"},
-		{ID: "asset2", Value: 5, Owner: "Brad"},
+	campaigns := []Campaign{
+		{ID: "id1", Name: "campaign1", Advertiser: "Adv0", Business: "Bus0"},
+		{ID: "id2", Name: "campaign2", Advertiser: "Adv0", Business: "Bus0"},
 	}
 
-	for _, asset := range assets {
-		assetJSON, err := json.Marshal(asset)
+	for _, campaign := range campaigns {
+		campaignJSON, err := json.Marshal(campaign)
 		if err != nil {
 			return err
 		}
 
-		err = ctx.GetStub().PutState(asset.ID, assetJSON)
+		err = ctx.GetStub().PutState(campaign.ID, campaignJSON)
 		if err != nil {
 			return fmt.Errorf("failed to put to world state. %v", err)
 		}
@@ -50,7 +43,7 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 }
 
 // GetAllAssets returns all assets found in world state
-func (s *SmartContract) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]*Asset, error) {
+func (s *SmartContract) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]*Campaign, error) {
 	// range query with empty string for startKey and endKey does an
 	// open-ended query of all assets in the chaincode namespace.
 	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
@@ -60,26 +53,26 @@ func (s *SmartContract) GetAllAssets(ctx contractapi.TransactionContextInterface
 	// close the resultsIterator when this function is finished
 	defer resultsIterator.Close()
 
-	var assets []*Asset
+	var campaigns []*Campaign
 	for resultsIterator.HasNext() {
 		queryResponse, err := resultsIterator.Next()
 		if err != nil {
 			return nil, err
 		}
 
-		var asset Asset
-		err = json.Unmarshal(queryResponse.Value, &asset)
+		var campaign Campaign
+		err = json.Unmarshal(queryResponse.Value, &campaign)
 		if err != nil {
 			return nil, err
 		}
-		assets = append(assets, &asset)
+		campaigns = append(campaigns, &campaign)
 	}
 
-	return assets, nil
+	return campaigns, nil
 }
 
-// Create a new asset
-func (s *SmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, id string, value int, owner string) error {
+// Create a new campaign
+func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name string, advertiser string, business string) error {
 	existing, err := ctx.GetStub().GetState(id)
 
 	if err != nil {
@@ -105,41 +98,9 @@ func (s *SmartContract) CreateAsset(ctx contractapi.TransactionContextInterface,
 
 	message := string(responseData)
 
-	asset := Asset{
-		ID:    id,
-		Value: value,
-		Owner: message,
-	}
-
-	assetJSON, err := json.Marshal(asset)
-	if err != nil {
-		return err
-	}
-
-	err = ctx.GetStub().PutState(id, assetJSON)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-
-func CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name string, advertiser string, business string) error {
-	existing, err := ctx.GetStub().GetState(id)
-
-	if err != nil {
-		return errors.New("Unable to read the world state.")
-	}
-
-	if existing != nil {
-		return fmt.Errorf("Campaign id %s is existed.", id)
-	}
-
 	campaign := Campaign{
 		ID:         id,
-		Name:       name,
+		Name:       message,
 		Advertiser: advertiser,
 		Business:   business,
 	}
@@ -149,8 +110,6 @@ func CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name
 		return err
 	}
 
-	fmt.Printf("Campaign JSON: %s", campaignJSON)
-
 	err = ctx.GetStub().PutState(id, campaignJSON)
 
 	if err != nil {
@@ -159,3 +118,4 @@ func CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name
 
 	return nil
 }
+

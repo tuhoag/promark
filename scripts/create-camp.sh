@@ -2,7 +2,7 @@
 
 . $SCRIPTS_DIR/utils.sh
 
-CC_CREATE_FCN="CreateAsset"
+CC_CREATE_FCN="CreateCampaign"
 CC_READ_ALL_FCN="GetAllAssets"
 
 function parsePeerConnectionParameters() {
@@ -72,7 +72,7 @@ function createCamp() {
     verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
 
     set -x
-    fcn_call='{"function":"'${CC_CREATE_FCN}'","Args":["a5","15","Roma"]}'
+    fcn_call='{"function":"'${CC_CREATE_FCN}'","Args":["id3","campaign3","Adv0","Bus0"]}'
 
     infoln "invoke fcn call:${fcn_call}"
     peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call} >&log.txt
