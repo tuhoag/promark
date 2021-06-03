@@ -1,8 +1,17 @@
-FROM python:3.7-alpine
+#FROM python:3.7-alpine
+#WORKDIR /code
+#ENV FLASK_APP=app.py
+#ENV FLASK_RUN_HOST=0.0.0.0
+#RUN apk add --no-cache gcc musl-dev linux-headers
+#RUN apk add redis
+#EXPOSE $API_PORT
+#EXPOSE $REDIS_PORT
+
+FROM golang:1.6.1-alpine
+ADD . /code
 WORKDIR /code
-ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=0.0.0.0
-RUN apk add --no-cache gcc musl-dev linux-headers
 RUN apk add redis
+RUN go run app.go
+#CMD ["go","run","app.go"]
 EXPOSE $API_PORT
-EXPOSE $REDIS_PORT
+

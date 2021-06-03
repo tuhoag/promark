@@ -19,8 +19,8 @@ services:
         networks:
             - test
         volumes:
-            - ../services/ext:/code
-        command: /bin/sh run.sh
+            - ../services/ext/go:/code
+        command: go run app.go
         environment:
             - API_PORT=5000
             - REDIS_PORT=6379
