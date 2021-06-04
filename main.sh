@@ -85,6 +85,11 @@ function invokeQueryById() {
     $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 1
 }
 
+function testChaincode() {
+    $SCRIPTS_DIR/chaincode-test.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 1
+}
+
+
 MODE=$1
 
 if [ $MODE = "restart" ]; then
@@ -138,6 +143,8 @@ elif [ $MODE = "trans" ]; then
         invokeCreateCamp
     elif [ $SUB_MODE = "query" ]; then
         invokeQueryById
+    elif [ $SUB_MODE = "test" ]; then
+        testChaincode
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi

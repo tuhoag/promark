@@ -1,0 +1,13 @@
+FROM golang:1.6.1-alpine
+ADD . /code
+WORKDIR /code
+#ENV APP_USER app
+#ENV APP_HOME /code
+RUN apk update
+RUN apk upgrade
+RUN apk add --no-cache git
+
+RUN go get github.com/bwesterb/go-ristretto
+
+EXPOSE $VER2_PORT
+

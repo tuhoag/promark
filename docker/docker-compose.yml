@@ -20,10 +20,40 @@ services:
             - test
         volumes:
             - ../services/ext/go:/code
-        command: go run app.go
+        command: /bin/sh run.sh
         environment:
             - API_PORT=5000
-            - REDIS_PORT=6379
+            - REDIS_PORT=6379     
+
+    verifier1.promark.com:
+        container_name: verifier1.promark.com
+        build:
+            context: .
+            dockerfile: verifier1-dockerfile
+        ports:
+            - "5001:5001"
+        networks:
+            - test
+        volumes:
+            - ../services/ext/verifier1:/code
+        command: go run app1.go
+        environment:
+            - VER1_PORT=5001
+    
+    verifier2.promark.com:
+        container_name: verifier2.promark.com
+        build:
+            context: .
+            dockerfile: verifier2-dockerfile
+        ports:
+            - "5002:5002"
+        networks:
+            - test
+        volumes:
+            - ../services/ext/verifier2:/code
+        command: go run app2.go
+        environment:
+            - VER2_PORT=5002  
 
     orderer.promark.com:
         container_name: orderer.promark.com
