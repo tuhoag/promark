@@ -7,8 +7,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
-
-	// "net/url"
+	"strings"
 
 	"github.com/bwesterb/go-ristretto"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -18,11 +17,34 @@ type SmartContract struct {
 	contractapi.Contract
 }
 
+var (
+	extURL        = "http://external.promark.com:5000"
+	camRequestURL = extURL + "/camp"
+	// ver1URL       = "http://verifier1.promark.com:5001"
+	// ver2URL       = "http://verifier1.promark.com:5002"
+)
+
+// Struct of request data to ext service
+type Cam struct {
+	ID string
+	No int
+}
+
+// Struct of return data from ext service
+type campaign_param struct {
+	H  []byte `json:"hvalue"`
+	R1 string `json:"r1"`
+	R2 string `json:"r2"`
+}
+
+// Struct of data store in Blockchain ledger
 type Campaign struct {
 	ID         string `json:"ID"`
 	Name       string `json:"Name"`
 	Advertiser string `json:"Advertiser"`
 	Business   string `json:"Business"`
+	// CommC1	   []byte `json:"CommC1"`
+	// CommC2	   []byte `json:"CommC2`
 }
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
@@ -87,24 +109,12 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		return fmt.Errorf("Cannot create asset since its id %s is existed", id)
 	}
 
-	// try to call to web service: start
-	response, err := http.Get("http://external.promark.com:5000/")
+	// Request to external service to get params
+	requestCamParams()
 
-	if err != nil {
-		return fmt.Errorf(err.Error())
-	}
+	// Request to verifier to compute Comm
 
-	responseData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return fmt.Errorf(err.Error())
-	}
 	//end
-
-	//message := string(responseData)
-	//var H ristretto.Point
-
-	message := convertStringToPoint(string(responseData))
-	fmt.Println("test value of message", message)
 
 	campaign := Campaign{
 		ID:         id,
@@ -157,78 +167,56 @@ func (s *SmartContract) QueryLedgerById(ctx contractapi.TransactionContextInterf
 
 	resultsIterator.Close()
 
-	response, err := http.Get("http://external.promark.com:5000/")
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	responseData, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	message := convertStringToPoint(string(responseData))
-	fmt.Println("test value of message", message)
-
 	return campaigns, nil
 }
 
 /////////////////// Pedersen functions //////////////////////////////////
-func (s *SmartContract) testPedersen(ctx contractapi.TransactionContextInterface) ([]*Campaign, error) {
-	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+
+func requestCamParams() {
+	c := &http.Client{}
+
+	message := Cam{"id4", 2}
+
+	jsonData, err := json.Marshal(message)
+
+	request := string(jsonData)
+
+	reqJSON, err := http.NewRequest("POST", camRequestURL, strings.NewReader(request))
 	if err != nil {
-		return nil, err
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+		return
 	}
 
-	// close the resultsIterator when this function is finished
-	defer resultsIterator.Close()
+	respJSON, err := c.Do(reqJSON)
+	if err != nil {
+		fmt.Printf("http.Do() error: %v\n", err)
+		return
+	}
+	defer respJSON.Body.Close()
 
-	var campaigns []*Campaign
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return nil, err
-		}
-
-		var campaign Campaign
-		err = json.Unmarshal(queryResponse.Value, &campaign)
-		if err != nil {
-			return nil, err
-		}
-		campaigns = append(campaigns, &campaign)
+	data, err := ioutil.ReadAll(respJSON.Body)
+	if err != nil {
+		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+		return
 	}
 
-	// response, err := http.Get("http://external.promark.com:5000/")
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// }
+	fmt.Println("return data all:", string(data))
 
-	// responseData, err := ioutil.ReadAll(response.Body)
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// }
+	// test the H value
+	var H ristretto.Point
+	var param campaign_param
 
-	// message := convertStringToPoint(string(responseData))
-	// fmt.Println("test value of message", message)
-	//
-	return campaigns, nil
+	err = json.Unmarshal([]byte(data), &param)
+	if err != nil {
+		println(err)
+	}
+
+	H = convertBytesToPoint(param.H)
+	fmt.Println("return data H:", H)
 }
 
 // The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
 var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857116359379907606001950938285454250989", 10)
-
-// Commit to a value x
-// H - Random secondary point on the curve
-// r - Private key used as blinding factor
-// x - The value (number of tokens)
-func commitTo(H *ristretto.Point, r, x *ristretto.Scalar) ristretto.Point {
-	//ec.g.mul(r).add(H.mul(x));
-	var result, rPoint, transferPoint ristretto.Point
-	rPoint.ScalarMultBase(r)
-	transferPoint.ScalarMult(H, x)
-	result.Add(&rPoint, &transferPoint)
-	return result
-}
 
 // Generate a random point on the curve
 func generateH() ristretto.Point {
@@ -254,13 +242,13 @@ func convertStringToPoint(s string) ristretto.Point {
 	return H
 }
 
-func convertBytesToPoint(s string) ristretto.Point {
+func convertBytesToPoint(buf []byte) ristretto.Point {
 
 	var H ristretto.Point
 	var hBytes [32]byte
 
 	//tmp := []byte(s)
-	copy(hBytes[:32], s[:])
+	copy(hBytes[:32], buf[:])
 
 	H.SetBytes(&hBytes)
 	fmt.Println("in convertPointtoBytes hString: ", H)

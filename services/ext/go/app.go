@@ -12,42 +12,34 @@ import (
 // The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
 var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857116359379907606001950938285454250989", 10)
 
+type Campaign struct {
+	ID   string `json:"id"`
+	No   int    `json:"ver"`
+	H 	 byte 	`json:`
+}
+
+type campaign_request struct {
+	ID string `json:"id"`
+	No int    `json:"no"`
+}
+
+type campaign_param struct {
+	H  []byte `json:"hvalue"`
+	R1 string `json:"r1"`
+	R2 string `json:"r2"`
+}
+
 func main() {
 	http.HandleFunc("/", homeHandler)
 	//http.HandleFunc("/post", postHandler)
-	redisConnect()
+	http.HandleFunc("/camp", campaignParams)
+
+	// redisConnect()
 
 	http.ListenAndServe(":5000", nil)
 }
 
-func redisConnect() {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-
-	pong, err := client.Ping().Result()
-	fmt.Println("pong:::::", pong, err)
-
-	// Store to db
-	err = client.Set("name", "Elliot", 0).Err()
-	// if there has been an error setting the value
-	// handle the error
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	//read from db
-	val, err := client.Get("name").Result()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(val)
-}
-
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	// hParam := generateParams()
 
 	if r.URL.Path != "/" {
 		http.Error(w, "404 not found.", http.StatusNotFound)
@@ -58,7 +50,6 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method is not supported.", http.StatusNotFound)
 		return
 	}
-
 	// fmt.Println("in generateParams hString: ", hParam)
 	fmt.Fprintf(w, "Hello")
 }
@@ -73,6 +64,127 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("username")
 
 	fmt.Fprintf(w, "username = %s\n", name)
+}
+
+func campaignParams(rw http.ResponseWriter, req *http.Request) {
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		println(err)
+	}
+	log.Println(string(body))
+
+	var campaign campaign_request
+	var campParam campaign_param
+	err = json.Unmarshal(body, &campaign)
+	if err != nil {
+		println(err)
+	}
+	log.Println("campaign is:", campaign.ID, campaign.No)
+
+	// generate and set param
+	setParam(campaign.ID, campaign.No)
+	//get param from db
+	campParam = getParam(campaign.ID)
+
+	//temporary return
+	param, err := json.Marshal(campParam)
+
+	fmt.Fprintf(rw, string(param))
+}
+
+func redisConnect() {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	// pong, err := client.Ping().Result()
+	// fmt.Println("pong:::::", pong, err)
+
+	// // Store to db
+	// err = client.Set("name", "Elliot", 0).Err()
+	// // if there has been an error setting the value
+	// // handle the error
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+
+	// //read from db
+	// val, err := client.Get("name").Result()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Println(val)
+}
+
+// Campaign function part
+func setParam(id string, no int) {
+	var r1, r2 ristretto.Scalar
+
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	//generate campaign param
+	_, err := client.Get(id).Result()
+
+	if err != nil {
+		fmt.Println(err)
+
+		H := generateH()
+		hBytes := H.Bytes()
+		// hString := convertPointToString(H)
+		fmt.Println("hString:.\n", hBytes)
+
+		r1.Rand()
+		fmt.Println("r1:.\n", r1.String())
+
+		r2.Rand()
+		fmt.Println("r1:.\n", r2.String())
+
+		jsonParam, err := json.Marshal(campaign_param{H: hBytes, R1: r1.String(), R2: r2.String()})
+		if err != nil {
+			fmt.Println(err)
+		}
+		
+		//store to redis db
+		err = client.Set(id, jsonParam, 0).Err()
+		if err != nil {
+			fmt.Println(err)
+		}
+
+	} else {
+		fmt.Println("The campaign already existed.\n")
+	}
+}
+
+func getParam(id string) campaign_param {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	val, err := client.Get(id).Result()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(val)
+
+	var campaign campaign_param
+	err = json.Unmarshal([]byte(val), &campaign)
+	if err != nil {
+		println(err)
+	}
+
+	//test the value of H
+	H1 := convertBytesToPoint(campaign.H)
+	fmt.Println("H1 point:", H1)
+
+	return campaign
 }
 
 func generateParams() string {
@@ -97,18 +209,8 @@ func generateParams() string {
 	return hString
 }
 
-// Commit to a value x
-// H - Random secondary point on the curve
-// r - Private key used as blinding factor
-// x - The value (number of tokens)
-func commitTo(H *ristretto.Point, r, x *ristretto.Scalar) ristretto.Point {
-	//ec.g.mul(r).add(H.mul(x));
-	var result, rPoint, transferPoint ristretto.Point
-	rPoint.ScalarMultBase(r)
-	transferPoint.ScalarMult(H, x)
-	result.Add(&rPoint, &transferPoint)
-	return result
-}
+//////////// Pedersen function
+var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857116359379907606001950938285454250989", 10)
 
 // Generate a random point on the curve
 func generateH() ristretto.Point {
@@ -119,3 +221,17 @@ func generateH() ristretto.Point {
 
 	return H
 }
+
+func convertBytesToPoint(b []byte) ristretto.Point {
+
+	var H ristretto.Point
+	var hBytes [32]byte
+
+	copy(hBytes[:32], b[:])
+
+	result := H.SetBytes(&hBytes)
+	fmt.Println("in convertStringToPoint result:", result)
+
+	return H
+}
+

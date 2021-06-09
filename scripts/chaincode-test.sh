@@ -2,7 +2,7 @@
 
 . $SCRIPTS_DIR/utils.sh
 
-CC_READ_ALL_FCN="testPedersen"
+CC_READ_ALL_FCN="GetAllAssets"
 
 function parsePeerConnectionParameters() {
     local orgNum=$1
