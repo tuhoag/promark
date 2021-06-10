@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"math/big"
 	"net/http"
 
@@ -13,9 +16,9 @@ import (
 var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857116359379907606001950938285454250989", 10)
 
 type Campaign struct {
-	ID   string `json:"id"`
-	No   int    `json:"ver"`
-	H 	 byte 	`json:`
+	ID string `json:"id"`
+	No int    `json:"ver"`
+	H  byte   `json:`
 }
 
 type campaign_request struct {
@@ -149,7 +152,7 @@ func setParam(id string, no int) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		
+
 		//store to redis db
 		err = client.Set(id, jsonParam, 0).Err()
 		if err != nil {
@@ -234,4 +237,3 @@ func convertBytesToPoint(b []byte) ristretto.Point {
 
 	return H
 }
-

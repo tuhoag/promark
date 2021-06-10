@@ -35,8 +35,8 @@ services:
         networks:
             - test
         volumes:
-            - ../services/ext/verifier1:/code
-        command: go run app1.go
+            - ../services/ext/verifier1:/code1
+        command: /bin/sh run.sh
         environment:
             - VER1_PORT=5001
     
@@ -50,8 +50,8 @@ services:
         networks:
             - test
         volumes:
-            - ../services/ext/verifier2:/code
-        command: go run app2.go
+            - ../services/ext/verifier2:/code2
+        command: /bin/sh run.sh
         environment:
             - VER2_PORT=5002  
 

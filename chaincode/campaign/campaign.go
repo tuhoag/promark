@@ -20,9 +20,11 @@ type SmartContract struct {
 var (
 	extURL        = "http://external.promark.com:5000"
 	camRequestURL = extURL + "/camp"
-	// ver1URL       = "http://verifier1.promark.com:5001"
-	// ver2URL       = "http://verifier1.promark.com:5002"
+	ver1URL       = "http://verifier1.promark.com:5001/comm"
+	ver2URL       = "http://verifier1.promark.com:5002/comm"
 )
+
+var camParam campaign_param
 
 // Struct of request data to ext service
 type Cam struct {
@@ -45,6 +47,12 @@ type Campaign struct {
 	Business   string `json:"Business"`
 	// CommC1	   []byte `json:"CommC1"`
 	// CommC2	   []byte `json:"CommC2`
+}
+
+type CommRequest struct {
+	ID string
+	H  []byte
+	r  string
 }
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
@@ -110,9 +118,17 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	}
 
 	// Request to external service to get params
+	// var totalComm ristretto.Point
 	requestCamParams()
+	// comm1 := commCompute(id, ver1URL, camParam.H, camParam.R1)
+	// fmt.Println("ver1 return:", comm1)
 
-	// Request to verifier to compute Comm
+	// comm2 := commCompute(id, ver2URL, camParam.H, camParam.R2)
+	// // Request to verifier to compute Comm
+	// fmt.Println("ver1 return:", comm2)
+
+	// totalComm.Add(&comm1, &comm2)
+	// fmt.Println("total Comm:", totalComm)
 
 	//end
 
@@ -204,16 +220,47 @@ func requestCamParams() {
 
 	// test the H value
 	var H ristretto.Point
-	var param campaign_param
 
-	err = json.Unmarshal([]byte(data), &param)
+	err = json.Unmarshal([]byte(data), &camParam)
 	if err != nil {
 		println(err)
 	}
 
-	H = convertBytesToPoint(param.H)
+	H = convertBytesToPoint(camParam.H)
 	fmt.Println("return data H:", H)
 }
+
+// func commCompute(campID string, url string, H []byte, r string) ristretto.Point {
+// 	//connect to verifier: campID,  H , r
+// 	c := &http.Client{}
+
+// 	param := CommRequest{campID, H, r}
+
+// 	jsonData, _ := json.Marshal(param)
+
+// 	request := string(jsonData)
+
+// 	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(request))
+// 	if err != nil {
+// 		fmt.Printf("http.NewRequest() error: %v\n", err)
+// 	}
+
+// 	respJSON, err := c.Do(reqJSON)
+// 	if err != nil {
+// 		fmt.Printf("http.Do() error: %v\n", err)
+// 	}
+// 	defer respJSON.Body.Close()
+
+// 	data, err := ioutil.ReadAll(respJSON.Body)
+// 	if err != nil {
+// 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+// 	}
+
+// 	fmt.Println("return data all:", string(data))
+
+// 	comm := convertStringToPoint(string(data))
+// 	return (comm)
+// }
 
 // The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
 var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857116359379907606001950938285454250989", 10)
