@@ -2,5 +2,5 @@
 #redis-server --daemonize yes
 #python3 app.py
 
-#redis-server --daemonize yes
-#go run app.go
+redis-server --daemonize yes
+go run app1.go

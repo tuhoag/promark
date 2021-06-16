@@ -1,6 +1,6 @@
 FROM golang:1.6.1-alpine
-ADD . /code
-WORKDIR /code
+ADD . /code2
+WORKDIR /code2
 #ENV APP_USER app
 #ENV APP_HOME /code2
 RUN apk update

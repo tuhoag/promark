@@ -39,17 +39,17 @@ func home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello")
 }
 
-func computeComm(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+func computeComm(w http.ResponseWriter, req *http.Request) {
+	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		println(err)
 	}
 	log.Println(string(body))
 
 	var campParam campaign_param
-	var r, R ristretto.Scalar
+	var r, V ristretto.Scalar
 	var v int64
-	var comm1 ristretto.Point
+	var comm ristretto.Point
 
 	v = rand.Int63n(100)
 

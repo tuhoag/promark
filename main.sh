@@ -72,13 +72,25 @@ function invokeCreateCamp() {
     $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 1
 } 
 
-function createExternalService() {
-    $SCRIPTS_DIR/external-service.sh $LOG_LEVEL
+function runExternalService() {
+    $SCRIPTS_DIR/external-service.sh $LOG_LEVEL 0
+}
+
+function runVerifier1Service() {
+    $SCRIPTS_DIR/external-service.sh $LOG_LEVEL 1
+}
+
+function runVerifier2Service() {
+    $SCRIPTS_DIR/external-service.sh $LOG_LEVEL 2
 }
 
 function buildExternalService() {
 
     FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache external.promark.com 2>&1
+
+    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache verifier1.promark.com 2>&1
+    
+    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache verifier2.promark.com 2>&1
 }
 
 function invokeQueryById() {
@@ -152,7 +164,11 @@ elif [ $MODE = "service" ]; then
     SUB_MODE=$2
 
     if [ $SUB_MODE = "run" ]; then
-        createExternalService
+        runExternalService
+    elif [ $SUB_MODE = "run1" ]; then
+        runVerifier1Service
+    elif [ $SUB_MODE = "run2" ]; then
+        runVerifier2Service
     elif [ $SUB_MODE = "build" ]; then
         buildExternalService
     else 

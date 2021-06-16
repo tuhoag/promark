@@ -12,9 +12,6 @@ import (
 	redis "gopkg.in/redis.v4"
 )
 
-// The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
-var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857116359379907606001950938285454250989", 10)
-
 type Campaign struct {
 	ID string `json:"id"`
 	No int    `json:"ver"`
@@ -96,11 +93,11 @@ func campaignParams(rw http.ResponseWriter, req *http.Request) {
 }
 
 func redisConnect() {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
+	// client := redis.NewClient(&redis.Options{
+	// 	Addr:     "localhost:6379",
+	// 	Password: "", // no password set
+	// 	DB:       0,  // use default DB
+	// })
 
 	// pong, err := client.Ping().Result()
 	// fmt.Println("pong:::::", pong, err)
