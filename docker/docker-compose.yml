@@ -9,6 +9,21 @@ networks:
     test:
 
 services:
+    logs.promark.com:
+        container_name: logs.promark.com
+        build:
+            context: .
+            dockerfile: logs-dockerfile
+        ports:
+            - "5003:5003"
+        networks:
+            - test
+        volumes:
+            - ../services/ext/log:/log
+        command: /bin/sh run.sh
+        environment:
+            - LOG_PORT=5003
+
     external.promark.com:
         container_name: external.promark.com
         build:
