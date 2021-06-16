@@ -3,7 +3,7 @@
 . $PWD/settings.sh
 
 export CHANNEL_NAME="mychannel"
-export LOG_LEVEL=INFO
+export LOG_LEVEL=DEBUG
 export FABRIC_LOGGING_SPEC=DEBUG
 export CHAINCODE_NAME="main"
 

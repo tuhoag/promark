@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/big"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/bwesterb/go-ristretto"
@@ -20,8 +22,10 @@ type SmartContract struct {
 var (
 	extURL        = "http://external.promark.com:5000"
 	camRequestURL = extURL + "/camp"
-	ver1URL       = "http://verifier1.promark.com:5001/comm"
-	ver2URL       = "http://verifier1.promark.com:5002/comm"
+	ver1URL       = "http://verifier1.promark.com:5001"
+	com1URL       = ver1URL + "/comm"
+	ver2URL       = "http://verifier1.promark.com:5002"
+	com2URL       = ver2URL + "/comm"
 )
 
 var camParam campaign_param
@@ -120,6 +124,9 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	// Request to external service to get params
 	// var totalComm ristretto.Point
 	requestCamParams()
+	testVer1()
+
+	// var totalComm ristretto.Point
 	// comm1 := commCompute(id, ver1URL, camParam.H, camParam.R1)
 	// fmt.Println("ver1 return:", comm1)
 
@@ -187,6 +194,20 @@ func (s *SmartContract) QueryLedgerById(ctx contractapi.TransactionContextInterf
 }
 
 /////////////////// Pedersen functions //////////////////////////////////
+func testVer1() {
+	response, err := http.Get(ver1URL)
+
+	if err != nil {
+		fmt.Print(err.Error())
+		os.Exit(1)
+	}
+
+	responseData, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(responseData))
+}
 
 func requestCamParams() {
 	c := &http.Client{}
@@ -230,37 +251,37 @@ func requestCamParams() {
 	fmt.Println("return data H:", H)
 }
 
-// func commCompute(campID string, url string, H []byte, r string) ristretto.Point {
-// 	//connect to verifier: campID,  H , r
-// 	c := &http.Client{}
+func commCompute(campID string, url string, H []byte, r string) ristretto.Point {
+	//connect to verifier: campID,  H , r
+	c := &http.Client{}
 
-// 	param := CommRequest{campID, H, r}
+	param := CommRequest{campID, H, r}
 
-// 	jsonData, _ := json.Marshal(param)
+	jsonData, _ := json.Marshal(param)
 
-// 	request := string(jsonData)
+	request := string(jsonData)
 
-// 	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(request))
-// 	if err != nil {
-// 		fmt.Printf("http.NewRequest() error: %v\n", err)
-// 	}
+	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(request))
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+	}
 
-// 	respJSON, err := c.Do(reqJSON)
-// 	if err != nil {
-// 		fmt.Printf("http.Do() error: %v\n", err)
-// 	}
-// 	defer respJSON.Body.Close()
+	respJSON, err := c.Do(reqJSON)
+	if err != nil {
+		fmt.Printf("http.Do() error: %v\n", err)
+	}
+	defer respJSON.Body.Close()
 
-// 	data, err := ioutil.ReadAll(respJSON.Body)
-// 	if err != nil {
-// 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-// 	}
+	data, err := ioutil.ReadAll(respJSON.Body)
+	if err != nil {
+		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+	}
 
-// 	fmt.Println("return data all:", string(data))
+	fmt.Println("return data all:", string(data))
 
-// 	comm := convertStringToPoint(string(data))
-// 	return (comm)
-// }
+	comm := convertStringToPoint(string(data))
+	return (comm)
+}
 
 // The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
 var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857116359379907606001950938285454250989", 10)

@@ -20,6 +20,7 @@ type campaign_param struct {
 
 func main() {
 	http.HandleFunc("/", home)
+	http.HandleFunc("/comm", computeComm)
 	http.ListenAndServe(":5002", nil)
 }
 
