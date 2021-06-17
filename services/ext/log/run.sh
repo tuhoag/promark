@@ -2,4 +2,4 @@
 #redis-server --daemonize yes
 #python3 app.py
 
-#go run app.go
+go run log.go

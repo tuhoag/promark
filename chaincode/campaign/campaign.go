@@ -26,6 +26,7 @@ var (
 	com1URL       = ver1URL + "/comm"
 	ver2URL       = "http://verifier1.promark.com:5002"
 	com2URL       = ver2URL + "/comm"
+	logURL        = "http://logs.promark.com:5003/log"
 )
 
 var camParam campaign_param
@@ -126,6 +127,9 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	requestCamParams()
 	testVer1()
 
+	jsonData := `{"Test":"that"}`
+	sendLog(jsonData)
+
 	// var totalComm ristretto.Point
 	// comm1 := commCompute(id, ver1URL, camParam.H, camParam.R1)
 	// fmt.Println("ver1 return:", comm1)
@@ -207,6 +211,52 @@ func testVer1() {
 		log.Fatal(err)
 	}
 	fmt.Println(string(responseData))
+}
+
+func sendLog(message string) {
+	c := &http.Client{}
+
+	// jsonData := `{"Test":"that"}`
+
+	// jsonData, err := json.Marshal(log)
+
+	// request := string(jsonData)
+
+	// response, err := http.Get(logURL)
+
+	// if err != nil {
+	// 	fmt.Print(err.Error())
+	// 	os.Exit(1)
+	// }
+
+	// responseData, err := ioutil.ReadAll(response.Body)
+
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(string(responseData))
+
+	reqJSON, err := http.NewRequest("POST", logURL, strings.NewReader(message))
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+		return
+	}
+
+	respJSON, err := c.Do(reqJSON)
+	if err != nil {
+		fmt.Printf("http.Do() error: %v\n", err)
+		return
+	}
+	defer respJSON.Body.Close()
+
+	data, err := ioutil.ReadAll(respJSON.Body)
+	if err != nil {
+		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+		return
+	}
+
+	fmt.Println("return data all:", string(data))
 }
 
 func requestCamParams() {
