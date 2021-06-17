@@ -37,6 +37,11 @@ type Cam struct {
 	No int
 }
 
+type DebugLog struct {
+	Name  string
+	Value string
+}
+
 // Struct of return data from ext service
 type campaign_param struct {
 	H  []byte `json:"hvalue"`
@@ -127,12 +132,14 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	requestCamParams()
 	testVer1()
 
-	jsonData := `{"Test":"that"}`
-	sendLog(jsonData)
-
 	// var totalComm ristretto.Point
-	// comm1 := commCompute(id, ver1URL, camParam.H, camParam.R1)
-	// fmt.Println("ver1 return:", comm1)
+	sendLog("id", id)
+	sendLog("Hvalue", string(camParam.H))
+	sendLog("R1value", camParam.R1)
+	sendLog("com1URL", string(com1URL))
+
+	comm1 := commCompute(id, string(com1URL), camParam.H, camParam.R1)
+	fmt.Println("ver1 return:", comm1)
 
 	// comm2 := commCompute(id, ver2URL, camParam.H, camParam.R2)
 	// // Request to verifier to compute Comm
@@ -213,31 +220,19 @@ func testVer1() {
 	fmt.Println(string(responseData))
 }
 
-func sendLog(message string) {
+func sendLog(name, message string) {
+	logmessage := DebugLog{name, message}
+
+	jsonLog, err := json.Marshal(logmessage)
+	if err != nil {
+		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+	}
+
+	logRequest := string(jsonLog)
+
 	c := &http.Client{}
 
-	// jsonData := `{"Test":"that"}`
-
-	// jsonData, err := json.Marshal(log)
-
-	// request := string(jsonData)
-
-	// response, err := http.Get(logURL)
-
-	// if err != nil {
-	// 	fmt.Print(err.Error())
-	// 	os.Exit(1)
-	// }
-
-	// responseData, err := ioutil.ReadAll(response.Body)
-
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(string(responseData))
-
-	reqJSON, err := http.NewRequest("POST", logURL, strings.NewReader(message))
+	reqJSON, err := http.NewRequest("POST", logURL, strings.NewReader(logRequest))
 	if err != nil {
 		fmt.Printf("http.NewRequest() error: %v\n", err)
 		return
@@ -328,6 +323,19 @@ func commCompute(campID string, url string, H []byte, r string) ristretto.Point 
 	}
 
 	fmt.Println("return data all:", string(data))
+
+	/// for sending log
+	tmp := string(data)
+	// logmessage := DebugLog{"comm", tmp}
+
+	// jsonLog, err := json.Marshal(logmessage)
+	// if err != nil {
+	// 	fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+	// }
+
+	// logRequest := string(jsonLog)
+
+	sendLog("comm", tmp)
 
 	comm := convertStringToPoint(string(data))
 	return (comm)

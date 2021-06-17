@@ -5,9 +5,19 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
+var f *os.File
+
 func main() {
+	var err error
+	f, err = os.Create("logfile")
+
+	if err != nil {
+		panic(err)
+	}
+
 	http.HandleFunc("/", home)
 	fmt.Println("Hello welcome to log service!")
 	http.HandleFunc("/log", printLog)
@@ -46,8 +56,12 @@ func printLog(w http.ResponseWriter, req *http.Request) {
 
 	log.Println(string(body))
 
-	d1 := []byte(string(body))
-	err = ioutil.WriteFile("logfile", d1, 0644)
+	// d1 := []byte(string(body))
+	// _, err = f.Write(d1)
+	n, err := f.WriteString(string(body) + string("\n"))
+
+	// n3, err := f.WriteString("writes\n")
+	fmt.Println("wrote to file:", n)
 
 	if err != nil {
 		panic(err)

@@ -68,7 +68,7 @@ func computeComm(w http.ResponseWriter, req *http.Request) {
 	comm = commitTo(&H, &r, V.SetBigInt(tem))
 	fmt.Print("comm: \n", comm)
 
-	s := comm.String()
+	s := convertPointtoString(comm)
 
 	fmt.Fprintf(w, string(s))
 }

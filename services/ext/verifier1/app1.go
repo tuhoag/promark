@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"math/rand"
 	"net/http"
+	"os"
 
 	"github.com/bwesterb/go-ristretto"
 )
@@ -18,7 +19,15 @@ type campaign_param struct {
 	R  string `json:"r"`
 }
 
+var f *os.File
+
 func main() {
+	var err error
+	f, err = os.Create("ver1log")
+
+	if err != nil {
+		panic(err)
+	}
 	http.HandleFunc("/", home)
 	http.HandleFunc("/comm", computeComm)
 	http.ListenAndServe(":5001", nil)
@@ -64,12 +73,20 @@ func computeComm(w http.ResponseWriter, req *http.Request) {
 	//get the value of H
 	H := convertBytesToPoint(campParam.H)
 	r = convertStringToScalar(campParam.R)
-	fmt.Println("H1 point:", H)
+	fmt.Println("H point:", H)
 
 	comm = commitTo(&H, &r, V.SetBigInt(tem))
 	fmt.Print("comm: \n", comm)
 
-	s := comm.String()
+	s := convertPointToString(comm)
+
+	n, err := f.WriteString(s)
+
+	fmt.Println("wrote to file:", n)
+
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Fprintf(w, string(s))
 }
