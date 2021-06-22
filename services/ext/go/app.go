@@ -7,10 +7,13 @@ import (
 	"log"
 	"math/big"
 	"net/http"
+	"os"
 
 	"github.com/bwesterb/go-ristretto"
 	redis "gopkg.in/redis.v4"
 )
+
+var f *os.File
 
 type Campaign struct {
 	ID string `json:"id"`
@@ -30,6 +33,13 @@ type campaign_param struct {
 }
 
 func main() {
+	var err error
+	f, err = os.Create("extlog")
+
+	if err != nil {
+		panic(err)
+	}
+
 	http.HandleFunc("/", homeHandler)
 	//http.HandleFunc("/post", postHandler)
 	http.HandleFunc("/camp", campaignParams)
@@ -88,6 +98,15 @@ func campaignParams(rw http.ResponseWriter, req *http.Request) {
 
 	//temporary return
 	param, err := json.Marshal(campParam)
+
+	// for log
+	n, err := f.WriteString(string(param))
+
+	fmt.Println("wrote to file:", n)
+
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Fprintf(rw, string(param))
 }

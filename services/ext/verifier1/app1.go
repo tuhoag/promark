@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/bwesterb/go-ristretto"
+	redis "gopkg.in/redis.v4"
 )
 
 type campaign_param struct {
@@ -19,11 +20,27 @@ type campaign_param struct {
 	R  string `json:"r"`
 }
 
+type SecretNumber struct {
+	ID string `json:"id"`
+	S  string `json:"s"`
+}
+
+type CommValue struct {
+	ID   string
+	comm []byte
+}
+
+var id string
+
 var f *os.File
 
 func main() {
 	var err error
 	f, err = os.Create("ver1log")
+
+	// initilization
+	id = "00"
+	getSecretNumber()
 
 	if err != nil {
 		panic(err)
@@ -60,35 +77,91 @@ func computeComm(w http.ResponseWriter, req *http.Request) {
 	var v int64
 	var comm ristretto.Point
 
-	v = rand.Int63n(100)
+	// generate COMM value - start
 
 	err = json.Unmarshal(body, &campParam)
 	if err != nil {
 		println(err)
 	}
-	log.Println("campaign is:", convertBytesToPoint(campParam.H), campParam.R)
+
+	v = rand.Int63n(100)
 
 	tem := big.NewInt(v)
 
 	//get the value of H
 	H := convertBytesToPoint(campParam.H)
 	r = convertStringToScalar(campParam.R)
-	fmt.Println("H point:", H)
+	n, err := f.WriteString(campParam.R)
+
+	fmt.Println("H point:", H.Bytes())
+	// n, err := f.WriteString(string(H.Bytes())
 
 	comm = commitTo(&H, &r, V.SetBigInt(tem))
-	fmt.Print("comm: \n", comm)
 
-	s := convertPointToString(comm)
+	commBytes := comm.Bytes()
 
-	n, err := f.WriteString(s)
+	// for log
+	n1, err := f.WriteString(string(commBytes))
 
-	fmt.Println("wrote to file:", n)
+	fmt.Println("wrote to file:", n, n1)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Fprintf(w, string(s))
+	cTemp := CommValue{campParam.id, commBytes}
+
+	jsonData, err := json.Marshal(cTemp)
+
+	// generate COMM - end
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Fprintf(w, string(jsonData))
+}
+
+func getSecretNumber() SecretNumber {
+	var V ristretto.Scalar
+	var returnValue SecretNumber
+
+	// connect to Redis
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	//generate campaign param
+	val, err := client.Get(id).Result()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = json.Unmarshal([]byte(val), &returnValue)
+
+	tem := rand.Int63n(100)
+	v := big.NewInt(tem)
+
+	if err != nil {
+		fmt.Println(err)
+		s := V.SetBigInt(v)
+
+		returnValue = SecretNumber{ID: id, S: s.String()}
+
+		jsonParam, err := json.Marshal(returnValue)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		//store to redis db
+		err = client.Set(id, jsonParam, 0).Err()
+		if err != nil {
+			fmt.Println(err)
+		}
+
+	}
+	return returnValue
 }
 
 // Pedersen part
@@ -123,29 +196,20 @@ func convertStringToPoint(s string) ristretto.Point {
 	var H ristretto.Point
 	var hBytes [32]byte
 
-	// fmt.Println("in convertStringToPoint s: \n", s)
-
 	tmp := []byte(s)
-	// fmt.Println("in convertStringToPoint tmp len: \n", tmp)
 
 	copy(hBytes[:32], tmp[:32])
-
 	H.SetBytes(&hBytes)
-	// fmt.Println("in convertStringToPoint H reverted: ", H)
 
 	return H
 }
 
 func convertPointToString(H ristretto.Point) string {
-	// fmt.Println(string("in convertPointToString function"))
-
 	// H := generateH()
 	fmt.Println("H: ", H)
 
 	hBytes := H.Bytes()
 	hString := string(hBytes)
-	//fmt.Println("in convertPointtoBytes H in bytes: ", hBytes)
-	//fmt.Println("in convertPointtoBytes H to string: ", H.String())
 	fmt.Println("in convertPointtoString hString: ", hString)
 
 	return hString

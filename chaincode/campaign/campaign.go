@@ -29,7 +29,8 @@ var (
 	logURL        = "http://logs.promark.com:5003/log"
 )
 
-var camParam campaign_param
+var camParam CampaignParam
+var cValue CommValue
 
 // Struct of request data to ext service
 type Cam struct {
@@ -43,7 +44,7 @@ type DebugLog struct {
 }
 
 // Struct of return data from ext service
-type campaign_param struct {
+type CampaignParam struct {
 	H  []byte `json:"hvalue"`
 	R1 string `json:"r1"`
 	R2 string `json:"r2"`
@@ -63,6 +64,11 @@ type CommRequest struct {
 	ID string
 	H  []byte
 	r  string
+}
+
+type CommValue struct {
+	ID   string `json:"ID"`
+	comm []byte `json:"comm"`
 }
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
@@ -130,7 +136,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	// Request to external service to get params
 	// var totalComm ristretto.Point
 	requestCamParams()
-	testVer1()
+	// testVer1()
 
 	// var totalComm ristretto.Point
 	sendLog("id", id)
@@ -138,7 +144,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	sendLog("R1value", camParam.R1)
 	sendLog("com1URL", string(com1URL))
 
-	comm1 := commCompute(id, string(com1URL), camParam.H, camParam.R1)
+	comm1 := commCompute(id, camParam.R1)
 	fmt.Println("ver1 return:", comm1)
 
 	// comm2 := commCompute(id, ver2URL, camParam.H, camParam.R2)
@@ -217,6 +223,8 @@ func testVer1() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	sendLog("testVer1", string(responseData))
 	fmt.Println(string(responseData))
 }
 
@@ -257,7 +265,7 @@ func sendLog(name, message string) {
 func requestCamParams() {
 	c := &http.Client{}
 
-	message := Cam{"id4", 2}
+	message := Cam{"id3", 2}
 
 	jsonData, err := json.Marshal(message)
 
@@ -285,28 +293,31 @@ func requestCamParams() {
 	fmt.Println("return data all:", string(data))
 
 	// test the H value
-	var H ristretto.Point
+	// var H ristretto.Point
 
 	err = json.Unmarshal([]byte(data), &camParam)
 	if err != nil {
 		println(err)
 	}
 
-	H = convertBytesToPoint(camParam.H)
-	fmt.Println("return data H:", H)
+	sendLog("returnedH", convertBytesToPoint(camParam.H).String())
 }
 
-func commCompute(campID string, url string, H []byte, r string) ristretto.Point {
+func commCompute(campID string, r string) string {
 	//connect to verifier: campID,  H , r
 	c := &http.Client{}
 
-	param := CommRequest{campID, H, r}
+	hBytes := camParam.H
+
+	param := CommRequest{campID, hBytes, r}
 
 	jsonData, _ := json.Marshal(param)
 
+	sendLog("commCompute.jsondata", string(jsonData))
+
 	request := string(jsonData)
 
-	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(request))
+	reqJSON, err := http.NewRequest("POST", com1URL, strings.NewReader(request))
 	if err != nil {
 		fmt.Printf("http.NewRequest() error: %v\n", err)
 	}
@@ -322,23 +333,14 @@ func commCompute(campID string, url string, H []byte, r string) ristretto.Point 
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
 	}
 
-	fmt.Println("return data all:", string(data))
+	err = json.Unmarshal(data, &cValue)
+	if err != nil {
+		println(err)
+	}
 
-	/// for sending log
-	tmp := string(data)
-	// logmessage := DebugLog{"comm", tmp}
+	sendLog("comm value:", string(cValue.comm))
 
-	// jsonLog, err := json.Marshal(logmessage)
-	// if err != nil {
-	// 	fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-	// }
-
-	// logRequest := string(jsonLog)
-
-	sendLog("comm", tmp)
-
-	comm := convertStringToPoint(string(data))
-	return (comm)
+	return (string(cValue.comm))
 }
 
 // The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
@@ -368,16 +370,15 @@ func convertStringToPoint(s string) ristretto.Point {
 	return H
 }
 
-func convertBytesToPoint(buf []byte) ristretto.Point {
+func convertBytesToPoint(b []byte) ristretto.Point {
 
 	var H ristretto.Point
 	var hBytes [32]byte
 
-	//tmp := []byte(s)
-	copy(hBytes[:32], buf[:])
+	copy(hBytes[:32], b[:])
 
-	H.SetBytes(&hBytes)
-	fmt.Println("in convertPointtoBytes hString: ", H)
+	result := H.SetBytes(&hBytes)
+	fmt.Println("in convertBytesToPoint result:", result)
 
 	return H
 }
