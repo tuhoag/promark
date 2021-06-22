@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/bwesterb/go-ristretto"
 	redis "gopkg.in/redis.v4"
@@ -18,6 +19,12 @@ type campaign_param struct {
 	id string `json:"id"`
 	H  []byte `json:"hvalue"`
 	R  string `json:"r"`
+}
+
+type ext_param struct {
+	H  []byte `json:"hvalue"`
+	R1 string `json:"r1"`
+	R2 string `json:"r2"`
 }
 
 type SecretNumber struct {
@@ -30,9 +37,27 @@ type CommValue struct {
 	comm []byte
 }
 
-var id string
+type Cam struct {
+	ID string
+	No int
+}
 
+type TestConvert struct {
+	ID    string
+	Hbyte []byte
+}
+
+type ResultConvert struct {
+	ID string
+	C  []byte
+}
+
+var id string
 var f *os.File
+var (
+	extURL        = "http://external.promark.com:5000"
+	camRequestURL = extURL + "/camp"
+)
 
 func main() {
 	var err error
@@ -46,7 +71,7 @@ func main() {
 		panic(err)
 	}
 	http.HandleFunc("/", home)
-	http.HandleFunc("/comm", computeComm)
+	http.HandleFunc("/comm", testConvert)
 	http.ListenAndServe(":5001", nil)
 }
 
@@ -73,52 +98,157 @@ func computeComm(w http.ResponseWriter, req *http.Request) {
 	log.Println(string(body))
 
 	var campParam campaign_param
-	var r, V ristretto.Scalar
-	var v int64
-	var comm ristretto.Point
+	// var r, V ristretto.Scalar
+	// var v int64
+	// var comm ristretto.Point
 
 	// generate COMM value - start
+	err = json.Unmarshal(body, &campParam)
+	if err != nil {
+		println(err)
+	}
+
+	// v = rand.Int63n(100)
+
+	// tem := big.NewInt(v)
+
+	//get the value of H
+	// H := convertBytesToPoint(campParam.H)
+	// r = convertStringToScalar(campParam.R)
+	n, err := f.WriteString(string(campParam.H))
+	n1, err := f.WriteString(campParam.R)
+
+	fmt.Println("wrote to file:", n, n1)
+
+	// fmt.Println("H point:", H.Bytes())
+	// n, err := f.WriteString(string(H.Bytes())
+
+	// comm = commitTo(&H, &r, V.SetBigInt(tem))
+
+	// commBytes := comm.Bytes()
+
+	if err != nil {
+		panic(err)
+	}
+
+	// cTemp := CommValue{campParam.id, commBytes}
+
+	// jsonData, err := json.Marshal(cTemp)
+
+	// // generate COMM - end
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// fmt.Fprintf(w, string(jsonData))
+	fmt.Fprintf(w, "OK")
+}
+
+func computeComm1(w http.ResponseWriter, req *http.Request) {
+	var campParam campaign_param
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		println(err)
+	}
+	log.Println(string(body))
 
 	err = json.Unmarshal(body, &campParam)
 	if err != nil {
 		println(err)
 	}
 
-	v = rand.Int63n(100)
+	// For connect to ext service
+	c := &http.Client{}
+	message := Cam{campParam.id, 2}
+	jsonData, err := json.Marshal(message)
+	request := string(jsonData)
 
+	reqJSON, err := http.NewRequest("POST", camRequestURL, strings.NewReader(request))
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+		return
+	}
+
+	respJSON, err := c.Do(reqJSON)
+	if err != nil {
+		fmt.Printf("http.Do() error: %v\n", err)
+		return
+	}
+	defer respJSON.Body.Close()
+
+	data, err := ioutil.ReadAll(respJSON.Body)
+	if err != nil {
+		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+		return
+	}
+	var camParamExt ext_param
+	fmt.Println("return data all:", string(data))
+	err = json.Unmarshal([]byte(data), &camParamExt)
+	if err != nil {
+		println(err)
+	}
+	// end calling to external service
+
+	// comm compute
+	var r ristretto.Scalar
+	var V ristretto.Scalar
+
+	r.Rand()
+	v := rand.Int63n(100)
 	tem := big.NewInt(v)
+	tmp := convertBytesToPoint(camParamExt.H)
+	n, err := f.WriteString(string(camParamExt.H))
 
 	//get the value of H
-	H := convertBytesToPoint(campParam.H)
-	r = convertStringToScalar(campParam.R)
-	n, err := f.WriteString(campParam.R)
-
-	fmt.Println("H point:", H.Bytes())
-	// n, err := f.WriteString(string(H.Bytes())
-
-	comm = commitTo(&H, &r, V.SetBigInt(tem))
-
+	var comm ristretto.Point
+	comm = commitTo(&tmp, &r, V.SetBigInt(tem))
 	commBytes := comm.Bytes()
-
-	// for log
-	n1, err := f.WriteString(string(commBytes))
-
-	fmt.Println("wrote to file:", n, n1)
-
-	if err != nil {
-		panic(err)
-	}
 
 	cTemp := CommValue{campParam.id, commBytes}
 
-	jsonData, err := json.Marshal(cTemp)
+	jsonData1, err := json.Marshal(cTemp)
+	// end of computation
 
-	// generate COMM - end
+	n, err = f.WriteString(string(jsonData1))
+	fmt.Println(n)
+
+	fmt.Fprintf(w, string(jsonData1))
+}
+
+func testConvert(rw http.ResponseWriter, req *http.Request) {
+	var r ristretto.Scalar
+	var V ristretto.Scalar
+	var comm ristretto.Point
+
+	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		panic(err)
+		println(err)
 	}
+	log.Println(string(body))
 
-	fmt.Fprintf(w, string(jsonData))
+	var testConvert TestConvert
+	err = json.Unmarshal(body, &testConvert)
+	tmp := convertBytesToPoint(testConvert.Hbyte)
+
+	//compute the comm value
+	r.Rand()
+	v := rand.Int63n(100)
+	tem := big.NewInt(v)
+
+	//get the value of H
+	comm = commitTo(&tmp, &r, V.SetBigInt(tem))
+
+	// commBytes := comm.Bytes()
+
+	returnValue := ResultConvert{testConvert.ID, comm.Bytes()}
+
+	jsonD, err := json.Marshal(returnValue)
+
+	n, err := f.WriteString(string(jsonD))
+	fmt.Println(n)
+
+	fmt.Fprintf(rw, string(jsonD))
 }
 
 func getSecretNumber() SecretNumber {
@@ -159,7 +289,6 @@ func getSecretNumber() SecretNumber {
 		if err != nil {
 			fmt.Println(err)
 		}
-
 	}
 	return returnValue
 }

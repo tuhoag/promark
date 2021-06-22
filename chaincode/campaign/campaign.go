@@ -30,7 +30,6 @@ var (
 )
 
 var camParam CampaignParam
-var cValue CommValue
 
 // Struct of request data to ext service
 type Cam struct {
@@ -69,6 +68,11 @@ type CommRequest struct {
 type CommValue struct {
 	ID   string `json:"ID"`
 	comm []byte `json:"comm"`
+}
+
+type ResultConvert struct {
+	ID string
+	C  []byte
 }
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
@@ -333,14 +337,16 @@ func commCompute(campID string, r string) string {
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
 	}
 
-	err = json.Unmarshal(data, &cValue)
+	var cValue ResultConvert
+
+	err = json.Unmarshal([]byte(data), &cValue)
 	if err != nil {
 		println(err)
 	}
 
-	sendLog("comm value:", string(cValue.comm))
+	sendLog("comm value:", string(cValue.C))
 
-	return (string(cValue.comm))
+	return (string(cValue.C))
 }
 
 // The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
