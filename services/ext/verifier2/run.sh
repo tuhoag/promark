@@ -3,4 +3,4 @@
 #python3 app.py
 
 redis-server --daemonize yes
-go run app2.go
+go run app.go

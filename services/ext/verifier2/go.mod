@@ -1,4 +1,4 @@
-module promark2.com/main
+module promark1.com/main
 
 go 1.16
 

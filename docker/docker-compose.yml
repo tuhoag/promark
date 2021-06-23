@@ -13,7 +13,7 @@ services:
         container_name: logs.promark.com
         build:
             context: .
-            dockerfile: logs-dockerfile
+            dockerfile: logs.dockerfile
         ports:
             - "5003:5003"
         networks:
@@ -28,7 +28,7 @@ services:
         container_name: external.promark.com
         build:
             context: .
-            dockerfile: external-service-dockerfile
+            dockerfile: external-service.dockerfile
         ports:
             - "5000:5000"
         networks:
@@ -44,31 +44,33 @@ services:
         container_name: verifier1.promark.com
         build:
             context: .
-            dockerfile: verifier1-dockerfile
+            dockerfile: verifier.dockerfile
         ports:
             - "5001:5001"
         networks:
             - test
         volumes:
-            - ../services/ext/verifier1:/code1
+            - ../services/ext/verifier:/code1
         command: /bin/sh run.sh
         environment:
-            - VER1_PORT=5001
+            - VER_PORT=5001
+            - VER_NAME=ver1log
     
     verifier2.promark.com:
         container_name: verifier2.promark.com
         build:
             context: .
-            dockerfile: verifier2-dockerfile
+            dockerfile: verifier.dockerfile
         ports:
-            - "5002:5002"
+            - "5002:5001"
         networks:
             - test
         volumes:
-            - ../services/ext/verifier2:/code2
+            - ../services/ext/verifier:/code1
         command: /bin/sh run.sh
         environment:
-            - VER2_PORT=5002  
+            - VER_PORT=5001
+            - VER_NAME=ver2log
 
     orderer.promark.com:
         container_name: orderer.promark.com

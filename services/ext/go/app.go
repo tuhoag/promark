@@ -28,8 +28,8 @@ type campaign_request struct {
 
 type campaign_param struct {
 	H  []byte `json:"hvalue"`
-	R1 string `json:"r1"`
-	R2 string `json:"r2"`
+	R1 []byte `json:"r1"`
+	R2 []byte `json:"r2"`
 }
 
 func main() {
@@ -159,12 +159,16 @@ func setParam(id string, no int) {
 		fmt.Println("hString:.\n", hBytes)
 
 		r1.Rand()
-		fmt.Println("r1:.\n", r1.String())
+		// r1String := string(r1.Bytes())
+		r1Bytes := r1.Bytes()
+		fmt.Println("r1:.\n", r1Bytes)
 
 		r2.Rand()
-		fmt.Println("r1:.\n", r2.String())
+		// r2String := string(r2.Bytes())
+		r2Bytes := r2.Bytes()
+		fmt.Println("r1:.\n", r2Bytes)
 
-		jsonParam, err := json.Marshal(campaign_param{H: hBytes, R1: r1.String(), R2: r2.String()})
+		jsonParam, err := json.Marshal(campaign_param{H: hBytes, R1: r1Bytes, R2: r2Bytes})
 		if err != nil {
 			fmt.Println(err)
 		}

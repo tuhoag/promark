@@ -1,6 +1,7 @@
 package campaign
 
 import (
+	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,7 +25,7 @@ var (
 	camRequestURL = extURL + "/camp"
 	ver1URL       = "http://verifier1.promark.com:5001"
 	com1URL       = ver1URL + "/comm"
-	ver2URL       = "http://verifier1.promark.com:5002"
+	ver2URL       = "http://verifier2.promark.com:5002"
 	com2URL       = ver2URL + "/comm"
 	logURL        = "http://logs.promark.com:5003/log"
 )
@@ -45,8 +46,8 @@ type DebugLog struct {
 // Struct of return data from ext service
 type CampaignParam struct {
 	H  []byte `json:"hvalue"`
-	R1 string `json:"r1"`
-	R2 string `json:"r2"`
+	R1 []byte `json:"r1"`
+	R2 []byte `json:"r2"`
 }
 
 // Struct of data store in Blockchain ledger
@@ -60,9 +61,9 @@ type Campaign struct {
 }
 
 type CommRequest struct {
-	ID string
-	H  []byte
-	r  string
+	ID string `json:"ID"`
+	H  []byte `json:"H"`
+	r  []byte `json:"r"`
 }
 
 type CommValue struct {
@@ -139,19 +140,26 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 
 	// Request to external service to get params
 	// var totalComm ristretto.Point
-	requestCamParams()
+	requestCamParams(id)
 	// testVer1()
 
 	// var totalComm ristretto.Point
 	sendLog("id", id)
 	sendLog("Hvalue", string(camParam.H))
-	sendLog("R1value", camParam.R1)
+	sendLog("R1value", string(camParam.R1))
 	sendLog("com1URL", string(com1URL))
+	sendLog("R2value", string(camParam.R2))
+	sendLog("com2URL", string(com2URL))
 
-	comm1 := commCompute(id, camParam.R1)
+	// var C1, C2, C ristretto.Point
+
+	comm1 := commCompute(id, com1URL)
+	// C1 = convertStringToPoint(comm)
 	fmt.Println("ver1 return:", comm1)
 
-	// comm2 := commCompute(id, ver2URL, camParam.H, camParam.R2)
+	comm2 := commCompute(id, com2URL)
+	fmt.Println("ver2 return:", comm2)
+
 	// // Request to verifier to compute Comm
 	// fmt.Println("ver1 return:", comm2)
 
@@ -266,10 +274,10 @@ func sendLog(name, message string) {
 	fmt.Println("return data all:", string(data))
 }
 
-func requestCamParams() {
+func requestCamParams(id string) {
 	c := &http.Client{}
 
-	message := Cam{"id3", 2}
+	message := Cam{id, 2}
 
 	jsonData, err := json.Marshal(message)
 
@@ -307,21 +315,42 @@ func requestCamParams() {
 	sendLog("returnedH", convertBytesToPoint(camParam.H).String())
 }
 
-func commCompute(campID string, r string) string {
+func commCompute(campID string, url string) string {
 	//connect to verifier: campID,  H , r
+	sendLog("Start of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
+	var param CommRequest
+	var rBytes []byte
+	var rEnc, hEnc string
 	c := &http.Client{}
 
 	hBytes := camParam.H
+	hEnc = b64.StdEncoding.EncodeToString(hBytes)
 
-	param := CommRequest{campID, hBytes, r}
+	if url == com1URL {
+		rBytes = camParam.R1
+		rEnc = b64.StdEncoding.EncodeToString(rBytes)
 
-	jsonData, _ := json.Marshal(param)
+	} else if url == com2URL {
+		rBytes = camParam.R2
+		rEnc = b64.StdEncoding.EncodeToString(rBytes)
+	}
 
-	sendLog("commCompute.jsondata", string(jsonData))
+	sendLog("commCompute.R in string", string(rBytes))
 
-	request := string(jsonData)
+	param = CommRequest{ID: campID, H: hBytes, r: rBytes}
+	sendLog("commCompute.param in string", param.ID)
+	sendLog("commCompute.param in string", string(param.H))
+	sendLog("commCompute.param in string", string(param.r))
 
-	reqJSON, err := http.NewRequest("POST", com1URL, strings.NewReader(request))
+	// jsonData, _ := json.Marshal(param)
+
+	message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", param.ID, hEnc, rEnc)
+
+	// request := string(jsonData)
+
+	sendLog("commCompute.message", message)
+
+	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(message))
 	if err != nil {
 		fmt.Printf("http.NewRequest() error: %v\n", err)
 	}
@@ -337,16 +366,17 @@ func commCompute(campID string, r string) string {
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
 	}
 
-	var cValue ResultConvert
+	// var cValue ResultConvert
 
-	err = json.Unmarshal([]byte(data), &cValue)
-	if err != nil {
-		println(err)
-	}
+	// err = json.Unmarshal([]byte(data), &cValue)
+	// if err != nil {
+	// 	println(err)
+	// }
 
-	sendLog("comm value:", string(cValue.C))
+	sendLog("commValue:", string(data))
+	sendLog("end of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
 
-	return (string(cValue.C))
+	return string(data)
 }
 
 // The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
@@ -387,4 +417,23 @@ func convertBytesToPoint(b []byte) ristretto.Point {
 	fmt.Println("in convertBytesToPoint result:", result)
 
 	return H
+}
+
+func convertBytesToScalar(b []byte) ristretto.Scalar {
+	var r ristretto.Scalar
+	var rBytes [32]byte
+
+	copy(rBytes[:32], b[:])
+
+	result := r.SetBytes(&rBytes)
+	fmt.Println("in convertBytesToScalar result:", result)
+
+	return r
+}
+
+func convertScalarToString(s ristretto.Scalar) string {
+	sBytes := s.Bytes()
+	sString := string(sBytes)
+
+	return sString
 }

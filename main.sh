@@ -116,7 +116,12 @@ if [ $MODE = "restart" ]; then
     joinChannel
 
 elif [ $MODE = "init" ]; then
+    clear 
+    sleep 10
+    rm chaincode/main.tar.gz
     initialize
+    sleep 10
+    networkUp
 elif [ $MODE = "clear" ]; then
     clear
 elif [ $MODE = "up" ]; then
@@ -131,11 +136,16 @@ elif [ $MODE = "channel" ]; then
         createChannel
     elif [ $SUB_MODE = "join" ]; then
         joinChannel
+    elif [ $SUB_MODE = "all" ]; then
+        createChannel
+        sleep 10
+        joinChannel
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "chaincode" ]; then
     # deployCC "campaign"
+
     SUB_MODE=$2
 
     if [ $SUB_MODE = "package" ]; then
@@ -146,12 +156,21 @@ elif [ $MODE = "chaincode" ]; then
         approveChaincode
     elif [ $SUB_MODE = "commit" ]; then
         commitChaincode
+    elif [ $SUB_MODE = "all" ]; then
+        packageChaincode
+        sleep 10
+        installChaincode
+        sleep 10
+        approveChaincode
+        sleep 10
+        commitChaincode
+        sleep 10
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "trans" ]; then
     SUB_MODE=$2
-
+    
     if [ $SUB_MODE = "init" ]; then
         invokeInitLedger
     elif [ $SUB_MODE = "add" ]; then
