@@ -139,8 +139,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	}
 
 	// Request to external service to get params
-	// var totalComm ristretto.Point
-	// var C1, C2, C ristretto.Point
+	var C1, C2, C ristretto.Point
 
 	requestCamParams(id)
 
@@ -152,20 +151,19 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	sendLog("com2URL", string(com2URL))
 
 	comm1 := commCompute(id, com1URL)
-	// C1 = convertStringToPoint(comm)
-	fmt.Println("ver1 return:", comm1)
+	comm1Dec, _ := b64.StdEncoding.DecodeString(comm1)
+	C1 = convertStringToPoint(string(comm1Dec))
 
 	comm2 := commCompute(id, com2URL)
-	fmt.Println("ver2 return:", comm2)
+	comm2Dec, _ := b64.StdEncoding.DecodeString(comm2)
+	C2 = convertStringToPoint(string(comm2Dec))
 
-	// // Request to verifier to compute Comm
-	// fmt.Println("ver1 return:", comm2)
-
-	// totalComm.Add(&comm1, &comm2)
-	// fmt.Println("total Comm:", totalComm)
+	C.Add(&C1, &C2)
+	CBytes := C.Bytes()
+	totalCommEnc := b64.StdEncoding.EncodeToString(CBytes)
+	sendLog("total Comm encoding:", totalCommEnc)
 
 	// End of comm computation
-
 	campaign := Campaign{
 		ID:         id,
 		Name:       name,

@@ -42,7 +42,7 @@ type Cam struct {
 	No int
 }
 
-type TestConvert struct {
+type CommParam struct {
 	ID    string `json:"ID"`
 	Hbyte string `json:"Hbyte"`
 	R     string `json:"R"`
@@ -108,25 +108,24 @@ func computeComm(rw http.ResponseWriter, req *http.Request) {
 	}
 	log.Println(string(body))
 
-	var testConvert TestConvert
-	err = json.Unmarshal(body, &testConvert)
+	var commParam CommParam
+	err = json.Unmarshal(body, &commParam)
 
-	hDec, _ := b64.StdEncoding.DecodeString(testConvert.Hbyte)
+	hDec, _ := b64.StdEncoding.DecodeString(commParam.Hbyte)
 	tmp := convertBytesToPoint(hDec)
 
-	rDec, _ := b64.StdEncoding.DecodeString(testConvert.R)
+	rDec, _ := b64.StdEncoding.DecodeString(commParam.R)
 
 	r = convertStringToScalar(string(rDec))
 	// r.Rand()
 	rstring := string(body)
 
 	n, err := f.WriteString("body:" + rstring + string("\n"))
-	n, err = f.WriteString("testConvert R: " + string(rDec) + string("\n"))
+	n, err = f.WriteString("commParam R: " + string(rDec) + string("\n"))
 
 	fmt.Println(n)
 
 	//compute the comm value
-
 	v := rand.Int63n(100)
 	tem := big.NewInt(v)
 
@@ -134,12 +133,6 @@ func computeComm(rw http.ResponseWriter, req *http.Request) {
 	comm = commitTo(&tmp, &r, V.SetBigInt(tem))
 	cEnc := b64.StdEncoding.EncodeToString(comm.Bytes())
 
-	// returnValue := ResultConvert{testConvert.ID, comm.Bytes()}
-
-	// jsonD, err := json.Marshal(returnValue)
-
-	// // n, err := f.WriteString(string(jsonD))
-	// fmt.Println(n)
 	n1, err := f.WriteString("cEnc:" + cEnc + string("\n"))
 	fmt.Println(n1)
 
