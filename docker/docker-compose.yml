@@ -62,14 +62,14 @@ services:
             context: .
             dockerfile: verifier.dockerfile
         ports:
-            - "5002:5001"
+            - "5002:5002"
         networks:
             - test
         volumes:
             - ../services/ext/verifier:/code1
         command: /bin/sh run.sh
         environment:
-            - VER_PORT=5001
+            - VER_PORT=5002
             - VER_NAME=ver2log
 
     orderer.promark.com:

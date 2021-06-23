@@ -140,18 +140,16 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 
 	// Request to external service to get params
 	// var totalComm ristretto.Point
-	requestCamParams(id)
-	// testVer1()
+	// var C1, C2, C ristretto.Point
 
-	// var totalComm ristretto.Point
+	requestCamParams(id)
+
 	sendLog("id", id)
 	sendLog("Hvalue", string(camParam.H))
 	sendLog("R1value", string(camParam.R1))
 	sendLog("com1URL", string(com1URL))
 	sendLog("R2value", string(camParam.R2))
 	sendLog("com2URL", string(com2URL))
-
-	// var C1, C2, C ristretto.Point
 
 	comm1 := commCompute(id, com1URL)
 	// C1 = convertStringToPoint(comm)
@@ -166,7 +164,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	// totalComm.Add(&comm1, &comm2)
 	// fmt.Println("total Comm:", totalComm)
 
-	//end
+	// End of comm computation
 
 	campaign := Campaign{
 		ID:         id,
@@ -304,9 +302,6 @@ func requestCamParams(id string) {
 
 	fmt.Println("return data all:", string(data))
 
-	// test the H value
-	// var H ristretto.Point
-
 	err = json.Unmarshal([]byte(data), &camParam)
 	if err != nil {
 		println(err)
@@ -343,9 +338,7 @@ func commCompute(campID string, url string) string {
 	sendLog("commCompute.param in string", string(param.r))
 
 	// jsonData, _ := json.Marshal(param)
-
 	message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", param.ID, hEnc, rEnc)
-
 	// request := string(jsonData)
 
 	sendLog("commCompute.message", message)
@@ -365,13 +358,6 @@ func commCompute(campID string, url string) string {
 	if err != nil {
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
 	}
-
-	// var cValue ResultConvert
-
-	// err = json.Unmarshal([]byte(data), &cValue)
-	// if err != nil {
-	// 	println(err)
-	// }
 
 	sendLog("commValue:", string(data))
 	sendLog("end of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
