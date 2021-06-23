@@ -66,14 +66,10 @@ type CommRequest struct {
 	r  []byte `json:"r"`
 }
 
-type CommValue struct {
-	ID   string `json:"ID"`
-	comm []byte `json:"comm"`
-}
-
-type ResultConvert struct {
-	ID string
-	C  []byte
+type CollectedData struct {
+	Comm string `json:"Comm"`
+	R1   string `json:"R1"`
+	R2   string `json:"R2"`
 }
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
@@ -164,6 +160,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	sendLog("total Comm encoding:", totalCommEnc)
 
 	// End of comm computation
+
 	campaign := Campaign{
 		ID:         id,
 		Name:       name,
@@ -179,6 +176,40 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	}
 
 	err = ctx.GetStub().PutState(id, campaignJSON)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInterface, id string, user string, comm string, r1 string, r2 string) error {
+	existing, err := ctx.GetStub().GetState(user)
+
+	if err != nil {
+		return errors.New("Unable to read the world state")
+	}
+
+	if existing != nil {
+		return fmt.Errorf("Cannot create asset since its id %s is existed", user)
+	}
+
+	// request
+	requestCamParams(id)
+
+	collectedData := CollectedData{
+		Comm: comm,
+		R1:   r1,
+		R2:   r2,
+	}
+
+	dataJSON, err := json.Marshal(collectedData)
+	if err != nil {
+		return err
+	}
+
+	err = ctx.GetStub().PutState(id, dataJSON)
 
 	if err != nil {
 		return err
@@ -220,7 +251,7 @@ func (s *SmartContract) QueryLedgerById(ctx contractapi.TransactionContextInterf
 	return campaigns, nil
 }
 
-/////////////////// Pedersen functions //////////////////////////////////
+/////////////////// External service functions //////////////////////////////////
 func testVer1() {
 	response, err := http.Get(ver1URL)
 
@@ -365,6 +396,7 @@ func commCompute(campID string, url string) string {
 	return string(data)
 }
 
+/////////////////// Pedersen functions //////////////////////////////////
 // The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
 var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857116359379907606001950938285454250989", 10)
 
