@@ -56,8 +56,8 @@ type Campaign struct {
 	Name       string `json:"Name"`
 	Advertiser string `json:"Advertiser"`
 	Business   string `json:"Business"`
-	// CommC1	   []byte `json:"CommC1"`
-	// CommC2	   []byte `json:"CommC2`
+	CommC1     string `json:"CommC1"`
+	CommC2     string `json:"CommC2`
 }
 
 type CommRequest struct {
@@ -78,8 +78,8 @@ type ResultConvert struct {
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	campaigns := []Campaign{
-		{ID: "id1", Name: "campaign1", Advertiser: "Adv0", Business: "Bus0"},
-		{ID: "id2", Name: "campaign2", Advertiser: "Adv0", Business: "Bus0"},
+		{ID: "id1", Name: "campaign1", Advertiser: "Adv0", Business: "Bus0", CommC1: "", CommC2: ""},
+		{ID: "id2", Name: "campaign2", Advertiser: "Adv0", Business: "Bus0", CommC1: "", CommC2: ""},
 	}
 
 	for _, campaign := range campaigns {
@@ -169,6 +169,8 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		Name:       name,
 		Advertiser: advertiser,
 		Business:   business,
+		CommC1:     comm1,
+		CommC2:     comm2,
 	}
 
 	campaignJSON, err := json.Marshal(campaign)
