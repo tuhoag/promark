@@ -67,6 +67,7 @@ type CommRequest struct {
 }
 
 type CollectedData struct {
+	User string `json:"User"`
 	Comm string `json:"Comm"`
 	R1   string `json:"R1"`
 	R2   string `json:"R2"`
@@ -120,6 +121,34 @@ func (s *SmartContract) GetAllAssets(ctx contractapi.TransactionContextInterface
 	}
 
 	return campaigns, nil
+}
+
+func (s *SmartContract) GetAllCollectedData(ctx contractapi.TransactionContextInterface) ([]*CollectedData, error) {
+	// range query with empty string for startKey and endKey does an
+	// open-ended query of all assets in the chaincode namespace.
+	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+	if err != nil {
+		return nil, err
+	}
+	// close the resultsIterator when this function is finished
+	defer resultsIterator.Close()
+
+	var allData []*CollectedData
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		var data CollectedData
+		err = json.Unmarshal(queryResponse.Value, &data)
+		if err != nil {
+			return nil, err
+		}
+		allData = append(allData, &data)
+	}
+
+	return allData, nil
 }
 
 // Create a new campaign
@@ -198,7 +227,32 @@ func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInter
 	// request
 	requestCamParams(id)
 
+	// comm comuptation - start
+	var C1, C2, C, Comm ristretto.Point
+
+	sendLog("id", id)
+	sendLog("Hvalue", string(camParam.H))
+
+	// convert encoded Comm value
+	commDec, _ := b64.StdEncoding.DecodeString(comm)
+	Comm = convertStringToPoint(string(commDec))
+
+	comm1 := commVerify(id, com1URL, r1)
+	comm1Dec, _ := b64.StdEncoding.DecodeString(comm1)
+	C1 = convertStringToPoint(string(comm1Dec))
+
+	comm2 := commVerify(id, com2URL, r2)
+	comm2Dec, _ := b64.StdEncoding.DecodeString(comm2)
+	C2 = convertStringToPoint(string(comm2Dec))
+
+	C.Add(&C1, &C2)
+	// comm computation - end
+
+	// check the comm conndition
+	checkResult := C.Equals(&Comm)
+
 	collectedData := CollectedData{
+		User: user,
 		Comm: comm,
 		R1:   r1,
 		R2:   r2,
@@ -209,10 +263,11 @@ func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInter
 		return err
 	}
 
-	err = ctx.GetStub().PutState(id, dataJSON)
-
-	if err != nil {
-		return err
+	if checkResult {
+		err = ctx.GetStub().PutState(id, dataJSON)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -392,6 +447,46 @@ func commCompute(campID string, url string) string {
 
 	sendLog("commValue:", string(data))
 	sendLog("end of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
+
+	return string(data)
+}
+
+func commVerify(campID string, url string, r string) string {
+	//connect to verifier: campID,  H , r
+	sendLog("Start of commVerify:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
+
+	var hEnc string
+	c := &http.Client{}
+
+	hBytes := camParam.H
+	hEnc = b64.StdEncoding.EncodeToString(hBytes)
+
+	sendLog("commVerify.r in string", r)
+
+	// jsonData, _ := json.Marshal(param)
+	message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", campID, hEnc, r)
+	// request := string(jsonData)
+
+	sendLog("commVerify.message", message)
+
+	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(message))
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+	}
+
+	respJSON, err := c.Do(reqJSON)
+	if err != nil {
+		fmt.Printf("http.Do() error: %v\n", err)
+	}
+	defer respJSON.Body.Close()
+
+	data, err := ioutil.ReadAll(respJSON.Body)
+	if err != nil {
+		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+	}
+
+	sendLog("commValue:", string(data))
+	sendLog("end of commVerify:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
 
 	return string(data)
 }

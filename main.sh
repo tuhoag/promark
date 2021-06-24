@@ -72,6 +72,10 @@ function invokeCreateCamp() {
     $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 1
 } 
 
+function invokeCollectData() {
+    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 1
+}
+
 function runExternalService() {
     $SCRIPTS_DIR/external-service.sh $LOG_LEVEL 0
 }
@@ -181,6 +185,12 @@ elif [ $MODE = "trans" ]; then
         testChaincode
     else
         echo "Unsupported $MODE $SUB_MODE command."
+    fi
+elif [ $MODE = "camp" ]; then
+    SUB_MODE=$2
+    
+    if [ $SUB_MODE = "add" ]; then
+        invokeCollectData
     fi
 elif [ $MODE = "service" ]; then
     SUB_MODE=$2
