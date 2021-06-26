@@ -19,7 +19,7 @@ services:
         networks:
             - test
         volumes:
-            - ../services/ext/log:/log
+            - ../services/log:/log
         command: /bin/sh run.sh
         environment:
             - LOG_PORT=5003
@@ -34,7 +34,7 @@ services:
         networks:
             - test
         volumes:
-            - ../services/ext/go:/code
+            - ../services/ext:/code
         command: /bin/sh run.sh
         environment:
             - API_PORT=5000
@@ -50,8 +50,8 @@ services:
         networks:
             - test
         volumes:
-            - ../services/ext/verifier:/code1
-        command: /bin/sh run.sh
+            - ../services/verifier:/code1
+        command: /bin/sh run1.sh
         environment:
             - VER_PORT=5001
             - VER_NAME=ver1log
@@ -66,8 +66,8 @@ services:
         networks:
             - test
         volumes:
-            - ../services/ext/verifier:/code1
-        command: /bin/sh run.sh
+            - ../services/verifier:/code1
+        command: /bin/sh run1.sh
         environment:
             - VER_PORT=5002
             - VER_NAME=ver2log
@@ -148,7 +148,7 @@ services:
         container_name: peer0.bus0.promark.com
         extends:
             file: docker-compose-base.yml
-            service: peer-base
+            service: peer-verifier-base
         ports:
             - 2050:7051
         networks:
