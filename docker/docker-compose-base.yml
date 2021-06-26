@@ -61,8 +61,6 @@ services:
         build:
             context: .
             dockerfile: peer.dockerfile
-            args:
-                - FABRIC_VER=$IMAGE_TAG
         working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
         command: /src/run.sh
         environment:

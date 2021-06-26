@@ -40,37 +40,37 @@ services:
             - API_PORT=5000
             - REDIS_PORT=6379     
 
-    verifier1.promark.com:
-        container_name: verifier1.promark.com
-        build:
-            context: .
-            dockerfile: verifier.dockerfile
-        ports:
-            - "5001:5001"
-        networks:
-            - test
-        volumes:
-            - ../services/verifier:/code1
-        command: /bin/sh run1.sh
-        environment:
-            - VER_PORT=5001
-            - VER_NAME=ver1log
+    # verifier1.promark.com:
+    #     container_name: verifier1.promark.com
+    #     build:
+    #         context: .
+    #         dockerfile: verifier.dockerfile
+    #     ports:
+    #         - "5001:5001"
+    #     networks:
+    #         - test
+    #     volumes:
+    #         - ../services/verifier:/code1
+    #     command: /bin/sh run1.sh
+    #     environment:
+    #         - VER_PORT=5001
+    #         - VER_NAME=ver1log
     
-    verifier2.promark.com:
-        container_name: verifier2.promark.com
-        build:
-            context: .
-            dockerfile: verifier.dockerfile
-        ports:
-            - "5002:5002"
-        networks:
-            - test
-        volumes:
-            - ../services/verifier:/code1
-        command: /bin/sh run1.sh
-        environment:
-            - VER_PORT=5002
-            - VER_NAME=ver2log
+    # verifier2.promark.com:
+    #     container_name: verifier2.promark.com
+    #     build:
+    #         context: .
+    #         dockerfile: verifier.dockerfile
+    #     ports:
+    #         - "5002:5002"
+    #     networks:
+    #         - test
+    #     volumes:
+    #         - ../services/verifier:/code1
+    #     command: /bin/sh run1.sh
+    #     environment:
+    #         - VER_PORT=5002
+    #         - VER_NAME=ver2log
 
     orderer.promark.com:
         container_name: orderer.promark.com
@@ -115,9 +115,10 @@ services:
         container_name: peer0.adv0.promark.com
         extends:
             file: docker-compose-base.yml
-            service: peer-base
+            service:  peer-verifier-base
         ports:
             - 1050:7051
+            - 5002:5002
         networks:
             - test
         depends_on:
@@ -137,6 +138,9 @@ services:
             - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.adv0.promark.com:5984
             - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
             - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+            
+            - VER_PORT=5002
+            - VER_NAME=ver1log
 
         volumes:
             - /var/run/docker.sock:/host/var/run/docker.sock
@@ -151,6 +155,7 @@ services:
             service: peer-verifier-base
         ports:
             - 2050:7051
+            - 5001:5001
         networks:
             - test
         depends_on:
@@ -170,6 +175,9 @@ services:
             - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1.bus0.promark.com:5984
             - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
             - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+
+            - VER_PORT=5001
+            - VER_NAME=ver1log
 
         volumes:
             - /var/run/docker.sock:/host/var/run/docker.sock
