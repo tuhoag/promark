@@ -18,3 +18,6 @@ rm -rf channels
 
 # remove log
 rm -rf $PWD/log.txt
+
+# remove the chaincode package file before commit
+rm chaincode/main.tar.gz
