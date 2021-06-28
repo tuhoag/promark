@@ -5,7 +5,7 @@
 export CHANNEL_NAME="mychannel"
 export LOG_LEVEL=INFO
 export FABRIC_LOGGING_SPEC=DEBUG
-export CHAINCODE_NAME="main"
+export CHAINCODE_NAME="campaign"
 
 function initialize() {
     # generate all organizations

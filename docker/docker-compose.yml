@@ -79,7 +79,7 @@ services:
             service: orderer-base
         ports:
             - 7050:7050
-            # - 7052:9443
+            - 53732:9443
         networks:
             - test
         environment:
@@ -119,6 +119,7 @@ services:
         ports:
             - 1050:7051
             - 5002:5002
+            - 54732:9443
         networks:
             - test
         depends_on:
@@ -156,6 +157,7 @@ services:
         ports:
             - 2050:7051
             - 5001:5001
+            - 55732:9443
         networks:
             - test
         depends_on:

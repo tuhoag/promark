@@ -1,0 +1,39 @@
+test:
+    name: createCampaign-contract-benchmark
+    description: test benchmark
+    workers:
+      type: local
+      number: 2
+    rounds:
+      - label: createCampaign
+        description:  Create Campaign benchmark
+        txDuration: 30
+        rateControl: 
+          type: fixed-load
+          opts:
+            transactionLoad: 2
+        workload:
+          module: ./workloads/queryCreateCampaign.js
+          arguments:
+            backups: 10
+            contractId: campaign
+
+observer:
+  type: prometheus
+  interval: 5
+
+monitor:
+  interval: 1
+  type: ['docker', 'prometheus', 'cadvisor']
+  docker:
+    containers: ['all']
+  prometheus:
+    url: "http://0.0.0.0:9090"
+    metrics:
+      ignore: [prometheus, cadvisor, grafana, node-exporter]
+      include:
+        Endorse Time (s):
+          query: rate(endorser_proposal_duration_sum{chaincode="backup"}[5m])/rate(endorser_proposal_duration_count{chaincode="backup"}[5m])
+          step: 1
+          label: instance
+          statistic: avg
