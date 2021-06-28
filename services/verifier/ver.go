@@ -29,7 +29,7 @@ type ext_param struct {
 
 type SecretNumber struct {
 	ID string `json:"id"`
-	S  string `json:"s"`
+	S  []byte `json:"s"`
 }
 
 type CommValue struct {
@@ -55,6 +55,7 @@ type ResultConvert struct {
 
 var id string
 var f *os.File
+var sValue SecretNumber
 
 // var (
 // 	extURL        = "http://external.promark.com:5000"
@@ -76,9 +77,9 @@ func main() {
 
 	// initilization
 	id = "00"
-	getSecretNumber()
+	sValue = getSecretNumber(id)
 
-	// n, _ := f.WriteString("Welcome to verifying service" + string("\n"))
+	// n, _ := f.WriteString("Secret value is:" + string(sValue.S) + string("\n"))
 	// fmt.Println(n)
 
 	http.HandleFunc("/", home)
@@ -125,22 +126,19 @@ func computeComm(rw http.ResponseWriter, req *http.Request) {
 	tmp := convertBytesToPoint(hDec)
 
 	rDec, _ := b64.StdEncoding.DecodeString(commParam.R)
-
-	r = convertStringToScalar(string(rDec))
+	r = convertBytesToScalar(rDec)
 	// r.Rand()
 	rstring := string(body)
 
 	n, err = f.WriteString("body:" + rstring + string("\n"))
-	n, err = f.WriteString("commParam R: " + string(rDec) + string("\n"))
 
 	fmt.Println(n)
 
 	//compute the comm value
-	v := rand.Int63n(100)
-	tem := big.NewInt(v)
+	V = convertBytesToScalar(sValue.S)
 
 	//get the value of H
-	comm = commitTo(&tmp, &r, V.SetBigInt(tem))
+	comm = commitTo(&tmp, &r, &V)
 	cEnc := b64.StdEncoding.EncodeToString(comm.Bytes())
 
 	n1, err := f.WriteString("cEnc:" + cEnc + string("\n"))
@@ -149,7 +147,7 @@ func computeComm(rw http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(rw, cEnc)
 }
 
-func getSecretNumber() SecretNumber {
+func getSecretNumber(id string) SecretNumber {
 	var V ristretto.Scalar
 	var returnValue SecretNumber
 
@@ -175,7 +173,7 @@ func getSecretNumber() SecretNumber {
 		fmt.Println(err)
 		s := V.SetBigInt(v)
 
-		returnValue = SecretNumber{ID: id, S: s.String()}
+		returnValue = SecretNumber{ID: id, S: s.Bytes()}
 
 		jsonParam, err := json.Marshal(returnValue)
 		if err != nil {

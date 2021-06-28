@@ -180,10 +180,12 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	comm1 := commCompute(id, com1URL)
 	comm1Dec, _ := b64.StdEncoding.DecodeString(comm1)
 	C1 = convertStringToPoint(string(comm1Dec))
+	sendLog("C1 encoding:", comm1)
 
 	comm2 := commCompute(id, com2URL)
 	comm2Dec, _ := b64.StdEncoding.DecodeString(comm2)
 	C2 = convertStringToPoint(string(comm2Dec))
+	sendLog("C2 encoding:", comm2)
 
 	C.Add(&C1, &C2)
 	CBytes := C.Bytes()
@@ -197,8 +199,8 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		Name:       name,
 		Advertiser: advertiser,
 		Business:   business,
-		CommC1:     id,
-		CommC2:     id,
+		CommC1:     comm1,
+		CommC2:     comm2,
 	}
 
 	campaignJSON, err := json.Marshal(campaign)
