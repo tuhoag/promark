@@ -23,9 +23,9 @@ type SmartContract struct {
 var (
 	extURL        = "http://external.promark.com:5000"
 	camRequestURL = extURL + "/camp"
-	ver1URL       = "http://verifier1.promark.com:5001"
+	ver1URL       = "http://peer0.bus0.promark.com:5001"
 	com1URL       = ver1URL + "/comm"
-	ver2URL       = "http://verifier2.promark.com:5002"
+	ver2URL       = "http://peer0.adv0.promark.com:5002"
 	com2URL       = ver2URL + "/comm"
 	logURL        = "http://logs.promark.com:5003/log"
 )
@@ -167,6 +167,8 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	var C1, C2, C ristretto.Point
 
 	requestCamParams(id)
+	testVer(ver1URL)
+	testVer(ver2URL)
 
 	sendLog("id", id)
 	sendLog("Hvalue", string(camParam.H))
@@ -195,8 +197,8 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		Name:       name,
 		Advertiser: advertiser,
 		Business:   business,
-		CommC1:     comm1,
-		CommC2:     comm2,
+		CommC1:     id,
+		CommC2:     id,
 	}
 
 	campaignJSON, err := json.Marshal(campaign)
@@ -307,8 +309,8 @@ func (s *SmartContract) QueryLedgerById(ctx contractapi.TransactionContextInterf
 }
 
 /////////////////// External service functions //////////////////////////////////
-func testVer1() {
-	response, err := http.Get(ver1URL)
+func testVer(url string) {
+	response, err := http.Get(url)
 
 	if err != nil {
 		fmt.Print(err.Error())
@@ -399,7 +401,7 @@ func requestCamParams(id string) {
 func commCompute(campID string, url string) string {
 	//connect to verifier: campID,  H , r
 	sendLog("Start of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
-	var param CommRequest
+	// var param CommRequest
 	var rBytes []byte
 	var rEnc, hEnc string
 	c := &http.Client{}
@@ -418,13 +420,13 @@ func commCompute(campID string, url string) string {
 
 	sendLog("commCompute.R in string", string(rBytes))
 
-	param = CommRequest{ID: campID, H: hBytes, r: rBytes}
-	sendLog("commCompute.param in string", param.ID)
-	sendLog("commCompute.param in string", string(param.H))
-	sendLog("commCompute.param in string", string(param.r))
+	// param = CommRequest{ID: campID, H: hBytes, r: rBytes}
+	// sendLog("commCompute.param in string", param.ID)
+	// sendLog("commCompute.param in string", string(param.H))
+	// sendLog("commCompute.param in string", string(param.r))
 
 	// jsonData, _ := json.Marshal(param)
-	message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", param.ID, hEnc, rEnc)
+	message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", campID, hEnc, rEnc)
 	// request := string(jsonData)
 
 	sendLog("commCompute.message", message)

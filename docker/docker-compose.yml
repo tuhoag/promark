@@ -124,6 +124,8 @@ services:
         depends_on:
             - orderer.${COMPOSE_PROJECT_NAME}.com
             - couchdb0.adv0.promark.com
+        # links:
+        #     - peer0.bus0.promark.com
         environment:
             - CORE_PEER_ID=peer0.adv0.${COMPOSE_PROJECT_NAME}.com
             - CORE_PEER_ADDRESS=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7051
@@ -140,7 +142,7 @@ services:
             - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
             
             - VER_PORT=5002
-            - VER_NAME=ver1log
+            - VER_NAME=ver2log
 
         volumes:
             - /var/run/docker.sock:/host/var/run/docker.sock
@@ -161,6 +163,8 @@ services:
         depends_on:
             - orderer.${COMPOSE_PROJECT_NAME}.com
             - couchdb1.bus0.promark.com
+        links:
+            - peer0.adv0.promark.com
         environment:
             - CORE_PEER_ID=peer0.bus0.${PROJECT_NAME}.com
             - CORE_PEER_ADDRESS=peer0.bus0.${PROJECT_NAME}.com:7051

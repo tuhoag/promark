@@ -5,5 +5,5 @@
 #python3 app.py
 
 redis-server --daemonize yes
-go run ver.go
+go run /src/ver.go &
 peer node start

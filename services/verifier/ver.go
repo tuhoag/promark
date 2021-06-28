@@ -55,10 +55,11 @@ type ResultConvert struct {
 
 var id string
 var f *os.File
-var (
-	extURL        = "http://external.promark.com:5000"
-	camRequestURL = extURL + "/camp"
-)
+
+// var (
+// 	extURL        = "http://external.promark.com:5000"
+// 	camRequestURL = extURL + "/camp"
+// )
 
 func main() {
 	var err error
@@ -77,6 +78,9 @@ func main() {
 	id = "00"
 	getSecretNumber()
 
+	// n, _ := f.WriteString("Welcome to verifying service" + string("\n"))
+	// fmt.Println(n)
+
 	http.HandleFunc("/", home)
 	http.HandleFunc("/comm", computeComm)
 	http.ListenAndServe(":"+port, nil)
@@ -94,6 +98,9 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	n, _ := f.WriteString("Welcome to verifying service" + string("\n"))
+	fmt.Println(n)
+
 	fmt.Fprintf(w, "Hello")
 }
 
@@ -101,6 +108,9 @@ func computeComm(rw http.ResponseWriter, req *http.Request) {
 	var r ristretto.Scalar
 	var V ristretto.Scalar
 	var comm ristretto.Point
+
+	n, err := f.WriteString("computeComm() calling" + string("\n"))
+	fmt.Println(n)
 
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -120,7 +130,7 @@ func computeComm(rw http.ResponseWriter, req *http.Request) {
 	// r.Rand()
 	rstring := string(body)
 
-	n, err := f.WriteString("body:" + rstring + string("\n"))
+	n, err = f.WriteString("body:" + rstring + string("\n"))
 	n, err = f.WriteString("commParam R: " + string(rDec) + string("\n"))
 
 	fmt.Println(n)
@@ -240,7 +250,7 @@ func convertBytesToPoint(b []byte) ristretto.Point {
 	copy(hBytes[:32], b[:])
 
 	result := H.SetBytes(&hBytes)
-	fmt.Println("in convertStringToPoint result:", result)
+	fmt.Println("in convertBytesToPoint result:", result)
 
 	return H
 }
@@ -254,7 +264,7 @@ func convertStringToScalar(s string) ristretto.Scalar {
 	copy(rBytes[:32], tmp[:])
 
 	result := r.SetBytes(&rBytes)
-	fmt.Println("in convertBytesToScalar result:", result)
+	fmt.Println("in convertStringToScalar result:", result)
 
 	return r
 }
