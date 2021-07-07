@@ -21,9 +21,10 @@ class MyWorkload extends WorkloadModuleBase {
                 contractFunction: 'InitLedger',
                 invokerIdentity: 'peer0.bus0.promark.com',
                 contractArguments: [],
-                // contractArguments: ['id8', 'campaign3','Adv0','Bus0'],
+                contractArguments: [backupID, 'campaign3','Adv0','Bus0'],
                 readOnly: false
             };
+            console.log(`initializeWorkloadModule: ${request}`);
 
             await this.sutAdapter.sendRequests(request);
         }
@@ -39,11 +40,12 @@ class MyWorkload extends WorkloadModuleBase {
             readOnly: true
         };
 
+        console.log(`submitTransaction: ${myArgs}`);
         await this.sutAdapter.sendRequests(myArgs);
     }
     
     async cleanupWorkloadModule() {
-        for (let i=0; i<this.roundArguments.backups; i++) {
+        for (let i=0; i<this.roundArguments.test; i++) {
             const backupID = `BACKUP_${this.workerIndex}_${i}`;
             console.log(`Worker ${this.workerIndex}: Deleting backup ${backupID}`);
             const request = {
@@ -54,6 +56,7 @@ class MyWorkload extends WorkloadModuleBase {
                 readOnly: false
             };
 
+            console.log(`cleanupWorkloadModule: ${request}`);
             await this.sutAdapter.sendRequests(request);
         }
     }
