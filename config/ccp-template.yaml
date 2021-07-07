@@ -1,5 +1,5 @@
 ---
-name: promark-${ORG}
+name: test-network-${ORG}
 version: 1.0.0
 client:
   organization: ${ORG}
@@ -8,14 +8,14 @@ client:
       peer:
         endorser: '300'
 organizations:
-  ${ORG}:
+  ${org}${ORG}:
     mspid: ${ORG}MSP
     peers:
     - peer0.${ORG}.promark.com
     certificateAuthorities:
     - ca.${ORG}.promark.com
 peers:
-  peer0.${ORG}.promark.com:
+  peer0.org${ORG}.example.com:
     url: grpcs://localhost:${P0PORT}
     tlsCACerts:
       pem: |
@@ -24,7 +24,7 @@ peers:
       ssl-target-name-override: peer0.${ORG}.promark.com
       hostnameOverride: peer0.${ORG}.promark.com
 certificateAuthorities:
-  ca.${ORG}.promark.com:
+  ca.org${ORG}.example.com:
     url: https://localhost:${CAPORT}
     caName: ca-${ORG}
     tlsCACerts:
