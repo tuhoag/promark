@@ -17,9 +17,6 @@ function generateOrgs() {
     if [ $res -ne 0 ]; then
         fatalln "Failed to generate certificates..."
     fi
-
-    $SCRIPTS_DIR/ccp-generate.sh
-
 }
 
 
