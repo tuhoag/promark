@@ -39,17 +39,17 @@ test:
           module: ./workloads/createCampaign.js
           arguments:
             contractId: campaign
-      # - label: Collect customer data (fixed-load)
-      #   description:  Test collecting customer data benchmark(fixed-load)
-      #   txDuration: 30
-      #   rateControl:
-      #       type: fixed-load
-      #       opts:
-      #         transactionLoad: 5
-      #   workload:
-      #     module: ./workloads/collectData.js
-      #     arguments:
-      #       contractId: campaign
+      - label: Collect customer data (fixed-load)
+        description:  Test collecting customer data benchmark(fixed-load)
+        txDuration: 30
+        rateControl:
+            type: fixed-rate
+            opts:
+              tps: 50
+        workload:
+          module: ./workloads/collectData.js
+          arguments:
+            contractId: campaign
 
 observer:
   type: prometheus

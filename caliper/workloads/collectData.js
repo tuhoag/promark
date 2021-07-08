@@ -4,8 +4,9 @@ const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
 // const id = ['id1', 'id2', 'id3', 'id4', 'id5', 'id6', 'id7', 'id8', 'id9', 'id10'];
 // const names = ['campaign1', 'campaign2', 'campaign3', 'campaign4', 'campaign5', 'campaign6', 'campaign7', 'campaign8', 'campaign9', 'campaign10'];
-const advs = ['adv0'];
-const buss = ['bus0'];
+const totalComm = 'VJsBPEWbqQHJinp1HHNfyilNq7Ga5k39Q5XZibwWEQQ=';
+const r1 = 'e6KSU9JX/br1V/5brfAc0DVjfFT8jBo0gPcEjw+SEA8=';
+const r2 = 'lXyTtgXMQH4jPqTKj9ZEh10rwaAyJCSK6xlRw2lVUAQ=';
 
 /**
  * Workload module for the benchmark round.
@@ -26,17 +27,17 @@ class CreateCarWorkload extends WorkloadModuleBase {
     async submitTransaction() {
         this.txIndex++;
         let id = 'ID' + this.workerIndex + '_' + this.txIndex.toString();
-        let campaignName = 'campaign' + id;
+        let userName = 'username' + id;
         // let campaignName = names[Math.floor(Math.random() * names.length)];
-        let campaignAdv = advs[Math.floor(Math.random() * advs.length)].toString();
-        let campaignBus = buss[Math.floor(Math.random() * buss.length)].toString();
+        // let campaignAdv = advs[Math.floor(Math.random() * advs.length)].toString();
+        // let campaignBus = buss[Math.floor(Math.random() * buss.length)].toString();
         // let carOwner = owners[Math.floor(Math.random() * owners.length)];
 
         let args = {
             contractId: 'campaign',
             contractVersion: 'v1',
-            contractFunction: 'CreateCampaign',
-            contractArguments: [id, campaignName, campaignAdv, campaignBus],
+            contractFunction: 'AddCollectedData',
+            contractArguments: [id, userName, totalComm, r1, r2],
             timeout: 30
         };
 

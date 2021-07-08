@@ -4,3 +4,5 @@ services/ext/extlog
 services/log/logfile
 services/verifier/ver1log
 services/verifier/ver2log
+caliper/package-lock.json
+caliper/report.html
