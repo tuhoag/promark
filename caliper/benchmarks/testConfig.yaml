@@ -1,24 +1,24 @@
 test:
-    name: createCampaign-contract-benchmark
+    name: Campaign-contract-benchmark
     description: test benchmark
     workers:
       type: local
       number: 2
     rounds:
-      - label: testExample
-        description:  Trial run test benchmark
-        txDuration: 30
-        rateControl: 
-          type: fixed-load
-          opts:
-            transactionLoad: 2
-        workload:
-          module: ./workloads/queryCreateCampaign.js
-          arguments:
-            backups: 10
-            contractId: campaign
+      # - label: Test query campaign
+      #   description:  Test quering campaign benchmark
+      #   txDuration: 30
+      #   rateControl: 
+      #     type: fixed-load
+      #     opts:
+      #       transactionLoad: 2
+      #   workload:
+      #     module: ./workloads/queryCampaign.js
+      #     arguments:
+      #       backups: 10
+      #       contractId: campaign
       - label: Create campaign (fixed-load)
-        description:  Test create the campaign benchmark(fixed-load)
+        description:  Test creating campaign benchmark(fixed-load)
         txDuration: 30
         rateControl:
             type: fixed-load
@@ -29,23 +29,25 @@ test:
           arguments:
             contractId: campaign
       - label: Create campaign (fixed-rate)
-        description:  Test create the campaign benchmark(fixed-rate)
-        txDuration: 30
+        description:  Test creating campaign benchmark(fixed-rate)
+        txNumber: 3000
         rateControl:
             type: fixed-rate
             opts:
-              tps: 10
+              tps: 200
         workload:
           module: ./workloads/createCampaign.js
           arguments:
             contractId: campaign
-      - label: Collect customer data (fixed-load)
-        description:  Test collecting customer data benchmark(fixed-load)
-        txDuration: 30
+      - label: Collect customer data (fixed-rate)
+        description:  Test collecting customer data benchmark(fixed-rate)
+        txNumber: 3000
         rateControl:
-            type: fixed-rate
-            opts:
-              tps: 50
+            type: linear-rate
+            opts: {
+              "startingTps": 100,
+              "finishingTps": 500
+              }
         workload:
           module: ./workloads/collectData.js
           arguments:

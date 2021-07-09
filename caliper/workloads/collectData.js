@@ -4,9 +4,9 @@ const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
 // const id = ['id1', 'id2', 'id3', 'id4', 'id5', 'id6', 'id7', 'id8', 'id9', 'id10'];
 // const names = ['campaign1', 'campaign2', 'campaign3', 'campaign4', 'campaign5', 'campaign6', 'campaign7', 'campaign8', 'campaign9', 'campaign10'];
-const totalComm = 'VJsBPEWbqQHJinp1HHNfyilNq7Ga5k39Q5XZibwWEQQ=';
-const r1 = 'e6KSU9JX/br1V/5brfAc0DVjfFT8jBo0gPcEjw+SEA8=';
-const r2 = 'lXyTtgXMQH4jPqTKj9ZEh10rwaAyJCSK6xlRw2lVUAQ=';
+const totalComm = 'dsUDvULKSaMk6/eaWBmThy7vqd4HSszBlv2mA+MDr1s=';
+const r1 = 'sLc2AFBxAOEhGqpiOSnVJmEX8/fKPM//62XykBc26wM=';
+const r2 = 'Zd7/Jz2CguWf+sR6dDwhyqFwiS1TsnCRUj+AKnIDtAY=';
 
 /**
  * Workload module for the benchmark round.
@@ -26,8 +26,9 @@ class CreateCarWorkload extends WorkloadModuleBase {
      */
     async submitTransaction() {
         this.txIndex++;
-        let id = 'ID' + this.workerIndex + '_' + this.txIndex.toString();
-        let userName = 'username' + id;
+        let id = 'id5'
+        let index = this.workerIndex + '_' + this.txIndex.toString();
+        let userName = 'username' + index;
         // let campaignName = names[Math.floor(Math.random() * names.length)];
         // let campaignAdv = advs[Math.floor(Math.random() * advs.length)].toString();
         // let campaignBus = buss[Math.floor(Math.random() * buss.length)].toString();

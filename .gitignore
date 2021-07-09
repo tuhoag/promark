@@ -6,3 +6,4 @@ services/verifier/ver1log
 services/verifier/ver2log
 caliper/package-lock.json
 caliper/report.html
+caliper/caliper.log
