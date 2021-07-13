@@ -23,12 +23,15 @@ type SmartContract struct {
 var (
 	extURL        = "http://external.promark.com:5000"
 	camRequestURL = extURL + "/camp"
-	ver1URL       = "http://peer0.bus0.promark.com:5001"
-	com1URL       = ver1URL + "/comm"
-	ver2URL       = "http://peer0.adv0.promark.com:5002"
-	com2URL       = ver2URL + "/comm"
-	logURL        = "http://logs.promark.com:5003/log"
+	// ver1URL       = "http://peer0.bus0.promark.com:5001"
+	// com1URL       = ver1URL + "/comm"
+	// ver2URL = "http://peer0.adv0.promark.com:5002"
+	// com2URL       = ver2URL + "/comm"
+	logURL = "http://logs.promark.com:5003/log"
 )
+
+var com1URL string
+var com2URL string
 
 var camParam CampaignParam
 
@@ -152,7 +155,7 @@ func (s *SmartContract) GetAllCollectedData(ctx contractapi.TransactionContextIn
 }
 
 // Create a new campaign
-func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name string, advertiser string, business string) error {
+func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name string, advertiser string, business string, ver1 string, ver2 string) error {
 	existing, err := ctx.GetStub().GetState(id)
 
 	if err != nil {
@@ -167,8 +170,10 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	var C1, C2, C ristretto.Point
 
 	requestCamParams(id)
-	testVer(ver1URL)
-	testVer(ver2URL)
+	testVer(ver1)
+	testVer(ver2)
+	com1URL = ver1 + "/comm"
+	com2URL = ver2 + "/comm"
 
 	sendLog("id", id)
 	sendLog("Hvalue", string(camParam.H))
@@ -217,7 +222,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	return nil
 }
 
-func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInterface, id string, user string, comm string, r1 string, r2 string) error {
+func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInterface, id string, user string, comm string, r1 string, r2 string, ver1 string, ver2 string) error {
 	existing, err := ctx.GetStub().GetState(user)
 
 	if err != nil {
@@ -233,6 +238,8 @@ func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInter
 
 	// comm comuptation - start
 	var C1, C2, C, Comm ristretto.Point
+	com1URL = ver1 + "/comm"
+	com2URL = ver2 + "/comm"
 
 	sendLog("id", id)
 	sendLog("Hvalue", string(camParam.H))
