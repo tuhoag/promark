@@ -72,7 +72,7 @@ function addData() {
     verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
 
     set -x
-    fcn_call='{"function":"'${CC_CREATE_FCN}'","Args":["id5","user1","FAtwOyVeRjxG4ACKKRVe2WzTBv4FFRYK/0mZOIkQSQU=","m68ADErYldMg0g2d1HVqIqoyz5eA7OkF3juF3l3Nag0=","1wDn8vBL5tm9sMrcYzy6+8FsAyQX3ulyJHZ8dENGMgo=","http://peer0.bus0.promark.com:5001","http://peer0.adv0.promark.com:5002"]}'
+    fcn_call='{"function":"'${CC_CREATE_FCN}'","Args":["id5","user1","jmaBw3kQhw+7D02Lv1dBhZ2RWSA3BTvIChXrcjJXv2k=","p7PhVDe761+s0M/nbUXPGDeNF5FzulR3+Jo9mkyGGAw=","KG0QsuyOoWCIG1OioFemTneQJZ3PIDNzJnUIPtdR7Ag=","http://peer0.bus0.promark.com:9000","http://peer0.adv0.promark.com:8500"]}'
 
     infoln "invoke fcn call:${fcn_call}"
     peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call} >&log.txt

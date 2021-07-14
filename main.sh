@@ -21,8 +21,9 @@ function createChannel() {
 }
 
 function joinChannel() {
-    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" 0 0
-    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" 0 0
+     # args: $CHANNEL_NAME <org name> <org id> <number of peer>
+    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" 0 2
+    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" 0 2
 }
 
 function networkUp() {
@@ -48,32 +49,37 @@ function packageChaincode() {
 }
 
 function installChaincode() {
-    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 0 0
-    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 0 0
+    
+    # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
+    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 0 2
+    
+    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 0 2
 }
 
 function approveChaincode {
-
-    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 0 0
-    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 0 0
+    # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
+    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 0 2
+    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 0 2
 
     $SCRIPTS_DIR/commit-checkreadiness.sh $CHAINCODE_NAME $CHANNEL_NAME
 }
 
 function commitChaincode() {
-    $SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME 1 1
+    # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
+    $SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME 1 2
 }
 
 function invokeInitLedger() {
-    $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME 1 1
+    # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
+    $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME 1 2
 }   
 
 function invokeCreateCamp() {
-    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 1
+    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 2
 } 
 
 function invokeCollectData() {
-    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 1
+    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 2
 }
 
 function runExternalService() {
@@ -173,11 +179,10 @@ elif [ $MODE = "chaincode" ]; then
         packageChaincode
         sleep 10
         installChaincode
-        sleep 10
+        sleep 15
         approveChaincode
-        sleep 10
+        sleep 15
         commitChaincode
-        sleep 10
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
