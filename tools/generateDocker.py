@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import print_function
+from typing import NewType
 
 import yaml
 import sys
@@ -12,6 +13,8 @@ SERVICES = {
   'peer': 'peer-verifier-base',
   'couchdb': 'couchdb:3.1.1',
 }
+
+# NW = {'test':''}
 
 ORDERER = {
   'orderer': 'orderer-base'
@@ -31,15 +34,19 @@ BUS_BASE_PORT=2050
 PEER_LOCAL_PORT=7051
 
 ADV_COUCHDB_PORT=5984
-BUS_COUCHDB_PORT=7984
+BUS_COUCHDB_PORT=6484
 COUCHDB_LOCAL_PORT=5984
 
 ORDERER_LOCAL_PORT=7050
 ORDERER_LISTEN_PORT=9443
 
-
 LOG_PORT=5003
 EXT_PORT=5000
+ADV_WEB_PORT=8500
+BUS_WEB_PORT=9000
+ADV_GOSSIP_PORT=55000
+BUS_GOSSIP_PORT=60000
+LOCAL_GOSSIP_PORT=9443
 REDIS_PORT=6379
 
 #define the specific name
@@ -50,7 +57,9 @@ compose_suffix='${COMPOSE_PROJECT_NAME}.com'
 # COMPOSITION = {'version': '2', 'network': 'test', 'services': {}}
 COMPOSITION = {'services': {}}
 
-HEADER = {'version': '2', 'network': 'test'}
+HEADER = {'version': '2', 'networks': 'test'}
+
+# NETWORK ={'network':{}}
 
 def servicize(name, image, org, n):
   orgid = org[3:]
@@ -58,8 +67,9 @@ def servicize(name, image, org, n):
   print(orgid, orgname)
 
   entry = {'container_name': name,
-             'network': 'test',
+            # 'network': 'test'
           }
+  entry['networks']=['test']
 
   if name.startswith('couchdb'):
     if orgname == 'adv':
@@ -79,10 +89,11 @@ def servicize(name, image, org, n):
     orderer_listen_map_port='53732'+':'+str(ORDERER_LISTEN_PORT)
     orderer_listen_port=str(ORDERER_LISTEN_PORT)
     
-    entry['extends']= [{'file':'docker-compose-base.yml'}, 
-                       {'service': image},
-                      ]
-    entry['port']=[orderer_port,
+    entry['extends']= {'file':'docker-compose-base.yml',
+                       'service': image, 
+                      }
+
+    entry['ports']=[orderer_port,
                     orderer_listen_map_port,
                   ]
 
@@ -96,15 +107,24 @@ def servicize(name, image, org, n):
   elif name.startswith('peer'):
     if orgname == 'adv':
       port = ADV_BASE_PORT + (int(orgid)*100)+ int(n)
+      webPort = ADV_WEB_PORT + (int(orgid)*100)+ int(n)
+      gossipPort= ADV_GOSSIP_PORT + (int(orgid)*100)+ int(n)
     elif orgname == 'bus':
       port = BUS_BASE_PORT + (int(orgid)*100)+ int(n)
+      webPort = BUS_WEB_PORT + (int(orgid)*100)+ int(n)
+      gossipPort= BUS_GOSSIP_PORT + (int(orgid)*100)+ int(n)
     
-    mapPort = str(port) + ':' + str(PEER_LOCAL_PORT)
+    mapPort ="{0}:{1}".format(port, PEER_LOCAL_PORT)
+    mapWebPort="{0}:{1}".format(webPort, webPort)
+    mapGossipPort="{0}:{1}".format(gossipPort, LOCAL_GOSSIP_PORT)
 
-    entry['extends']= [{'file':'docker-compose-base.yml'}, 
-                        {'service': image}
-                      ]
-    entry['ports']=[mapPort]
+    entry['extends']= {'file':'docker-compose-base.yml', 
+                       'service': image, 
+                      }
+    entry['ports']=[mapPort,
+                    mapWebPort,
+                    mapGossipPort,
+                    ]
 
     # for environment part of each peer
     # - CORE_PEER_ID=peer0.bus0.${PROJECT_NAME}.com
@@ -134,6 +154,9 @@ def servicize(name, image, org, n):
     coreLedgerStateCouchDBConfigAdd="CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS={0}:{1}".format(couchdbName, COUCHDB_LOCAL_PORT)
     coreLedgerStateCouchDBUsername="CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin"
     coreLedgerStateCoudchDBPassword="CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw"
+    
+    verPort="VER_PORT={0}".format(webPort) 
+    verName="VER_NAME={0}.log".format(name)
 
     entry['environment']=[corePeerId,
                           corePeerAdd,
@@ -147,6 +170,8 @@ def servicize(name, image, org, n):
                           coreLedgerStateCouchDBConfigAdd,
                           coreLedgerStateCouchDBUsername,
                           coreLedgerStateCoudchDBPassword,
+                          verPort,
+                          verName,
     ]
     # - /var/run/docker.sock:/host/var/run/docker.sock
     # - ../organizations/peerOrganizations/bus0.${PROJECT_NAME}.com/peers/peer0.bus0.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
@@ -156,7 +181,7 @@ def servicize(name, image, org, n):
     volumnMsp="../organizations/peerOrganizations/{0}.{1}/peers/{2}/msp:/etc/hyperledger/fabric/msp".format(org, var_suffix, peerName)
     volumnTls="../organizations/peerOrganizations/{0}.{1}/peers/{2}/tls:/etc/hyperledger/fabric/tls".format(org, var_suffix, peerName)
     
-    entry['volumns']=[volumnSock,
+    entry['volumes']=[volumnSock,
                       volumnMsp,
                       volumnTls,
     ]
@@ -176,8 +201,8 @@ def generatePeer(name, image, org, n):
   print(orgid, orgname)
 
   entry = {'container_name': name,
-             'network': 'test',
           }
+
   if name.startswith('peer'):
     if orgname == 'adv':
       port = ADV_BASE_PORT + (int(orgid)*100)+ int(n)
@@ -234,11 +259,12 @@ def main():
 
   # for name, image in SERVICES.items():
   #   COMPOSITION1['services'][name] = servicize(name, image)
-  with open('docker-compose.yaml', 'w') as f:
+  with open('docker-compose.yml', 'w') as f:
       f.write(yaml.dump(HEADER, default_flow_style=False, indent=4))
 
   for name, image in ORDERER.items():
-    name = name +str(org_suffix)
+    # name = name +str(org_suffix)
+    name="{0}.{1}".format(name, org_suffix)
     COMPOSITION['services'][name] = servicize(name, image, '', '')
 
   for n in range(0, int(sys.argv[1])):
@@ -250,7 +276,7 @@ def main():
         COMPOSITION['services'][name] = servicize(name, image, org, str(n))
 
   # print(yaml.dump(COMPOSITION, default_flow_style=False, indent=4), end='')
-  with open('docker-compose.yaml', 'a') as f:
+  with open('docker-compose.yml', 'a') as f:
       f.write(yaml.dump(COMPOSITION, default_flow_style=False, indent=4))
 
 
