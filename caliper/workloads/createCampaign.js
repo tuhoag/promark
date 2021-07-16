@@ -6,6 +6,8 @@ const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 // const names = ['campaign1', 'campaign2', 'campaign3', 'campaign4', 'campaign5', 'campaign6', 'campaign7', 'campaign8', 'campaign9', 'campaign10'];
 const advs = ['adv0'];
 const buss = ['bus0'];
+const ver1 = 'http://peer0.bus0.promark.com:9000';
+const ver2 = 'http://peer0.adv0.promark.com:8500';
 
 /**
  * Workload module for the benchmark round.
@@ -36,7 +38,7 @@ class CreateCarWorkload extends WorkloadModuleBase {
             contractId: 'campaign',
             contractVersion: 'v1',
             contractFunction: 'CreateCampaign',
-            contractArguments: [id, campaignName, campaignAdv, campaignBus],
+            contractArguments: [id, campaignName, campaignAdv, campaignBus, ver1, ver2],
             timeout: 30
         };
 

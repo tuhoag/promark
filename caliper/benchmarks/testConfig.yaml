@@ -17,37 +17,39 @@ test:
       #     arguments:
       #       backups: 10
       #       contractId: campaign
-      - label: Create campaign (fixed-load)
-        description:  Test creating campaign benchmark(fixed-load)
-        txDuration: 30
-        rateControl:
-            type: fixed-load
-            opts:
-              transactionLoad: 5
-        workload:
-          module: ./workloads/createCampaign.js
-          arguments:
-            contractId: campaign
-      - label: Create campaign (fixed-rate)
-        description:  Test creating campaign benchmark(fixed-rate)
-        txNumber: 3000
-        rateControl:
-            type: fixed-rate
-            opts:
-              tps: 200
-        workload:
-          module: ./workloads/createCampaign.js
-          arguments:
-            contractId: campaign
+      # - label: Create campaign (fixed-load)
+      #   description:  Test creating campaign benchmark(fixed-load)
+      #   txDuration: 30
+      #   rateControl:
+      #       type: fixed-load
+      #       opts:
+      #         transactionLoad: 5
+      #   workload:
+      #     module: ./workloads/createCampaign.js
+      #     arguments:
+      #       contractId: campaign
+      # - label: Create campaign (fixed-rate)
+      #   description:  Test creating campaign benchmark(fixed-rate)
+      #   txNumber: 3000
+      #   rateControl:
+      #       type: fixed-rate
+      #       opts:
+      #         tps: 200
+      #   workload:
+      #     module: ./workloads/createCampaign.js
+      #     arguments:
+      #       contractId: campaign
       - label: Collect customer data (fixed-rate)
         description:  Test collecting customer data benchmark(fixed-rate)
         txNumber: 3000
         rateControl:
             type: linear-rate
-            opts: {
-              "startingTps": 100,
-              "finishingTps": 500
-              }
+            # opts: {
+            #   "startingTps": 100,
+            #   "finishingTps": 500
+            #   }
+            opts:
+              tps: 300
         workload:
           module: ./workloads/collectData.js
           arguments:

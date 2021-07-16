@@ -4,10 +4,11 @@ const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
 // const id = ['id1', 'id2', 'id3', 'id4', 'id5', 'id6', 'id7', 'id8', 'id9', 'id10'];
 // const names = ['campaign1', 'campaign2', 'campaign3', 'campaign4', 'campaign5', 'campaign6', 'campaign7', 'campaign8', 'campaign9', 'campaign10'];
-const totalComm = 'dsUDvULKSaMk6/eaWBmThy7vqd4HSszBlv2mA+MDr1s=';
-const r1 = 'sLc2AFBxAOEhGqpiOSnVJmEX8/fKPM//62XykBc26wM=';
-const r2 = 'Zd7/Jz2CguWf+sR6dDwhyqFwiS1TsnCRUj+AKnIDtAY=';
-
+const totalComm = 'FqGivC5kKeJDcshwer6Mjru6JbM3yRNxL+FKdvVng34=';
+const r1 = 'tuHEjEtLQ6hY/JMhsnUEOB/sthSe3mjHofNdzpFR/AA=';
+const r2 = 'kB/AV8tfG3D771odJ/NC5UEkAr7swRJrglc6tAoEtwk=';
+const ver1 = 'http://peer0.bus0.promark.com:9000';
+const ver2 = 'http://peer0.adv0.promark.com:8500';
 /**
  * Workload module for the benchmark round.
  */
@@ -26,7 +27,7 @@ class CreateCarWorkload extends WorkloadModuleBase {
      */
     async submitTransaction() {
         this.txIndex++;
-        let id = 'id5'
+        let id = 'id4'
         let index = this.workerIndex + '_' + this.txIndex.toString();
         let userName = 'username' + index;
         // let campaignName = names[Math.floor(Math.random() * names.length)];
@@ -38,7 +39,7 @@ class CreateCarWorkload extends WorkloadModuleBase {
             contractId: 'campaign',
             contractVersion: 'v1',
             contractFunction: 'AddCollectedData',
-            contractArguments: [id, userName, totalComm, r1, r2],
+            contractArguments: [id, userName, totalComm, r1, r2, ver1, ver2],
             timeout: 30
         };
 
