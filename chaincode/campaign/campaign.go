@@ -234,15 +234,15 @@ func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInter
 	}
 
 	// request
-	requestCamParams(id)
+	// requestCamParams(id)
 
 	// comm comuptation - start
 	var C1, C2, C, Comm ristretto.Point
-	com1URL = ver1 + "/comm"
-	com2URL = ver2 + "/comm"
+	com1URL = ver1 + "/verify"
+	com2URL = ver2 + "/verify"
 
 	sendLog("id", id)
-	sendLog("Hvalue", string(camParam.H))
+	// sendLog("Hvalue", string(camParam.H))
 
 	// convert encoded Comm value
 	commDec, _ := b64.StdEncoding.DecodeString(comm)
@@ -275,7 +275,7 @@ func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInter
 	}
 
 	if checkResult {
-		err = ctx.GetStub().PutState(id, dataJSON)
+		err = ctx.GetStub().PutState(user, dataJSON)
 		if err != nil {
 			return err
 		}
@@ -466,16 +466,18 @@ func commVerify(campID string, url string, r string) string {
 	//connect to verifier: campID,  H , r
 	sendLog("Start of commVerify:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
 
-	var hEnc string
+	// var hEnc string
 	c := &http.Client{}
 
-	hBytes := camParam.H
-	hEnc = b64.StdEncoding.EncodeToString(hBytes)
+	// hBytes := camParam.H
+	// hEnc = b64.StdEncoding.EncodeToString(hBytes)
 
 	sendLog("commVerify.r in string", r)
 
 	// jsonData, _ := json.Marshal(param)
-	message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", campID, hEnc, r)
+	// message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", campID, hEnc, r)
+	message := fmt.Sprintf("{\"id\": \"%s\", \"r\": \"%s\"}", campID, r)
+
 	// request := string(jsonData)
 
 	sendLog("commVerify.message", message)

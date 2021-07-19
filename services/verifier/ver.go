@@ -32,6 +32,11 @@ type SecretNumber struct {
 	S  []byte `json:"s"`
 }
 
+type HNumber struct {
+	ID     string `json:"id"`
+	HValue string `json:"hvalue"`
+}
+
 type CommValue struct {
 	ID   string
 	comm []byte
@@ -84,6 +89,7 @@ func main() {
 
 	http.HandleFunc("/", home)
 	http.HandleFunc("/comm", computeComm)
+	http.HandleFunc("/verify", verifyComm)
 	http.ListenAndServe(":"+port, nil)
 }
 
@@ -125,6 +131,10 @@ func computeComm(rw http.ResponseWriter, req *http.Request) {
 	hDec, _ := b64.StdEncoding.DecodeString(commParam.Hbyte)
 	tmp := convertBytesToPoint(hDec)
 
+	// store hValue to redid db
+	stored := storeHValue(commParam.ID, commParam.Hbyte)
+	fmt.Println(stored)
+
 	rDec, _ := b64.StdEncoding.DecodeString(commParam.R)
 	r = convertBytesToScalar(rDec)
 	// r.Rand()
@@ -147,6 +157,121 @@ func computeComm(rw http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(rw, cEnc)
 }
 
+func verifyComm(rw http.ResponseWriter, req *http.Request) {
+	var r ristretto.Scalar
+	var V ristretto.Scalar
+	var comm ristretto.Point
+	var hValue string
+
+	n, err := f.WriteString("computeComm() calling" + string("\n"))
+	fmt.Println(n)
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		println(err)
+	}
+	log.Println(string(body))
+
+	var commParam CommParam
+	err = json.Unmarshal(body, &commParam)
+
+	// get Hvalue from database
+	hValue = getHValue(commParam.ID)
+	hDec, _ := b64.StdEncoding.DecodeString(hValue)
+	tmp := convertBytesToPoint(hDec)
+
+	rDec, _ := b64.StdEncoding.DecodeString(commParam.R)
+	r = convertBytesToScalar(rDec)
+	// r.Rand()
+	rstring := string(body)
+
+	n, err = f.WriteString("body:" + rstring + string("\n"))
+
+	fmt.Println(n)
+
+	//compute the comm value
+	V = convertBytesToScalar(sValue.S)
+
+	//get the value of H
+	comm = commitTo(&tmp, &r, &V)
+	cEnc := b64.StdEncoding.EncodeToString(comm.Bytes())
+
+	n1, err := f.WriteString("cEnc:" + cEnc + string("\n"))
+	fmt.Println(n1)
+
+	fmt.Fprintf(rw, cEnc)
+}
+
+func storeHValue(id string, h string) bool {
+	var returnValue bool
+	var hValue HNumber
+
+	// connect to Redis
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	pong, err := client.Ping().Result()
+	fmt.Println(pong, err)
+
+	val, err := client.Get(id).Result()
+	err = json.Unmarshal([]byte(val), &hValue)
+
+	if err != nil {
+		fmt.Println(err)
+		hValue = HNumber{ID: id, HValue: h}
+
+		jsonParam, err := json.Marshal(hValue)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = client.Set(id, jsonParam, 0).Err()
+		if err != nil {
+			fmt.Println(err)
+			returnValue = false
+		}
+
+		returnValue = true
+	} else {
+		fmt.Print("The Hvalue is existed for id")
+		returnValue = true
+	}
+
+	return returnValue
+}
+
+func getHValue(id string) string {
+	var returnHValue string
+	var H HNumber
+	// connect to Redis
+
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	pong, err := client.Ping().Result()
+	fmt.Println(pong, err)
+
+	val, err := client.Get(id).Result()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = json.Unmarshal([]byte(val), &H)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	returnHValue = H.HValue
+
+	return returnHValue
+}
+
 func getSecretNumber(id string) SecretNumber {
 	var V ristretto.Scalar
 	var returnValue SecretNumber
@@ -158,7 +283,6 @@ func getSecretNumber(id string) SecretNumber {
 		DB:       0,
 	})
 
-	//generate campaign param
 	val, err := client.Get(id).Result()
 	if err != nil {
 		fmt.Println(err)

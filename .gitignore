@@ -7,3 +7,8 @@ services/verifier/ver2log
 caliper/package-lock.json
 caliper/report.html
 caliper/caliper.log
+caliper/report-50.html
+caliper/report_100_in30s.html
+caliper/report_3000trans_500tps.html
+caliper/report_linearRate.html	
+caliper/report_linearRate.html
