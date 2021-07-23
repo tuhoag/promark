@@ -2,7 +2,6 @@
 
 . $SCRIPTS_DIR/utils.sh
 
-CC_CREATE_FCN="AddCollectedData"
 CC_READ_ALL_FCN="GetAllCollectedData"
 
 function parsePeerConnectionParameters() {
@@ -57,34 +56,4 @@ function getData () {
   cat log.txt
 }
 
-
-function addData() {
-    local chaincodeName=$1
-    local channelName=$2
-    local orgNum=$5
-    local peerNum=$6
-
-    echo "addData: $1 $2 $3 $4 $5 $6"
-
-    #TODO: need to use the list of orgType 
-    parsePeerConnectionParameters $orgNum $peerNum
-    res=$?
-    verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
-
-    set -x
-    fcn_call='{"function":"'${CC_CREATE_FCN}'","Args":["id6","user6","npV3Wn22vQ3zr9O/PJxyCFPTYh/DKk6DoDLTijq9Rio=","zlpqZTf5m2OvofTud4grXEV0290PuoMn/q/jCpuOSAo=","KY1brBjsStCPfdWKjGvwBhP+MTZ/XzlnwHeXPZoBwg8=","http://peer0.bus0.promark.com:9000","http://peer0.adv0.promark.com:8500"]}'
-
-    infoln "invoke fcn call:${fcn_call}"
-    peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call} >&log.txt
-    
-    res=$?
-    { set +x; } 2>/dev/null
-    cat log.txt
-    verifyResult $res "Invoke execution failed"
-    successln "Invoke transaction successful on channel '$channelName'"
-
-}
-
-addData $1 $2 $3 $4 $5 $6
 getData $1 $2
-
