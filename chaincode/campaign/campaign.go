@@ -222,6 +222,29 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	return nil
 }
 
+func (s *SmartContract) DeleteCampaignByID(ctx contractapi.TransactionContextInterface, id string) (bool, error) {
+	campaignJSON, err := ctx.GetStub().GetState(id)
+	if err != nil {
+		return false, fmt.Errorf("failed to read from world state: %v", err)
+	}
+	if campaignJSON == nil {
+		return false, fmt.Errorf("the backup %s does not exist", id)
+	}
+
+	var campaign Campaign
+	err = json.Unmarshal(campaignJSON, &campaign)
+	if err != nil {
+		return false, err
+	}
+
+	err = ctx.GetStub().DelState(id)
+	if err != nil {
+		return false, fmt.Errorf("Failed to delete state:" + err.Error())
+	}
+
+	return true, err
+}
+
 func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInterface, id string, user string, comm string, r1 string, r2 string, ver1 string, ver2 string) error {
 	existing, err := ctx.GetStub().GetState(user)
 
@@ -241,7 +264,7 @@ func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInter
 	com1URL = ver1 + "/verify"
 	com2URL = ver2 + "/verify"
 
-	sendLog("id", id)
+	// sendLog("id", id)
 	// sendLog("Hvalue", string(camParam.H))
 
 	// convert encoded Comm value
@@ -282,6 +305,29 @@ func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInter
 	}
 
 	return nil
+}
+
+func (s *SmartContract) DeleteDataByUserId(ctx contractapi.TransactionContextInterface, userId string) (bool, error) {
+	dataJSON, err := ctx.GetStub().GetState(userId)
+	if err != nil {
+		return false, fmt.Errorf("failed to read from world state: %v", err)
+	}
+	if dataJSON == nil {
+		return false, fmt.Errorf("the backup %s does not exist", userId)
+	}
+
+	var collectedData CollectedData
+	err = json.Unmarshal(dataJSON, &collectedData)
+	if err != nil {
+		return false, err
+	}
+
+	err = ctx.GetStub().DelState(userId)
+	if err != nil {
+		return false, fmt.Errorf("Failed to delete state:" + err.Error())
+	}
+
+	return true, err
 }
 
 func (s *SmartContract) QueryLedgerById(ctx contractapi.TransactionContextInterface, id string) ([]*Campaign, error) {
@@ -464,7 +510,7 @@ func commCompute(campID string, url string) string {
 
 func commVerify(campID string, url string, r string) string {
 	//connect to verifier: campID,  H , r
-	sendLog("Start of commVerify:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
+	// sendLog("Start of commVerify:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
 
 	// var hEnc string
 	c := &http.Client{}
@@ -472,7 +518,7 @@ func commVerify(campID string, url string, r string) string {
 	// hBytes := camParam.H
 	// hEnc = b64.StdEncoding.EncodeToString(hBytes)
 
-	sendLog("commVerify.r in string", r)
+	// sendLog("commVerify.r in string", r)
 
 	// jsonData, _ := json.Marshal(param)
 	// message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", campID, hEnc, r)
@@ -480,7 +526,7 @@ func commVerify(campID string, url string, r string) string {
 
 	// request := string(jsonData)
 
-	sendLog("commVerify.message", message)
+	// sendLog("commVerify.message", message)
 
 	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(message))
 	if err != nil {
@@ -498,8 +544,8 @@ func commVerify(campID string, url string, r string) string {
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
 	}
 
-	sendLog("commValue:", string(data))
-	sendLog("end of commVerify:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
+	// sendLog("commValue:", string(data))
+	// sendLog("end of commVerify:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
 
 	return string(data)
 }
