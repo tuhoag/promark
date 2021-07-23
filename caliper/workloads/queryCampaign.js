@@ -12,7 +12,7 @@ class MyWorkload extends WorkloadModuleBase {
     async initializeWorkloadModule(workerIndex, totalWorkers, roundIndex, roundArguments, sutAdapter, sutContext) {
         await super.initializeWorkloadModule(workerIndex, totalWorkers, roundIndex, roundArguments, sutAdapter, sutContext);
 
-        for (let i=0; i<this.roundArguments.backups; i++) {
+        for (let i=0; i<this.roundArguments.test; i++) {
             const campaignID = `CAMPAIGN_${this.workerIndex}_${i}`;
             const peerId = Math.floor(Math.random() * (peers.length - 1));
             console.log(`Worker ${this.workerIndex}: Creating backup ${campaignID} for peer ${peers[peerId]}`);

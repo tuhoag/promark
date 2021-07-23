@@ -5,43 +5,54 @@ test:
       type: local
       number: 2
     rounds:
-      # - label: Create campaign (fixed-rate)
-      #   description:  Test creating campaign benchmark(fixed-rate)
-      #   txNumber: 300
+      # - label: Test query campaign
+      #   description:  Test quering campaign benchmark
+      #   txDuration: 30
+      #   rateControl: 
+      #     type: fixed-load
+      #     opts:
+      #       transactionLoad: 2
+      #   workload:
+      #     module: ./workloads/queryCampaign.js
+      #     arguments:
+      #       backups: 10
+      #       contractId: campaign
+      # - label: Create campaign (fixed-load)
+      #   description:  Test creating campaign benchmark(fixed-load)
+      #   txDuration: 30
       #   rateControl:
-      #       type: fixed-rate
+      #       type: fixed-load
       #       opts:
-      #         tps: 100
+      #         transactionLoad: 5
       #   workload:
       #     module: ./workloads/createCampaign.js
       #     arguments:
-      #       test: 2
       #       contractId: campaign
-      # - label: Collect customer data (fixed sending rate:200)
-      #   description:  Test collecting customer data benchmark(fixed-rate)
+      # - label: Create campaign (fixed-rate)
+      #   description:  Test creating campaign benchmark(fixed-rate)
       #   txNumber: 3000
       #   rateControl:
       #       type: fixed-rate
       #       opts:
-      #         tps: 250
+      #         tps: 200
       #   workload:
-      #     module: ./workloads/collectData.js
+      #     module: ./workloads/createCampaign.js
       #     arguments:
-      #       testRound: test1
       #       contractId: campaign
-      - label: Collect customer data (linear-rate-150 300tps)
+      - label: Collect customer data (fixed-rate)
         description:  Test collecting customer data benchmark(fixed-rate)
         txNumber: 3000
         rateControl:
             type: linear-rate
-            opts: {
-              "startingTps": 150,
-              "finishingTps": 300
-              }
+            # opts: {
+            #   "startingTps": 100,
+            #   "finishingTps": 500
+            #   }
+            opts:
+              tps: 300
         workload:
           module: ./workloads/collectData.js
           arguments:
-            test: 10
             contractId: campaign
 
 observer:
