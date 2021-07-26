@@ -1,5 +1,4 @@
 caliper/node_modules/*
-chaincode/campaign.tar.gz
 services/ext/extlog
 services/log/logfile
 services/verifier/ver1log
