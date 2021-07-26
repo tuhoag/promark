@@ -17,32 +17,32 @@ test:
       #     arguments:
       #       test: 2
       #       contractId: campaign
-      # - label: Collect customer data (fixed sending rate:200)
-      #   description:  Test collecting customer data benchmark(fixed-rate)
-      #   txNumber: 3000
-      #   rateControl:
-      #       type: fixed-rate
-      #       opts:
-      #         tps: 250
-      #   workload:
-      #     module: ./workloads/collectData.js
-      #     arguments:
-      #       testRound: test1
-      #       contractId: campaign
-      - label: Collect customer data (linear-rate-150 300tps)
+      - label: Collect customer data (fixed sending rate:150)
         description:  Test collecting customer data benchmark(fixed-rate)
         txNumber: 3000
         rateControl:
-            type: linear-rate
-            opts: {
-              "startingTps": 150,
-              "finishingTps": 300
-              }
+            type: fixed-rate
+            opts:
+              tps: 150
         workload:
           module: ./workloads/collectData.js
           arguments:
-            test: 10
+            testRound: test1
             contractId: campaign
+      # - label: Collect customer data (linear-rate-150 300tps)
+      #   description:  Test collecting customer data benchmark(fixed-rate)
+      #   txNumber: 3000
+      #   rateControl:
+      #       type: linear-rate
+      #       opts: {
+      #         "startingTps": 150,
+      #         "finishingTps": 300
+      #         }
+      #   workload:
+      #     module: ./workloads/collectData.js
+      #     arguments:
+      #       test: 10
+      #       contractId: campaign
 
 observer:
   type: prometheus
