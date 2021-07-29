@@ -117,6 +117,10 @@ function invokeQueryById() {
     $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 3 1
 }
 
+function deleteCampById() {
+    $SCRIPTS_DIR/delete-camp-byId.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 3 1
+}
+
 function testChaincode() {
     $SCRIPTS_DIR/chaincode-test.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 3 1
 }
@@ -210,6 +214,8 @@ elif [ $MODE = "trans" ]; then
         invokeQueryById
     elif [ $SUB_MODE = "test" ]; then
         testChaincode
+    elif [ $SUB_MODE = "delete" ]; then
+        deleteCampById
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
