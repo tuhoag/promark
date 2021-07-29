@@ -4,9 +4,9 @@ const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
 // const id = ['id1', 'id2', 'id3', 'id4', 'id5', 'id6', 'id7', 'id8', 'id9', 'id10'];
 // const names = ['campaign1', 'campaign2', 'campaign3', 'campaign4', 'campaign5', 'campaign6', 'campaign7', 'campaign8', 'campaign9', 'campaign10'];
-const totalComm = 'akR+5ONbor4K7w3pH913NyNaVqIcRAxPl6ostx1+g2s=';
-const r1 = 'qJH2yKPSsXXR9QEymUMmbNC03by99rxQd3LG+XVU3Ag=';
-const r2 = '3G274BpAYKE+sO0nxSL/iUgSlAb9BtVOJrtEuj7PfQ0=';
+const totalComm = 'qJ0LoddreR+pveZ0mA4buZ5Bh9gQqxUfaxJBcBVdhxs=';
+const r1 = '4pJEX5dj+1UamPv9JAigzNdeokf1tUnCqsiMg0QQSQk=';
+const r2 = 'R3b/jETOO7J7/IKy0jwXj9s28QyvH4bVJk4ogbLLGAI=';
 const ver1 = 'http://peer0.bus0.promark.com:9000';
 const ver2 = 'http://peer0.adv0.promark.com:8500';
 /**
