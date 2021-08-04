@@ -2,13 +2,34 @@
 
 const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
-// const id = ['id1', 'id2', 'id3', 'id4', 'id5', 'id6', 'id7', 'id8', 'id9', 'id10'];
+const ids = ['id10', 'id11', 'id12', 'id13'];
 // const names = ['campaign1', 'campaign2', 'campaign3', 'campaign4', 'campaign5', 'campaign6', 'campaign7', 'campaign8', 'campaign9', 'campaign10'];
-const totalComm = 'qJ0LoddreR+pveZ0mA4buZ5Bh9gQqxUfaxJBcBVdhxs=';
-const r1 = '4pJEX5dj+1UamPv9JAigzNdeokf1tUnCqsiMg0QQSQk=';
-const r2 = 'R3b/jETOO7J7/IKy0jwXj9s28QyvH4bVJk4ogbLLGAI=';
-const ver1 = 'http://peer0.bus0.promark.com:9000';
-const ver2 = 'http://peer0.adv0.promark.com:8500';
+const totalComms = ['v3jlBUHAExMNsEe9Q/WYZNKjKoFQDqMbsinsOyi32s=',
+                    'oBNJqHMQWP3o7m/ltchj/Vq4emeY3H5OLgryHDVd/Rw=',
+                    'FClP6BQxXhxyymrXQDbwJXwki+xl/PukIvWOR31aJ04=',
+                    '6oZXEY2la7BH0oLQM4Q/KHSAntknB4cO77ZuwhFm52k=',
+                    ];
+const r1s = ['MJopGWsp5MSVnHen2bp3hcAxNNFUi48Ra2525hTikg4=',
+            'WvdLSYK+HnD+hm/ozrxzFwDPGqWOzJrURzMpy8GIDAs=',
+            'V/7IGFlDV+nuBA0ACkgWB07QElhldA8jdxJHsWCLdQo=',
+            'PMegpMnPZ/FJjmLr7Pzy8DU/sA1UnBz8tJc/WuBStwo=',
+            ];
+const r2s = ['Xjpa8hlGtDRaQN1RyN0MTdToK2ZqJq+dzXMx4sPnxAM=',
+            '6rcouDaC3naJBoRQ08adCTIydO7TzChfF8ax0Om1/AQ=',
+            'MOZxS9LxYJ9TOyHReLgAjfPKAnKBmkkmwGhAoT9PEgo=',
+            'nsjRqUikxqvf6I+ZpK5InHYfefqMmZiDFK+aqm4VNAg=',
+            ];
+
+const ver1s = ['http://peer0.adv0.promark.com:8500',
+                'http://peer0.adv1.promark.com:8510',
+                'http://peer0.adv2.promark.com:8520',
+                'http://peer0.adv3.promark.com:8530',
+              ];
+const ver2s = ['http://peer0.bus0.promark.com:9000',
+                'http://peer0.bus1.promark.com:9010',
+                'http://peer0.bus2.promark.com:9020',
+                'http://peer0.bus3.promark.com:9030',               
+              ];
 /**
  * Workload module for the benchmark round.
  */
@@ -27,15 +48,15 @@ class CreateCarWorkload extends WorkloadModuleBase {
      */
     async submitTransaction() {
         this.txIndex++;
-        const id = 'id10'
-        // for (let i=0; i<this.roundArguments.test; i++) {
-            // const randomId = Math.floor(Math.random()*this.roundArguments.testRound)
+        let id = ids[Math.floor(Math.random() * ids.length)].toString();
         let index = this.workerIndex + '_' + this.txIndex.toString();
-        // const userName = `username_${this.workerIndex}_${i}`;
-        let userName = 'username' + this.roundArguments.testRound + '_' + index;
-        // let campaignName = names[Math.floor(Math.random() * names.length)];
-        // let campaignAdv = advs[Math.floor(Math.random() * advs.length)].toString();
-        // let campaignBus = buss[Math.floor(Math.random() * buss.length)].toString();
+
+        let userName = 'user' + this.roundArguments.testRound + '_' + index;
+        let totalComm = totalComms[ids.indexOf(id)].toString();
+        let r1 = r1s[ids.indexOf(id)].toString();
+        let r2 = r2s[ids.indexOf(id)].toString();
+        let ver1 = ver1s[ids.indexOf(id)].toString();
+        let ver2 = ver2s[ids.indexOf(id)].toString();
 
         let args = {
             contractId: 'campaign',
