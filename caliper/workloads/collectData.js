@@ -2,22 +2,14 @@
 
 const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
-const ids = ['id10', 'id11', 'id12', 'id13'];
+// const ids = ['id10', 'id11', 'id12', 'id13'];
+const ids = ['id10']
 // const names = ['campaign1', 'campaign2', 'campaign3', 'campaign4', 'campaign5', 'campaign6', 'campaign7', 'campaign8', 'campaign9', 'campaign10'];
 const totalComms = ['v3jlBUHAExMNsEe9Q/WYZNKjKoFQDqMbsinsOyi32s=',
-                    'oBNJqHMQWP3o7m/ltchj/Vq4emeY3H5OLgryHDVd/Rw=',
-                    'FClP6BQxXhxyymrXQDbwJXwki+xl/PukIvWOR31aJ04=',
-                    '6oZXEY2la7BH0oLQM4Q/KHSAntknB4cO77ZuwhFm52k=',
                     ];
 const r1s = ['MJopGWsp5MSVnHen2bp3hcAxNNFUi48Ra2525hTikg4=',
-            'WvdLSYK+HnD+hm/ozrxzFwDPGqWOzJrURzMpy8GIDAs=',
-            'V/7IGFlDV+nuBA0ACkgWB07QElhldA8jdxJHsWCLdQo=',
-            'PMegpMnPZ/FJjmLr7Pzy8DU/sA1UnBz8tJc/WuBStwo=',
             ];
 const r2s = ['Xjpa8hlGtDRaQN1RyN0MTdToK2ZqJq+dzXMx4sPnxAM=',
-            '6rcouDaC3naJBoRQ08adCTIydO7TzChfF8ax0Om1/AQ=',
-            'MOZxS9LxYJ9TOyHReLgAjfPKAnKBmkkmwGhAoT9PEgo=',
-            'nsjRqUikxqvf6I+ZpK5InHYfefqMmZiDFK+aqm4VNAg=',
             ];
 
 const ver1s = ['http://peer0.adv0.promark.com:8500',
@@ -71,28 +63,28 @@ class CreateCarWorkload extends WorkloadModuleBase {
         // }
     }
 
-    async cleanupWorkloadModule() {
-        const id = 'id10'
+    // async cleanupWorkloadModule() {
+    //     const id = 'id10'
 
-        // for (let i=0; i<this.roundArguments.test; i++) {
-            // const randomId = Math.floor(Math.random()*this.roundArguments.testRound)
-        let index = this.workerIndex + '_' + this.txIndex.toString();
-        let userName = 'username' + this.roundArguments.testRound + '_' + index;
-        // const userName = `username_${this.workerIndex}_${i}`;
+    //     // for (let i=0; i<this.roundArguments.test; i++) {
+    //         // const randomId = Math.floor(Math.random()*this.roundArguments.testRound)
+    //     let index = this.workerIndex + '_' + this.txIndex.toString();
+    //     let userName = 'username' + this.roundArguments.testRound + '_' + index;
+    //     // const userName = `username_${this.workerIndex}_${i}`;
 
-        const request = {
-            contractId: 'campaign',
-            contractVersion: 'v1',
-            contractFunction: 'DeleteDataByUserId',
-            // invokerIdentity: 'peer0.bus0.promark.com',
-            contractArguments: [userName],
-            readOnly: false
-        };
+    //     const request = {
+    //         contractId: 'campaign',
+    //         contractVersion: 'v1',
+    //         contractFunction: 'DeleteDataByUserId',
+    //         // invokerIdentity: 'peer0.bus0.promark.com',
+    //         contractArguments: [userName],
+    //         readOnly: false
+    //     };
 
-        console.log(`cleanupWorkloadModule: ${userName}`);
-        await this.sutAdapter.sendRequests(request);
-        // }
-    }
+    //     console.log(`cleanupWorkloadModule: ${userName}`);
+    //     await this.sutAdapter.sendRequests(request);
+    //     // }
+    // }
 
 }
 
