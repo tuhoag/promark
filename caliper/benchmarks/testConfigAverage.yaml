@@ -17,8 +17,8 @@ test:
       #     arguments:
       #       test: 2
       #       contractId: campaign
-      - label: Collect customer data (fixed sending rate:300)
-        description:  Test collecting customer data benchmark(linear-rate)
+      - label: Collect customer data (fixed sending rate:200)
+        description:  Test collecting customer data benchmark(fixed-rate)
         # txNumber: 1000
         txDuration: 60
         rateControl:
