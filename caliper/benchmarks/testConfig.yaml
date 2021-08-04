@@ -24,7 +24,7 @@ test:
         rateControl:
             type: fixed-rate
             opts:
-              tps: 200
+              tps: 300
           # type: linear-rate
           # opts: {
           #   "startingTps": 35,
