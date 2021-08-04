@@ -22,14 +22,14 @@ test:
         # txNumber: 1000
         txDuration: 60
         rateControl:
-        #     type: fixed-rate
-        #     opts:
-        #       tps: 150
-          type: linear-rate
-          opts: {
-            "startingTps": 35,
-            "finishingTps": 200
-            }
+            type: fixed-rate
+            opts:
+              tps: 200
+          # type: linear-rate
+          # opts: {
+          #   "startingTps": 35,
+          #   "finishingTps": 200
+          #   }
         workload:
           module: ./workloads/collectData.js
           arguments:
