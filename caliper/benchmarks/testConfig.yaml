@@ -17,13 +17,19 @@ test:
       #     arguments:
       #       test: 2
       #       contractId: campaign
-      - label: Collect customer data (fixed sending rate:150)
-        description:  Test collecting customer data benchmark(fixed-rate)
-        txNumber: 3000
+      - label: Collect customer data (linear sending rate:150-300)
+        description:  Test collecting customer data benchmark(linear-rate)
+        # txNumber: 1000
+        txDuration: 60
         rateControl:
-            type: fixed-rate
-            opts:
-              tps: 150
+        #     type: fixed-rate
+        #     opts:
+        #       tps: 150
+          type: linear-rate
+          opts: {
+            "startingTps": 35,
+            "finishingTps": 200
+            }
         workload:
           module: ./workloads/collectData.js
           arguments:
