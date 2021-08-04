@@ -14,6 +14,7 @@ Organizations:
         Type: Signature
         Rule: "OR('ordererMSP.admin')"
 
+
   - &Adv0
     Name: adv0MSP
     ID: adv0MSP
@@ -59,6 +60,52 @@ Organizations:
     AnchorPeers:
       - Host: peer0.adv1.promark.com
         Port: 1150
+  
+  - &Adv2
+    Name: adv2MSP
+    ID: adv2MSP
+    MSPDir: ../organizations/peerOrganizations/adv2.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('adv2MSP.admin', 'adv2MSP.peer', 'adv2MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('adv2MSP.admin', 'adv2MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('adv2MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('adv2MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.adv2.promark.com
+        Port: 1250
+
+  - &Adv3
+    Name: adv3MSP
+    ID: adv3MSP
+    MSPDir: ../organizations/peerOrganizations/adv3.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('adv3MSP.admin', 'adv3MSP.peer', 'adv3MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('adv3MSP.admin', 'adv3MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('adv3MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('adv3MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.adv3.promark.com
+        Port: 1350
 
   - &Bus0
     Name: bus0MSP
@@ -79,6 +126,9 @@ Organizations:
         Rule: "OR('bus0MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
+    # AnchorPeers defines the location of peers which can be used for
+        # cross-org gossip communication. Note, this value is only encoded in
+        # the genesis block in the Application section context.
     AnchorPeers:
         - Host: peer0.bus0.promark.com
           Port: 2050
@@ -103,8 +153,54 @@ Organizations:
     OrdererEndpoints:
       - orderer.promark.com:7050
     AnchorPeers:
-        - Host: peer0.bus1.promark.com
-          Port: 2150
+    - Host: peer0.bus1.promark.com
+      Port: 2150
+  
+  - &Bus2
+    Name: bus2MSP
+    ID: bus2MSP
+    MSPDir: ../organizations/peerOrganizations/bus2.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus2MSP.admin', 'bus2MSP.peer', 'bus2MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus2MSP.admin', 'bus2MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus2MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus2MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+    - Host: peer0.bus2.promark.com
+      Port: 2250
+
+  - &Bus3
+    Name: bus3MSP
+    ID: bus3MSP
+    MSPDir: ../organizations/peerOrganizations/bus3.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus3MSP.admin', 'bus3MSP.peer', 'bus3MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus3MSP.admin', 'bus3MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus3MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus3MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+    - Host: peer0.bus3.promark.com
+      Port: 2350
 
 
 Capabilities:
@@ -202,6 +298,10 @@ Profiles:
           - *Bus0
           - *Adv1
           - *Bus1
+          - *Adv2
+          - *Bus2
+          - *Adv3
+          - *Bus3
   TwoOrgsChannel:
     Consortium: SampleConsortium
     <<: *ChannelDefaults
@@ -212,5 +312,9 @@ Profiles:
         - *Bus0
         - *Adv1
         - *Bus1
+        - *Adv2
+        - *Bus2
+        - *Adv3
+        - *Bus3
       Capabilities:
         <<: *ApplicationCapabilities
