@@ -133,9 +133,9 @@ def generateCouchDB(name, image, orgname, orgid, peerid):
   entry['networks']=['test']
 
   if orgname == 'adv':
-    couchdb_port = ADV_COUCHDB_PORT + (int(orgid)*100)+ int(peerid)
+    couchdb_port = ADV_COUCHDB_PORT + (int(orgid)*10)+ int(peerid)
   elif orgname == 'bus':
-    couchdb_port = BUS_COUCHDB_PORT + (int(orgid)*100)+ int(peerid)
+    couchdb_port = BUS_COUCHDB_PORT + (int(orgid)*10)+ int(peerid)
 
   map_couchdb_port = str(couchdb_port)+':'+str(COUCHDB_LOCAL_PORT)
   entry['image'] = image
