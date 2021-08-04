@@ -140,9 +140,9 @@ def generateOrg(orgName, peerNumber):
 def generatePeer(peerName, peerID, org, orgID):
   orgName = "{0}{1}".format(org, orgID)
   if org == 'adv':
-    port = ADV_BASE_PORT + (int(orgID)*100)+ int(peerID)
+    port = ADV_BASE_PORT + (int(orgID)*10)+ int(peerID)
   elif org == 'bus':
-    port = BUS_BASE_PORT + (int(orgID)*100)+ int(peerID)
+    port = BUS_BASE_PORT + (int(orgID)*10)+ int(peerID)
   url = "grpcs://0.0.0.0:{}".format(port)
   tlsCACertsPath = "./../organizations/peerOrganizations/{0}.promark.com/tlsca/tlsca.{1}.promark.com-cert.pem".format(orgName, orgName)
 

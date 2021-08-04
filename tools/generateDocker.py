@@ -153,13 +153,13 @@ def generatePeer (name, image, orgname, orgid, peerid):
   entry['networks']=['test']
 
   if orgname == 'adv':
-    port = ADV_BASE_PORT + (int(orgid)*100)+ int(peerid)
-    webPort = ADV_WEB_PORT + (int(orgid)*100)+ int(peerid)
-    gossipPort= ADV_GOSSIP_PORT + (int(orgid)*100)+ int(peerid)
+    port = ADV_BASE_PORT + (int(orgid)*10)+ int(peerid)
+    webPort = ADV_WEB_PORT + (int(orgid)*10)+ int(peerid)
+    gossipPort= ADV_GOSSIP_PORT + (int(orgid)*10)+ int(peerid)
   elif orgname == 'bus':
-    port = BUS_BASE_PORT + (int(orgid)*100)+ int(peerid)
-    webPort = BUS_WEB_PORT + (int(orgid)*100)+ int(peerid)
-    gossipPort= BUS_GOSSIP_PORT + (int(orgid)*100)+ int(peerid)
+    port = BUS_BASE_PORT + (int(orgid)*10)+ int(peerid)
+    webPort = BUS_WEB_PORT + (int(orgid)*10)+ int(peerid)
+    gossipPort= BUS_GOSSIP_PORT + (int(orgid)*10)+ int(peerid)
   
   mapPort ="{0}:{1}".format(port, PEER_LOCAL_PORT)
   mapWebPort="{0}:{1}".format(webPort, webPort)
