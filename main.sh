@@ -22,9 +22,9 @@ function createChannel() {
 
 function joinChannel() {
      # args: $CHANNEL_NAME <org type> <number of org> <number of peer>
-    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" 1 25
+    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" 1 1
     # $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" 1 2
-    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" 1 25
+    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" 1 1
     # $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" 0 2
 }
 
@@ -53,20 +53,20 @@ function packageChaincode() {
 function installChaincode() {
     
     # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
-    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 25
+    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 1
     # $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 2
 
-    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 1 25
+    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 1 1
     # $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 1 2
 
 }
 
 function approveChaincode {
     # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
-    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 25
+    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 1
     # $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 2
 
-    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 1 25
+    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 1 1
     # $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 1 2
 
     $SCRIPTS_DIR/commit-checkreadiness.sh $CHAINCODE_NAME $CHANNEL_NAME
@@ -74,20 +74,20 @@ function approveChaincode {
 
 function commitChaincode() {
     # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
-    $SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME 1 25
+    $SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME 1 1
 }
 
 function invokeInitLedger() {
     # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
-    $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME 1 25
+    $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME 1 1
 }   
 
 function invokeCreateCamp() {
-    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 25
+    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 1
 } 
 
 function invokeCollectData() {
-    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 25
+    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 1 1
 }
 
 function runExternalService() {
@@ -114,19 +114,19 @@ function buildExternalService() {
 }
 
 function invokeQueryById() {
-    $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 25
+    $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 1
 }
 
 function deleteCampById() {
-    $SCRIPTS_DIR/delete-camp-byId.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 25
+    $SCRIPTS_DIR/delete-camp-byId.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 1
 }
 
 function testChaincode() {
-    $SCRIPTS_DIR/chaincode-test.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 25
+    $SCRIPTS_DIR/chaincode-test.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 1
 }
 
 function getAllCampaignData() {
-    $SCRIPTS_DIR/getAllCampaignData.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 25
+    $SCRIPTS_DIR/getAllCampaignData.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 1
 
 }
 

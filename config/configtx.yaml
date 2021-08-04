@@ -14,7 +14,6 @@ Organizations:
         Type: Signature
         Rule: "OR('ordererMSP.admin')"
 
-
   - &Adv0
     Name: adv0MSP
     ID: adv0MSP
