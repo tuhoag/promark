@@ -14,7 +14,6 @@ Organizations:
         Type: Signature
         Rule: "OR('ordererMSP.admin')"
 
-
   - &Adv0
     Name: adv0MSP
     ID: adv0MSP
@@ -59,7 +58,7 @@ Organizations:
       - orderer.promark.com:7050
     AnchorPeers:
       - Host: peer0.adv1.promark.com
-        Port: 1150
+        Port: 1060
   
   - &Adv2
     Name: adv2MSP
@@ -82,7 +81,7 @@ Organizations:
       - orderer.promark.com:7050
     AnchorPeers:
       - Host: peer0.adv2.promark.com
-        Port: 1250
+        Port: 1070
 
   - &Adv3
     Name: adv3MSP
@@ -105,7 +104,122 @@ Organizations:
       - orderer.promark.com:7050
     AnchorPeers:
       - Host: peer0.adv3.promark.com
-        Port: 1350
+        Port: 1080
+
+  - &Adv4
+    Name: adv4MSP
+    ID: adv4MSP
+    MSPDir: ../organizations/peerOrganizations/adv4.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('adv4MSP.admin', 'adv4MSP.peer', 'adv4MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('adv4MSP.admin', 'adv4MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('adv4MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('adv4MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.adv4.promark.com
+        Port: 1090
+
+  - &Adv5
+    Name: adv5MSP
+    ID: adv5MSP
+    MSPDir: ../organizations/peerOrganizations/adv5.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('adv5MSP.admin', 'adv5MSP.peer', 'adv5MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('adv5MSP.admin', 'adv5MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('adv5MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('adv5MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.adv5.promark.com
+        Port: 1100
+
+  - &Adv6
+    Name: adv6MSP
+    ID: adv6MSP
+    MSPDir: ../organizations/peerOrganizations/adv6.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('adv6MSP.admin', 'adv6MSP.peer', 'adv6MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('adv6MSP.admin', 'adv6MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('adv6MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('adv6MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.adv6.promark.com
+        Port: 1110
+
+  - &Adv7
+    Name: adv7MSP
+    ID: adv7MSP
+    MSPDir: ../organizations/peerOrganizations/adv7.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('adv7MSP.admin', 'adv7MSP.peer', 'adv7MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('adv7MSP.admin', 'adv7MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('adv7MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('adv7MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.adv7.promark.com
+        Port: 1120
+
+  # - &Adv8
+  #   Name: adv8SP
+  #   ID: adv8SP
+  #   MSPDir: ../organizations/peerOrganizations/adv8.promark.com/msp
+  #   Policies:
+  #     Readers:
+  #       Type: Signature
+  #       Rule: "OR('adv8SP.admin', 'adv8SP.peer', 'adv8SP.client')"
+  #     Writers:
+  #       Type: Signature
+  #       Rule: "OR('adv8SP.admin', 'adv8SP.client')"
+  #     Admins:
+  #       Type: Signature
+  #       Rule: "OR('adv8SP.admin')"
+  #     Endorsement:
+  #       Type: Signature
+  #       Rule: "OR('adv8SP.peer')"
+  #   OrdererEndpoints:
+  #     - orderer.promark.com:7050
+  #   AnchorPeers:
+  #     - Host: peer0.adv8.promark.com
+  #       Port: 1850
 
   - &Bus0
     Name: bus0MSP
@@ -154,7 +268,7 @@ Organizations:
       - orderer.promark.com:7050
     AnchorPeers:
     - Host: peer0.bus1.promark.com
-      Port: 2150
+      Port: 2060
   
   - &Bus2
     Name: bus2MSP
@@ -177,7 +291,7 @@ Organizations:
       - orderer.promark.com:7050
     AnchorPeers:
     - Host: peer0.bus2.promark.com
-      Port: 2250
+      Port: 2070
 
   - &Bus3
     Name: bus3MSP
@@ -200,8 +314,122 @@ Organizations:
       - orderer.promark.com:7050
     AnchorPeers:
     - Host: peer0.bus3.promark.com
-      Port: 2350
+      Port: 2080
 
+  - &Bus4
+    Name: bus4MSP
+    ID: bus4MSP
+    MSPDir: ../organizations/peerOrganizations/bus4.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus4MSP.admin', 'bus4MSP.peer', 'bus4MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus4MSP.admin', 'bus4MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus4MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus4MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+    - Host: peer0.bus4.promark.com
+      Port: 2090
+
+  - &Bus5
+    Name: bus5MSP
+    ID: bus5MSP
+    MSPDir: ../organizations/peerOrganizations/bus5.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus5MSP.admin', 'bus5MSP.peer', 'bus5MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus5MSP.admin', 'bus5MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus5MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus5MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+    - Host: peer0.bus5.promark.com
+      Port: 2100
+
+  - &Bus6
+    Name: bus6MSP
+    ID: bus6MSP
+    MSPDir: ../organizations/peerOrganizations/bus6.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus6MSP.admin', 'bus6MSP.peer', 'bus6MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus6MSP.admin', 'bus6MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus6MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus6MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+    - Host: peer0.bus6.promark.com
+      Port: 2110
+
+  - &Bus7
+    Name: bus7MSP
+    ID: bus7MSP
+    MSPDir: ../organizations/peerOrganizations/bus7.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus7MSP.admin', 'bus7MSP.peer', 'bus7MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus7MSP.admin', 'bus7MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus7MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus7MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+    - Host: peer0.bus7.promark.com
+      Port: 2120
+
+  # - &Bus8
+  #   Name: bus8MSP
+  #   ID: bus8MSP
+  #   MSPDir: ../organizations/peerOrganizations/bus8.promark.com/msp
+  #   Policies:
+  #     Readers:
+  #       Type: Signature
+  #       Rule: "OR('bus8MSP.admin', 'bus8MSP.peer', 'bus8MSP.client')"
+  #     Writers:
+  #       Type: Signature
+  #       Rule: "OR('bus8MSP.admin', 'bus8MSP.client')"
+  #     Admins:
+  #       Type: Signature
+  #       Rule: "OR('bus8MSP.admin')"
+  #     Endorsement:
+  #       Type: Signature
+  #       Rule: "OR('bus8MSP.peer')"
+  #   OrdererEndpoints:
+  #     - orderer.promark.com:7050
+  #   AnchorPeers:
+  #   - Host: peer0.bus8.promark.com
+  #     Port: 2850
 
 Capabilities:
   Channel: &ChannelCapabilities
@@ -302,6 +530,16 @@ Profiles:
           - *Bus2
           - *Adv3
           - *Bus3
+          - *Adv4
+          - *Bus4
+          - *Adv5
+          - *Bus5
+          - *Adv6
+          - *Bus6
+          - *Adv7
+          - *Bus7
+          # - *Adv8
+          # - *Bus8
   TwoOrgsChannel:
     Consortium: SampleConsortium
     <<: *ChannelDefaults
@@ -316,5 +554,15 @@ Profiles:
         - *Bus2
         - *Adv3
         - *Bus3
+        - *Adv4
+        - *Bus4
+        - *Adv5
+        - *Bus5
+        - *Adv6
+        - *Bus6
+        - *Adv7
+        - *Bus7
+        # - *Adv8
+        # - *Bus8
       Capabilities:
         <<: *ApplicationCapabilities
