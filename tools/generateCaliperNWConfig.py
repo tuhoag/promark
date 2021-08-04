@@ -73,15 +73,15 @@ def generateChannels():
   entry['created'] = settingVar
   entry['orderers'] = ['orderer.promark.com']
 
-  entry['contract'] = ['id:campaign', 'version:"1.0"', 'language:golang']
+  entry['contracts'] = {'id':'campaign', 'version': "1.0", 'language':'golang'}
 
   return entry
 
 def generateOrderer(name, image):
-  urls = "grpcs://0.0.0.0:7050"
+  url = "grpcs://0.0.0.0:7050"
 
   entry = {}
-  entry['urls']= urls
+  entry['url']= url
   entry['tlsCACerts']={'path':'./../organizations/ordererOrganizations/promark.com/tlsca/tlsca.promark.com-cert.pem'}
   entry['grpcOptions'] = {'ssl-target-name-override':name}
   return entry
@@ -93,10 +93,10 @@ def generateChannelPeers():
 def generateChannelPeer():
   settingVar = "true"
   entry = {}
-  entry = ['endorsingPeer:true',
-          'chaincodeQuery:true',
-          'ledgerQuery:true',
-          'eventSource:true',]
+  entry= {'endorsingPeer': settingVar,
+          'chaincodeQuery': "true",
+          'ledgerQuery': 'true',
+          'eventSource': 'true',}
   return entry
 
 # def generateClientsPeer():
