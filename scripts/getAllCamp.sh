@@ -2,12 +2,11 @@
 
 . $SCRIPTS_DIR/utils.sh
 
-CC_QUERYBYID_FCN="DeleteCampaignByID"
+CC_READ_ALL_FCN="GetAllAssets"
 
 function parsePeerConnectionParameters() {
     local orgNum=$1
     local peerNum=$2
-    local orgType=$3
    
     PEER_CONN_PARMS=""
     PEERS=""
@@ -21,7 +20,7 @@ function parsePeerConnectionParameters() {
     for orgId in $(seq 0 $maxOrgId); do
          infoln $orgId
          for peerId in $(seq 0 $maxPeerId); do
-             #for orgType in "adv" "bus"; do
+             for orgType in "adv" "bus"; do
                  local peerName="peer${peerId}.${orgType}${orgId}"
                  infoln "processed $peerName"
                  selectPeer $orgType $orgId $peerId
@@ -30,35 +29,31 @@ function parsePeerConnectionParameters() {
                 ## Set path to TLS certificate
                 TLSINFO=$(eval echo "--tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE")
                 PEER_CONN_PARMS="$PEER_CONN_PARMS $TLSINFO"
-             #done
+             done
          done
      done
 
     infoln "parsePeerConnectionParameters: $PEERS $PEER_CONN_PARMS"
 }
 
-function queryById() {
-    local chaincodeName=$1
-    local channelName=$2
-    local orgType=$3
-    local orgNum=$4
-    local peerNum=$5
+function getData () {
+  local chaincodeName=$1
+  local channelName=$2
 
-    infoln $orgType
+  # infoln "Invoking Init Chaincode with $@\n"
+  parsePeerConnectionParameters 1 1
+  res=$?
+  verifyResult $res "Invoke transaction failed on channel '$channelName' due to uneven number of peer and org parameters "
 
-    parsePeerConnectionParameters $orgNum $peerNum $orgType
+  sleep $DELAY
+  infoln "Attempting to Query peer0.org${ORG}, Retry after $DELAY seconds."
+  set -x
+  peer chaincode query --channelID $channelName --name $chaincodeName  -c '{"Args":["'${CC_READ_ALL_FCN}'"]}' >&log.txt
+  res=$?
+  { set +x; } 2>/dev/null
 
-    fcnCall='{"function":"'DeleteCampaignByID'","Args":["id1"]}'
-
-    infoln "Invoke fcn call:${fcnCall} on peers: $peers"
-
-    set -x
-    peer chaincode invoke --channelID $channelName --name $chaincodeName -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --cafile $ORDERER_CA --tls $peerConnectionParams -c $fcnCall >&log.txt
-    res=$?
-    { set +x; } 2>/dev/null
-    cat log.txt
-    verifyResult $res "Invoke execution on $peers failed "
-    successln "Invoke transaction successful on $peers on channel '$channelName'"
+  let rc=$res
+  cat log.txt
 }
 
-queryById $1 $2 $3 $4 $5
+getData $1 $2
