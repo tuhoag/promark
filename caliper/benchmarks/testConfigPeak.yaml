@@ -17,14 +17,14 @@ test:
       #     arguments:
       #       test: 2
       #       contractId: campaign
-      - label: Collect customer data (fixed sending rate:300)
+      - label: Collect customer data (fixed sending rate:120)
         description:  Test collecting customer data benchmark(fixed-rate)
         # txNumber: 1000
         txDuration: 60
         rateControl:
             type: fixed-rate
             opts:
-              tps: 300
+              tps: 120
           # type: linear-rate
           # opts: {
           #   "startingTps": 35,
