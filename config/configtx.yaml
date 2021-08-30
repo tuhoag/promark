@@ -270,7 +270,7 @@ Organizations:
   - &Adv11
     Name: adv11MSP
     ID: adv11MSP
-    MSPDir: ../organizations/peerOrganizations/adv10.promark.com/msp
+    MSPDir: ../organizations/peerOrganizations/adv11.promark.com/msp
     Policies:
       Readers:
         Type: Signature
