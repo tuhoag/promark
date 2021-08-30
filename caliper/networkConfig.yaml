@@ -23,6 +23,36 @@ channels:
                 endorsingPeer: true
                 eventSource: true
                 ledgerQuery: true
+            peer0.adv10.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.adv11.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.adv12.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.adv13.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.adv14.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.adv15.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
             peer0.adv2.promark.com:
                 chaincodeQuery: true
                 endorsingPeer: true
@@ -53,12 +83,52 @@ channels:
                 endorsingPeer: true
                 eventSource: true
                 ledgerQuery: true
+            peer0.adv8.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.adv9.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
             peer0.bus0.promark.com:
                 chaincodeQuery: true
                 endorsingPeer: true
                 eventSource: true
                 ledgerQuery: true
             peer0.bus1.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.bus10.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.bus11.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.bus12.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.bus13.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.bus14.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.bus15.promark.com:
                 chaincodeQuery: true
                 endorsingPeer: true
                 eventSource: true
@@ -93,6 +163,16 @@ channels:
                 endorsingPeer: true
                 eventSource: true
                 ledgerQuery: true
+            peer0.bus8.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
+            peer0.bus9.promark.com:
+                chaincodeQuery: true
+                endorsingPeer: true
+                eventSource: true
+                ledgerQuery: true
 orderers:
     orderer.promark.com:
         grpcOptions:
@@ -123,6 +203,72 @@ clients:
                     path: ../organizations/peerOrganizations/adv1.promark.com/users/Admin@adv1.promark.com/msp
                 path: ../organizations/peerOrganizations/adv1.promark.com/users/Admin@adv1.promark.com/msp/admincerts
             organization: adv1
+    peer0.adv10.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/adv10.promark.com/users/Admin@adv10.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/adv10.promark.com/users/Admin@adv10.promark.com/msp/signcerts/Admin@adv10.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/adv10.promark.com/users/Admin@adv10.promark.com/msp
+                path: ../organizations/peerOrganizations/adv10.promark.com/users/Admin@adv10.promark.com/msp/admincerts
+            organization: adv10
+    peer0.adv11.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/adv11.promark.com/users/Admin@adv11.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/adv11.promark.com/users/Admin@adv11.promark.com/msp/signcerts/Admin@adv11.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/adv11.promark.com/users/Admin@adv11.promark.com/msp
+                path: ../organizations/peerOrganizations/adv11.promark.com/users/Admin@adv11.promark.com/msp/admincerts
+            organization: adv11
+    peer0.adv12.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/adv12.promark.com/users/Admin@adv12.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/adv12.promark.com/users/Admin@adv12.promark.com/msp/signcerts/Admin@adv12.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/adv12.promark.com/users/Admin@adv12.promark.com/msp
+                path: ../organizations/peerOrganizations/adv12.promark.com/users/Admin@adv12.promark.com/msp/admincerts
+            organization: adv12
+    peer0.adv13.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/adv13.promark.com/users/Admin@adv13.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/adv13.promark.com/users/Admin@adv13.promark.com/msp/signcerts/Admin@adv13.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/adv13.promark.com/users/Admin@adv13.promark.com/msp
+                path: ../organizations/peerOrganizations/adv13.promark.com/users/Admin@adv13.promark.com/msp/admincerts
+            organization: adv13
+    peer0.adv14.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/adv14.promark.com/users/Admin@adv14.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/adv14.promark.com/users/Admin@adv14.promark.com/msp/signcerts/Admin@adv14.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/adv14.promark.com/users/Admin@adv14.promark.com/msp
+                path: ../organizations/peerOrganizations/adv14.promark.com/users/Admin@adv14.promark.com/msp/admincerts
+            organization: adv14
+    peer0.adv15.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/adv15.promark.com/users/Admin@adv15.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/adv15.promark.com/users/Admin@adv15.promark.com/msp/signcerts/Admin@adv15.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/adv15.promark.com/users/Admin@adv15.promark.com/msp
+                path: ../organizations/peerOrganizations/adv15.promark.com/users/Admin@adv15.promark.com/msp/admincerts
+            organization: adv15
     peer0.adv2.promark.com:
         client:
             clientPrivateKey:
@@ -189,6 +335,28 @@ clients:
                     path: ../organizations/peerOrganizations/adv7.promark.com/users/Admin@adv7.promark.com/msp
                 path: ../organizations/peerOrganizations/adv7.promark.com/users/Admin@adv7.promark.com/msp/admincerts
             organization: adv7
+    peer0.adv8.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/adv8.promark.com/users/Admin@adv8.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/adv8.promark.com/users/Admin@adv8.promark.com/msp/signcerts/Admin@adv8.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/adv8.promark.com/users/Admin@adv8.promark.com/msp
+                path: ../organizations/peerOrganizations/adv8.promark.com/users/Admin@adv8.promark.com/msp/admincerts
+            organization: adv8
+    peer0.adv9.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/adv9.promark.com/users/Admin@adv9.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/adv9.promark.com/users/Admin@adv9.promark.com/msp/signcerts/Admin@adv9.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/adv9.promark.com/users/Admin@adv9.promark.com/msp
+                path: ../organizations/peerOrganizations/adv9.promark.com/users/Admin@adv9.promark.com/msp/admincerts
+            organization: adv9
     peer0.bus0.promark.com:
         client:
             clientPrivateKey:
@@ -211,6 +379,72 @@ clients:
                     path: ../organizations/peerOrganizations/bus1.promark.com/users/Admin@bus1.promark.com/msp
                 path: ../organizations/peerOrganizations/bus1.promark.com/users/Admin@bus1.promark.com/msp/admincerts
             organization: bus1
+    peer0.bus10.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/bus10.promark.com/users/Admin@bus10.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/bus10.promark.com/users/Admin@bus10.promark.com/msp/signcerts/Admin@bus10.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/bus10.promark.com/users/Admin@bus10.promark.com/msp
+                path: ../organizations/peerOrganizations/bus10.promark.com/users/Admin@bus10.promark.com/msp/admincerts
+            organization: bus10
+    peer0.bus11.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/bus11.promark.com/users/Admin@bus11.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/bus11.promark.com/users/Admin@bus11.promark.com/msp/signcerts/Admin@bus11.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/bus11.promark.com/users/Admin@bus11.promark.com/msp
+                path: ../organizations/peerOrganizations/bus11.promark.com/users/Admin@bus11.promark.com/msp/admincerts
+            organization: bus11
+    peer0.bus12.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/bus12.promark.com/users/Admin@bus12.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/bus12.promark.com/users/Admin@bus12.promark.com/msp/signcerts/Admin@bus12.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/bus12.promark.com/users/Admin@bus12.promark.com/msp
+                path: ../organizations/peerOrganizations/bus12.promark.com/users/Admin@bus12.promark.com/msp/admincerts
+            organization: bus12
+    peer0.bus13.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/bus13.promark.com/users/Admin@bus13.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/bus13.promark.com/users/Admin@bus13.promark.com/msp/signcerts/Admin@bus13.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/bus13.promark.com/users/Admin@bus13.promark.com/msp
+                path: ../organizations/peerOrganizations/bus13.promark.com/users/Admin@bus13.promark.com/msp/admincerts
+            organization: bus13
+    peer0.bus14.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/bus14.promark.com/users/Admin@bus14.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/bus14.promark.com/users/Admin@bus14.promark.com/msp/signcerts/Admin@bus14.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/bus14.promark.com/users/Admin@bus14.promark.com/msp
+                path: ../organizations/peerOrganizations/bus14.promark.com/users/Admin@bus14.promark.com/msp/admincerts
+            organization: bus14
+    peer0.bus15.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/bus15.promark.com/users/Admin@bus15.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/bus15.promark.com/users/Admin@bus15.promark.com/msp/signcerts/Admin@bus15.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/bus15.promark.com/users/Admin@bus15.promark.com/msp
+                path: ../organizations/peerOrganizations/bus15.promark.com/users/Admin@bus15.promark.com/msp/admincerts
+            organization: bus15
     peer0.bus2.promark.com:
         client:
             clientPrivateKey:
@@ -277,6 +511,28 @@ clients:
                     path: ../organizations/peerOrganizations/bus7.promark.com/users/Admin@bus7.promark.com/msp
                 path: ../organizations/peerOrganizations/bus7.promark.com/users/Admin@bus7.promark.com/msp/admincerts
             organization: bus7
+    peer0.bus8.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/bus8.promark.com/users/Admin@bus8.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/bus8.promark.com/users/Admin@bus8.promark.com/msp/signcerts/Admin@bus8.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/bus8.promark.com/users/Admin@bus8.promark.com/msp
+                path: ../organizations/peerOrganizations/bus8.promark.com/users/Admin@bus8.promark.com/msp/admincerts
+            organization: bus8
+    peer0.bus9.promark.com:
+        client:
+            clientPrivateKey:
+                path: ../organizations/peerOrganizations/bus9.promark.com/users/Admin@bus9.promark.com/msp/keystore/priv_sk
+            clientSignedCert:
+                path: ../organizations/peerOrganizations/bus9.promark.com/users/Admin@bus9.promark.com/msp/signcerts/Admin@bus9.promark.com-cert.pem
+            credentialStore:
+                cryptoStore:
+                    path: ../organizations/peerOrganizations/bus9.promark.com/users/Admin@bus9.promark.com/msp
+                path: ../organizations/peerOrganizations/bus9.promark.com/users/Admin@bus9.promark.com/msp/admincerts
+            organization: bus9
 organizations:
     adv0:
         adminPrivateKey:
@@ -294,6 +550,54 @@ organizations:
         - peer0.adv1.promark.com
         signedCert:
             path: ../organizations/peerOrganizations/adv1.promark.com/users/Admin@adv1.promark.com/msp/signcerts/Admin@adv1.promark.com-cert.pem
+    adv10:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/adv10.promark.com/users/Admin@adv10.promark.com/msp/keystore/priv_sk
+        mspid: adv10MSP
+        peers:
+        - peer0.adv10.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/adv10.promark.com/users/Admin@adv10.promark.com/msp/signcerts/Admin@adv10.promark.com-cert.pem
+    adv11:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/adv11.promark.com/users/Admin@adv11.promark.com/msp/keystore/priv_sk
+        mspid: adv11MSP
+        peers:
+        - peer0.adv11.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/adv11.promark.com/users/Admin@adv11.promark.com/msp/signcerts/Admin@adv11.promark.com-cert.pem
+    adv12:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/adv12.promark.com/users/Admin@adv12.promark.com/msp/keystore/priv_sk
+        mspid: adv12MSP
+        peers:
+        - peer0.adv12.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/adv12.promark.com/users/Admin@adv12.promark.com/msp/signcerts/Admin@adv12.promark.com-cert.pem
+    adv13:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/adv13.promark.com/users/Admin@adv13.promark.com/msp/keystore/priv_sk
+        mspid: adv13MSP
+        peers:
+        - peer0.adv13.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/adv13.promark.com/users/Admin@adv13.promark.com/msp/signcerts/Admin@adv13.promark.com-cert.pem
+    adv14:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/adv14.promark.com/users/Admin@adv14.promark.com/msp/keystore/priv_sk
+        mspid: adv14MSP
+        peers:
+        - peer0.adv14.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/adv14.promark.com/users/Admin@adv14.promark.com/msp/signcerts/Admin@adv14.promark.com-cert.pem
+    adv15:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/adv15.promark.com/users/Admin@adv15.promark.com/msp/keystore/priv_sk
+        mspid: adv15MSP
+        peers:
+        - peer0.adv15.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/adv15.promark.com/users/Admin@adv15.promark.com/msp/signcerts/Admin@adv15.promark.com-cert.pem
     adv2:
         adminPrivateKey:
             path: ../organizations/peerOrganizations/adv2.promark.com/users/Admin@adv2.promark.com/msp/keystore/priv_sk
@@ -342,6 +646,22 @@ organizations:
         - peer0.adv7.promark.com
         signedCert:
             path: ../organizations/peerOrganizations/adv7.promark.com/users/Admin@adv7.promark.com/msp/signcerts/Admin@adv7.promark.com-cert.pem
+    adv8:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/adv8.promark.com/users/Admin@adv8.promark.com/msp/keystore/priv_sk
+        mspid: adv8MSP
+        peers:
+        - peer0.adv8.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/adv8.promark.com/users/Admin@adv8.promark.com/msp/signcerts/Admin@adv8.promark.com-cert.pem
+    adv9:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/adv9.promark.com/users/Admin@adv9.promark.com/msp/keystore/priv_sk
+        mspid: adv9MSP
+        peers:
+        - peer0.adv9.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/adv9.promark.com/users/Admin@adv9.promark.com/msp/signcerts/Admin@adv9.promark.com-cert.pem
     bus0:
         adminPrivateKey:
             path: ../organizations/peerOrganizations/bus0.promark.com/users/Admin@bus0.promark.com/msp/keystore/priv_sk
@@ -358,6 +678,54 @@ organizations:
         - peer0.bus1.promark.com
         signedCert:
             path: ../organizations/peerOrganizations/bus1.promark.com/users/Admin@bus1.promark.com/msp/signcerts/Admin@bus1.promark.com-cert.pem
+    bus10:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/bus10.promark.com/users/Admin@bus10.promark.com/msp/keystore/priv_sk
+        mspid: bus10MSP
+        peers:
+        - peer0.bus10.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/bus10.promark.com/users/Admin@bus10.promark.com/msp/signcerts/Admin@bus10.promark.com-cert.pem
+    bus11:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/bus11.promark.com/users/Admin@bus11.promark.com/msp/keystore/priv_sk
+        mspid: bus11MSP
+        peers:
+        - peer0.bus11.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/bus11.promark.com/users/Admin@bus11.promark.com/msp/signcerts/Admin@bus11.promark.com-cert.pem
+    bus12:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/bus12.promark.com/users/Admin@bus12.promark.com/msp/keystore/priv_sk
+        mspid: bus12MSP
+        peers:
+        - peer0.bus12.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/bus12.promark.com/users/Admin@bus12.promark.com/msp/signcerts/Admin@bus12.promark.com-cert.pem
+    bus13:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/bus13.promark.com/users/Admin@bus13.promark.com/msp/keystore/priv_sk
+        mspid: bus13MSP
+        peers:
+        - peer0.bus13.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/bus13.promark.com/users/Admin@bus13.promark.com/msp/signcerts/Admin@bus13.promark.com-cert.pem
+    bus14:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/bus14.promark.com/users/Admin@bus14.promark.com/msp/keystore/priv_sk
+        mspid: bus14MSP
+        peers:
+        - peer0.bus14.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/bus14.promark.com/users/Admin@bus14.promark.com/msp/signcerts/Admin@bus14.promark.com-cert.pem
+    bus15:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/bus15.promark.com/users/Admin@bus15.promark.com/msp/keystore/priv_sk
+        mspid: bus15MSP
+        peers:
+        - peer0.bus15.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/bus15.promark.com/users/Admin@bus15.promark.com/msp/signcerts/Admin@bus15.promark.com-cert.pem
     bus2:
         adminPrivateKey:
             path: ../organizations/peerOrganizations/bus2.promark.com/users/Admin@bus2.promark.com/msp/keystore/priv_sk
@@ -406,6 +774,22 @@ organizations:
         - peer0.bus7.promark.com
         signedCert:
             path: ../organizations/peerOrganizations/bus7.promark.com/users/Admin@bus7.promark.com/msp/signcerts/Admin@bus7.promark.com-cert.pem
+    bus8:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/bus8.promark.com/users/Admin@bus8.promark.com/msp/keystore/priv_sk
+        mspid: bus8MSP
+        peers:
+        - peer0.bus8.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/bus8.promark.com/users/Admin@bus8.promark.com/msp/signcerts/Admin@bus8.promark.com-cert.pem
+    bus9:
+        adminPrivateKey:
+            path: ../organizations/peerOrganizations/bus9.promark.com/users/Admin@bus9.promark.com/msp/keystore/priv_sk
+        mspid: bus9MSP
+        peers:
+        - peer0.bus9.promark.com
+        signedCert:
+            path: ../organizations/peerOrganizations/bus9.promark.com/users/Admin@bus9.promark.com/msp/signcerts/Admin@bus9.promark.com-cert.pem
 peers:
     peer0.adv0.promark.com:
         grpcOptions:
@@ -419,6 +803,42 @@ peers:
         tlsCACerts:
             path: ./../organizations/peerOrganizations/adv1.promark.com/tlsca/tlsca.adv1.promark.com-cert.pem
         url: grpcs://0.0.0.0:1060
+    peer0.adv10.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.adv10.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/adv10.promark.com/tlsca/tlsca.adv10.promark.com-cert.pem
+        url: grpcs://0.0.0.0:1150
+    peer0.adv11.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.adv11.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/adv11.promark.com/tlsca/tlsca.adv11.promark.com-cert.pem
+        url: grpcs://0.0.0.0:1160
+    peer0.adv12.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.adv12.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/adv12.promark.com/tlsca/tlsca.adv12.promark.com-cert.pem
+        url: grpcs://0.0.0.0:1170
+    peer0.adv13.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.adv13.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/adv13.promark.com/tlsca/tlsca.adv13.promark.com-cert.pem
+        url: grpcs://0.0.0.0:1180
+    peer0.adv14.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.adv14.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/adv14.promark.com/tlsca/tlsca.adv14.promark.com-cert.pem
+        url: grpcs://0.0.0.0:1190
+    peer0.adv15.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.adv15.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/adv15.promark.com/tlsca/tlsca.adv15.promark.com-cert.pem
+        url: grpcs://0.0.0.0:1200
     peer0.adv2.promark.com:
         grpcOptions:
             ssl-target-name-override: peer0.adv2.promark.com
@@ -455,6 +875,18 @@ peers:
         tlsCACerts:
             path: ./../organizations/peerOrganizations/adv7.promark.com/tlsca/tlsca.adv7.promark.com-cert.pem
         url: grpcs://0.0.0.0:1120
+    peer0.adv8.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.adv8.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/adv8.promark.com/tlsca/tlsca.adv8.promark.com-cert.pem
+        url: grpcs://0.0.0.0:1130
+    peer0.adv9.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.adv9.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/adv9.promark.com/tlsca/tlsca.adv9.promark.com-cert.pem
+        url: grpcs://0.0.0.0:1140
     peer0.bus0.promark.com:
         grpcOptions:
             ssl-target-name-override: peer0.bus0.promark.com
@@ -467,6 +899,42 @@ peers:
         tlsCACerts:
             path: ./../organizations/peerOrganizations/bus1.promark.com/tlsca/tlsca.bus1.promark.com-cert.pem
         url: grpcs://0.0.0.0:2060
+    peer0.bus10.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.bus10.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/bus10.promark.com/tlsca/tlsca.bus10.promark.com-cert.pem
+        url: grpcs://0.0.0.0:2150
+    peer0.bus11.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.bus11.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/bus11.promark.com/tlsca/tlsca.bus11.promark.com-cert.pem
+        url: grpcs://0.0.0.0:2160
+    peer0.bus12.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.bus12.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/bus12.promark.com/tlsca/tlsca.bus12.promark.com-cert.pem
+        url: grpcs://0.0.0.0:2170
+    peer0.bus13.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.bus13.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/bus13.promark.com/tlsca/tlsca.bus13.promark.com-cert.pem
+        url: grpcs://0.0.0.0:2180
+    peer0.bus14.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.bus14.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/bus14.promark.com/tlsca/tlsca.bus14.promark.com-cert.pem
+        url: grpcs://0.0.0.0:2190
+    peer0.bus15.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.bus15.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/bus15.promark.com/tlsca/tlsca.bus15.promark.com-cert.pem
+        url: grpcs://0.0.0.0:2200
     peer0.bus2.promark.com:
         grpcOptions:
             ssl-target-name-override: peer0.bus2.promark.com
@@ -503,3 +971,15 @@ peers:
         tlsCACerts:
             path: ./../organizations/peerOrganizations/bus7.promark.com/tlsca/tlsca.bus7.promark.com-cert.pem
         url: grpcs://0.0.0.0:2120
+    peer0.bus8.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.bus8.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/bus8.promark.com/tlsca/tlsca.bus8.promark.com-cert.pem
+        url: grpcs://0.0.0.0:2130
+    peer0.bus9.promark.com:
+        grpcOptions:
+            ssl-target-name-override: peer0.bus9.promark.com
+        tlsCACerts:
+            path: ./../organizations/peerOrganizations/bus9.promark.com/tlsca/tlsca.bus9.promark.com-cert.pem
+        url: grpcs://0.0.0.0:2140

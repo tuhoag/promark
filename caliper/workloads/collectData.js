@@ -3,13 +3,13 @@
 const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
 // const ids = ['id10', 'id11', 'id12', 'id13'];
-const ids = ['id10']
+const ids = ['id12']
 // const names = ['campaign1', 'campaign2', 'campaign3', 'campaign4', 'campaign5', 'campaign6', 'campaign7', 'campaign8', 'campaign9', 'campaign10'];
-const totalComms = ['v3jlBUHAExMNsEe9Q/WYZNKjKoFQDqMbsinsOyi32s=',
+const totalComms = ['ljhSknOoXkMhCsPk8LXB3pcq6+0+kDNFyCKi9NTrfQI=',
                     ];
-const r1s = ['MJopGWsp5MSVnHen2bp3hcAxNNFUi48Ra2525hTikg4=',
+const r1s = ['quUvnfouF2AQZks7xQxMR926Z7TTn7B9ZEuRIyajWwo=',
             ];
-const r2s = ['Xjpa8hlGtDRaQN1RyN0MTdToK2ZqJq+dzXMx4sPnxAM=',
+const r2s = ['D7NjVL2e9AV8iX+Y55Tf1EM99K7hX0x9scVYkFBwow0=',
             ];
 
 const ver1s = ['http://peer0.adv0.promark.com:8500',
@@ -39,11 +39,12 @@ class CreateCarWorkload extends WorkloadModuleBase {
      * @return {Promise<TxStatus[]>}
      */
     async submitTransaction() {
+    
         this.txIndex++;
         let id = ids[Math.floor(Math.random() * ids.length)].toString();
         let index = this.workerIndex + '_' + this.txIndex.toString();
 
-        let userName = 'user' + this.roundArguments.testRound + '_' + index;
+        let userName = 'user' + id.toString() + this.roundArguments.testRound + '_' + index;
         let totalComm = totalComms[ids.indexOf(id)].toString();
         let r1 = r1s[ids.indexOf(id)].toString();
         let r2 = r2s[ids.indexOf(id)].toString();
@@ -54,6 +55,7 @@ class CreateCarWorkload extends WorkloadModuleBase {
             contractId: 'campaign',
             contractVersion: 'v1',
             contractFunction: 'AddCollectedData',
+            // invokerIdentity: 'peer0.bus1.promark.com',
             contractArguments: [id, userName, totalComm, r1, r2, ver1, ver2],
             readOnly: false,
             timeout: 30
@@ -64,24 +66,21 @@ class CreateCarWorkload extends WorkloadModuleBase {
     }
 
     // async cleanupWorkloadModule() {
-    //     const id = 'id10'
-
-    //     // for (let i=0; i<this.roundArguments.test; i++) {
-    //         // const randomId = Math.floor(Math.random()*this.roundArguments.testRound)
+    //     // this.txIndex++;
+    //     // let id = ids[Math.floor(Math.random() * ids.length)].toString();
     //     let index = this.workerIndex + '_' + this.txIndex.toString();
-    //     let userName = 'username' + this.roundArguments.testRound + '_' + index;
-    //     // const userName = `username_${this.workerIndex}_${i}`;
+    //     let userName = 'user' + this.roundArguments.testRound + '_' + index;
 
     //     const request = {
     //         contractId: 'campaign',
     //         contractVersion: 'v1',
     //         contractFunction: 'DeleteDataByUserId',
-    //         // invokerIdentity: 'peer0.bus0.promark.com',
+    //         invokerIdentity: 'peer0.bus1.promark.com',
     //         contractArguments: [userName],
     //         readOnly: false
     //     };
 
-    //     console.log(`cleanupWorkloadModule: ${userName}`);
+    //     // console.log(`cleanupWorkloadModule: ${userName}`);
     //     await this.sutAdapter.sendRequests(request);
     //     // }
     // }
