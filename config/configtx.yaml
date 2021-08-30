@@ -870,7 +870,7 @@ Profiles:
           - *Bus11
           - *Adv12
           - *Bus12
-          - *Adv12
+          - *Adv13
           - *Bus13
           - *Adv14
           - *Bus14
@@ -909,7 +909,7 @@ Profiles:
         - *Bus11
         - *Adv12
         - *Bus12
-        - *Adv12
+        - *Adv13
         - *Bus13
         - *Adv14
         - *Bus14
