@@ -3,22 +3,35 @@
 const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
 // const ids = ['id10', 'id11', 'id12', 'id13'];
-const ids = ['id12']
+const ids = ['id10', 'id11', 'id12', 'id13'];
 // const names = ['campaign1', 'campaign2', 'campaign3', 'campaign4', 'campaign5', 'campaign6', 'campaign7', 'campaign8', 'campaign9', 'campaign10'];
-const totalComms = ['ljhSknOoXkMhCsPk8LXB3pcq6+0+kDNFyCKi9NTrfQI=',
+const totalComms = ['iiIhxLouay6sTS2uhDpr9hTTPVg2I8k+AtlG869m+FI=',
+                    '8m91gDWPbfv0sSOHuM5aq6ZcgyQAwz2g7xmT//pODHs=',
+                    '9ngd/x4NmukQh61x8wNFGw82xWcjy9x7RSP9QMkXABc=',
+                    'dGVL9Lu2yPiePmUTjqmIh3LOhVvRHswrR5H+QN/gVBY=',
                     ];
-const r1s = ['quUvnfouF2AQZks7xQxMR926Z7TTn7B9ZEuRIyajWwo=',
+const r1s = ['v7g8Lm0VjieFg+7fBULDIMOu9gBrvhY54a+gU2eLnwc=',
+            'plB/YF932SjCOP37BN/8lGWYMUjthyrzB4g+tbU72Qk=',
+            'ppGBvNBUpN9MgnlaS5kvtDFh8DdiU0Kk+g0QIr/3/AI=',
+            'JwLzkwM1BC0U+mcTn98U845aPlCGrwwoQmIO3YLpbgM=',
             ];
-const r2s = ['D7NjVL2e9AV8iX+Y55Tf1EM99K7hX0x9scVYkFBwow0=',
+const r2s = ['VEgJObUFPo88iwqzfwJN3HD1dJthqf007DPe35JusgA=',
+            'qjJPpPxfRxu0zyBbbhNf0zrfg4GCex88xdVgOonc1wc=',
+            'M1tL2lfgu6Wu9yiqo3w1IwRDvohLgu8q+vpDoB/bkQk=',
+            '3eE5k9hCDc6k8hlPDoIGJfplMahFeMzqo+MiYp9GBAM=',
             ];
 
 const ver1s = ['http://peer0.adv0.promark.com:8500',
                 'http://peer0.adv1.promark.com:8510',
+                // 'http://peer0.adv0.promark.com:8500',
+                // 'http://peer0.adv0.promark.com:8500',
                 'http://peer0.adv2.promark.com:8520',
                 'http://peer0.adv3.promark.com:8530',
               ];
 const ver2s = ['http://peer0.bus0.promark.com:9000',
                 'http://peer0.bus1.promark.com:9010',
+                // 'http://peer0.bus0.promark.com:9000',
+                // 'http://peer0.bus0.promark.com:9000',
                 'http://peer0.bus2.promark.com:9020',
                 'http://peer0.bus3.promark.com:9030',               
               ];

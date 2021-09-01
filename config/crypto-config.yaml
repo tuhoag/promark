@@ -22,89 +22,89 @@ PeerOrgs:
     Users:
       Count: 1
 
-  # - Name: adv1
-  #   Domain: adv1.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: adv1
+    Domain: adv1.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
   
-  # - Name: adv2
-  #   Domain: adv2.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: adv2
+    Domain: adv2.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
   
-  # - Name: adv3
-  #   Domain: adv3.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-    # Users:
-    #   Count: 1
+  - Name: adv3
+    Domain: adv3.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
 
-  # - Name: adv4
-  #   Domain: adv4.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: adv4
+    Domain: adv4.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
 
-  # - Name: adv5
-  #   Domain: adv5.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: adv5
+    Domain: adv5.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
   
-  # - Name: adv6
-  #   Domain: adv6.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: adv6
+    Domain: adv6.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
 
-  # - Name: adv7
-  #   Domain: adv7.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: adv7
+    Domain: adv7.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
 
   # - Name: adv8
   #   Domain: adv8.promark.com
@@ -214,89 +214,89 @@ PeerOrgs:
     Users:
       Count: 1
 
-  # - Name: bus1
-  #   Domain: bus1.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: bus1
+    Domain: bus1.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
   
-  # - Name: bus2
-  #   Domain: bus2.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: bus2
+    Domain: bus2.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
 
-  # - Name: bus3
-  #   Domain: bus3.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: bus3
+    Domain: bus3.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
 
-  # - Name: bus4
-  #   Domain: bus4.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: bus4
+    Domain: bus4.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
 
-  # - Name: bus5
-  #   Domain: bus5.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: bus5
+    Domain: bus5.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
 
-  # - Name: bus6
-  #   Domain: bus6.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: bus6
+    Domain: bus6.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
 
-  # - Name: bus7
-  #   Domain: bus7.promark.com
-  #   EnableNodeOUs: true
-  #   Template:
-  #     Count: 1
-  #     SANS:
-  #       - "localhost"
-  #       - "127.0.0.1"
-  #       - "0.0.0.0"
-  #   Users:
-  #     Count: 1
+  - Name: bus7
+    Domain: bus7.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
 
   # - Name: bus8
   #   Domain: bus8.promark.com
