@@ -22,17 +22,17 @@ PeerOrgs:
     Users:
       Count: 1
 
-  - Name: adv1
-    Domain: adv1.promark.com
-    EnableNodeOUs: true
-    Template:
-      Count: 1
-      SANS:
-        - "localhost"
-        - "127.0.0.1"
-        - "0.0.0.0"
-    Users:
-      Count: 1
+  # - Name: adv1
+  #   Domain: adv1.promark.com
+  #   EnableNodeOUs: true
+  #   Template:
+  #     Count: 1
+  #     SANS:
+  #       - "localhost"
+  #       - "127.0.0.1"
+  #       - "0.0.0.0"
+  #   Users:
+  #     Count: 1
   
   # - Name: adv2
   #   Domain: adv2.promark.com
@@ -214,17 +214,17 @@ PeerOrgs:
     Users:
       Count: 1
 
-  - Name: bus1
-    Domain: bus1.promark.com
-    EnableNodeOUs: true
-    Template:
-      Count: 1
-      SANS:
-        - "localhost"
-        - "127.0.0.1"
-        - "0.0.0.0"
-    Users:
-      Count: 1
+  # - Name: bus1
+  #   Domain: bus1.promark.com
+  #   EnableNodeOUs: true
+  #   Template:
+  #     Count: 1
+  #     SANS:
+  #       - "localhost"
+  #       - "127.0.0.1"
+  #       - "0.0.0.0"
+  #   Users:
+  #     Count: 1
   
   # - Name: bus2
   #   Domain: bus2.promark.com
