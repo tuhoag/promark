@@ -60,25 +60,25 @@ Organizations:
     #   - Host: peer0.adv1.promark.com
     #     Port: 1060
   
-  # - &Adv2
-  #   Name: adv2MSP
-  #   ID: adv2MSP
-  #   MSPDir: ../organizations/peerOrganizations/adv2.promark.com/msp
-  #   Policies:
-  #     Readers:
-  #       Type: Signature
-  #       Rule: "OR('adv2MSP.admin', 'adv2MSP.peer', 'adv2MSP.client')"
-  #     Writers:
-  #       Type: Signature
-  #       Rule: "OR('adv2MSP.admin', 'adv2MSP.client')"
-  #     Admins:
-  #       Type: Signature
-  #       Rule: "OR('adv2MSP.admin')"
-  #     Endorsement:
-  #       Type: Signature
-  #       Rule: "OR('adv2MSP.peer')"
-  #   OrdererEndpoints:
-  #     - orderer.promark.com:7050
+  - &Adv2
+    Name: adv2MSP
+    ID: adv2MSP
+    MSPDir: ../organizations/peerOrganizations/adv2.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('adv2MSP.admin', 'adv2MSP.peer', 'adv2MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('adv2MSP.admin', 'adv2MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('adv2MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('adv2MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
   # #   AnchorPeers:
   # #     - Host: peer0.adv2.promark.com
   # #       Port: 1070
@@ -431,48 +431,48 @@ Organizations:
     # - Host: peer0.bus1.promark.com
     #   Port: 2060
   
-  # - &Bus2
-  #   Name: bus2MSP
-  #   ID: bus2MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus2.promark.com/msp
-  #   Policies:
-  #     Readers:
-  #       Type: Signature
-  #       Rule: "OR('bus2MSP.admin', 'bus2MSP.peer', 'bus2MSP.client')"
-  #     Writers:
-  #       Type: Signature
-  #       Rule: "OR('bus2MSP.admin', 'bus2MSP.client')"
-  #     Admins:
-  #       Type: Signature
-  #       Rule: "OR('bus2MSP.admin')"
-  #     Endorsement:
-  #       Type: Signature
-  #       Rule: "OR('bus2MSP.peer')"
-  #   OrdererEndpoints:
-  #     - orderer.promark.com:7050
-  #   AnchorPeers:
-  #   - Host: peer0.bus2.promark.com
-  #     Port: 2070
+  - &Bus2
+    Name: bus2MSP
+    ID: bus2MSP
+    MSPDir: ../organizations/peerOrganizations/bus2.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus2MSP.admin', 'bus2MSP.peer', 'bus2MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus2MSP.admin', 'bus2MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus2MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus2MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+    AnchorPeers:
+    - Host: peer0.bus2.promark.com
+      Port: 2070
 
-  # - &Bus3
-  #   Name: bus3MSP
-  #   ID: bus3MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus3.promark.com/msp
-  #   Policies:
-  #     Readers:
-  #       Type: Signature
-  #       Rule: "OR('bus3MSP.admin', 'bus3MSP.peer', 'bus3MSP.client')"
-  #     Writers:
-  #       Type: Signature
-  #       Rule: "OR('bus3MSP.admin', 'bus3MSP.client')"
-  #     Admins:
-  #       Type: Signature
-  #       Rule: "OR('bus3MSP.admin')"
-  #     Endorsement:
-  #       Type: Signature
-  #       Rule: "OR('bus3MSP.peer')"
-  #   OrdererEndpoints:
-  #     - orderer.promark.com:7050
+  - &Bus3
+    Name: bus3MSP
+    ID: bus3MSP
+    MSPDir: ../organizations/peerOrganizations/bus3.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus3MSP.admin', 'bus3MSP.peer', 'bus3MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus3MSP.admin', 'bus3MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus3MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus3MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
   #   AnchorPeers:
   #   - Host: peer0.bus3.promark.com
   #     Port: 2080
@@ -848,8 +848,8 @@ Profiles:
           - *Bus0
           - *Adv1
           - *Bus1
-          # - *Adv2
-          # - *Bus2
+          - *Adv2
+          - *Bus2
           # - *Adv3
           # - *Bus3
           # - *Adv4
@@ -887,8 +887,8 @@ Profiles:
         - *Bus0
         - *Adv1
         - *Bus1
-        # - *Adv2
-        # - *Bus2
+        - *Adv2
+        - *Bus2
         # - *Adv3
         # - *Bus3
         # - *Adv4
