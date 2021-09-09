@@ -72,22 +72,22 @@ function createCamp() {
     verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
 
     set -x
-    fcn_call0='{"function":"'${CC_CREATE_FCN}'","Args":["id10","campaign10","Adv0","Bus0","http://peer0.adv0.promark.com:8500","http://peer0.bus0.promark.com:9000"]}'
+    fcn_call0='{"function":"'${CC_CREATE_FCN}'","Args":["id21","campaign21","Adv0","Bus0","http://peer0.adv0.promark.com:8500","http://peer0.bus0.promark.com:9000"]}'
 
-    fcn_call1='{"function":"'${CC_CREATE_FCN}'","Args":["id11","campaign11","Adv1","Bus1","http://peer0.adv1.promark.com:8510","http://peer0.bus1.promark.com:9010"]}'
+    # fcn_call1='{"function":"'${CC_CREATE_FCN}'","Args":["id11","campaign11","Adv1","Bus1","http://peer0.adv1.promark.com:8510","http://peer0.bus1.promark.com:9010"]}'
 
-    fcn_call2='{"function":"'${CC_CREATE_FCN}'","Args":["id12","campaign12","Adv2","Bus2","http://peer0.adv2.promark.com:8520","http://peer0.bus2.promark.com:9020"]}'
+    # fcn_call2='{"function":"'${CC_CREATE_FCN}'","Args":["id12","campaign12","Adv2","Bus2","http://peer0.adv2.promark.com:8520","http://peer0.bus2.promark.com:9020"]}'
 
-    fcn_call3='{"function":"'${CC_CREATE_FCN}'","Args":["id13","campaign13","Adv3","Bus3","http://peer0.adv3.promark.com:8530","http://peer0.bus3.promark.com:9030"]}'
+    # fcn_call3='{"function":"'${CC_CREATE_FCN}'","Args":["id13","campaign13","Adv3","Bus3","http://peer0.adv3.promark.com:8530","http://peer0.bus3.promark.com:9030"]}'
 
     infoln "invoke fcn call:${fcn_call}"
     peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call0} >&log.txt
 
-    peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call1} >&log.txt
+    # peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call1} >&log.txt
     
-    peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call2} >&log.txt
+    # peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call2} >&log.txt
 
-    peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call3} >&log.txt
+    # peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call3} >&log.txt
 
     res=$?
     { set +x; } 2>/dev/null
