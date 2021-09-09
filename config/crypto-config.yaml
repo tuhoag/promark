@@ -226,17 +226,17 @@ PeerOrgs:
     Users:
       Count: 1
   
-  - Name: bus2
-    Domain: bus2.promark.com
-    EnableNodeOUs: true
-    Template:
-      Count: 4
-      SANS:
-        - "localhost"
-        - "127.0.0.1"
-        - "0.0.0.0"
-    Users:
-      Count: 1
+  # - Name: bus2
+  #   Domain: bus2.promark.com
+  #   EnableNodeOUs: true
+  #   Template:
+  #     Count: 4
+  #     SANS:
+  #       - "localhost"
+  #       - "127.0.0.1"
+  #       - "0.0.0.0"
+  #   Users:
+  #     Count: 1
 
   # - Name: bus3
   #   Domain: bus3.promark.com
