@@ -7,6 +7,8 @@ function checkCommitReadiness() {
     local chaincodeName=$1
     local channelName=$2
     local orgType=$3
+    # local orgNum=$3
+    # local peerNum=$4
 
     local maxOrgId=0
     local maxPeerId=0
@@ -21,6 +23,19 @@ function checkCommitReadiness() {
             #done
         done
     done
+
+    # local maxOrgId=$(($orgNum - 1))
+    # local maxPeerId=$(($peerNum - 1))
+
+    # for orgId in $(seq 0 $maxOrgId); do
+    #      infoln $orgId
+    #      for peerId in $(seq 0 $maxPeerId); do
+    #          for orgType in "adv" "bus"; do
+    #              selectPeer $orgType $orgId $peerId
+    #              echo $orgType $orgId $peerId
+    #          done
+    #      done
+    #  done
 
     local rc=1
     local COUNTER=1
@@ -53,6 +68,7 @@ function checkCommitReadiness() {
     fi
 }
 
+# checkCommitReadiness $1 $2 $3 $4
 checkCommitReadiness $1 $2 "adv" "\"adv0MSP\": true" "\"bus0MSP\": false"
 checkCommitReadiness $1 $2 "bus" "\"adv0MSP\": true" "\"bus0MSP\": false"
 checkCommitReadiness $1 $2 "adv" "\"adv0MSP\": true" "\"bus0MSP\": true"

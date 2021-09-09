@@ -22,9 +22,9 @@ function createChannel() {
 
 function joinChannel() {
      # args: $CHANNEL_NAME <org type> <number of org> <number of peer>
-    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" 8 1
-    # $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" 1 2
-    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" 8 1
+    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" $1 $2
+        # $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" 1 2
+    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" $1 $2
     # $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" 0 2
 }
 
@@ -53,20 +53,20 @@ function packageChaincode() {
 function installChaincode() {
     
     # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
-    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 8 1
+    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
     # $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 2
 
-    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 8 1
+    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2
     # $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 1 2
 
 }
 
 function approveChaincode {
     # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
-    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 8 1
+    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 0 5
     # $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 1 2
 
-    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 8 1
+    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 0 5
     # $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" 1 2
 
     $SCRIPTS_DIR/commit-checkreadiness.sh $CHAINCODE_NAME $CHANNEL_NAME
@@ -74,20 +74,20 @@ function approveChaincode {
 
 function commitChaincode() {
     # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
-    $SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME 8 1
+    $SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME $1 $2
 }
 
 function invokeInitLedger() {
     # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
-    $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME 8 1
+    $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME $1 $2
 }   
 
 function invokeCreateCamp() {
-    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 8 1
+    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" $1 $2
 } 
 
 function invokeCollectData() {
-    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" 8 1
+    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" $1 $2
 }
 
 function runExternalService() {
@@ -114,19 +114,19 @@ function buildExternalService() {
 }
 
 function invokeQueryById() {
-    $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 8 1
+    $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 }
 
 function deleteCampById() {
-    $SCRIPTS_DIR/delete-camp-byId.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 8 1 
+    $SCRIPTS_DIR/delete-camp-byId.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2 
 }
 
 function getAllCamp() {
-    $SCRIPTS_DIR/getAllCamp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 8 1
+    $SCRIPTS_DIR/getAllCamp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 }
 
 function getAllCampaignData() {
-    $SCRIPTS_DIR/getAllCampaignData.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" 8 1
+    $SCRIPTS_DIR/getAllCampaignData.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 
 }
 
@@ -167,15 +167,17 @@ elif [ $MODE = "monitor" ]; then
 elif [ $MODE = "channel" ]; then
 
     SUB_MODE=$2
+    NO_ORG=$3
+    NO_PEERS=$4
 
     if [ $SUB_MODE = "create" ]; then
-        createChannel
+        createChannel $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "join" ]; then
-        joinChannel
+        joinChannel $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "all" ]; then
-        createChannel
+        createChannel $NO_ORG $NO_PEERS
         sleep 10
-        joinChannel
+        joinChannel $NO_ORG $NO_PEERS
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
@@ -183,49 +185,55 @@ elif [ $MODE = "chaincode" ]; then
     # deployCC "campaign"
 
     SUB_MODE=$2
+    NO_ORG=$3
+    NO_PEERS=$4
 
     if [ $SUB_MODE = "package" ]; then
         packageChaincode
     elif [ $SUB_MODE = "install" ]; then
-        installChaincode
+        installChaincode $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "approve" ]; then
-        approveChaincode
+        approveChaincode $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "commit" ]; then
-        commitChaincode
+        commitChaincode $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "all" ]; then
         packageChaincode
         sleep 10
-        installChaincode
+        installChaincode $NO_ORG $NO_PEERS
         sleep 15
-        approveChaincode
+        approveChaincode $NO_ORG $NO_PEERS
         sleep 15
-        commitChaincode
+        commitChaincode $NO_ORG $NO_PEERS
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "trans" ]; then
     SUB_MODE=$2
+    NO_ORG=$3
+    NO_PEERS=$4
     
     if [ $SUB_MODE = "init" ]; then
-        invokeInitLedger
+        invokeInitLedger $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "add" ]; then
-        invokeCreateCamp
+        invokeCreateCamp $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "query" ]; then
-        invokeQueryById
+        invokeQueryById $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "get" ]; then
-        getAllCamp
+        getAllCamp $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "delete" ]; then
-        deleteCampById
+        deleteCampById deleteCampById
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "camp" ]; then
     SUB_MODE=$2
+    NO_ORG=$3
+    NO_PEERS=$4
     
     if [ $SUB_MODE = "add" ]; then
-        invokeCollectData
+        invokeCollectData $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "get" ]; then
-        getAllCampaignData
+        getAllCampaignData $NO_ORG $NO_PEERS
     fi
 elif [ $MODE = "service" ]; then
     SUB_MODE=$2
