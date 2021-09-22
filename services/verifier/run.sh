@@ -1,5 +1,8 @@
 #!/bin/sh
 
 redis-server --daemonize yes
-go run /src/ver.go &
+cd /src/
+go mod tidy
+go run ver.go &
+cd /opt/gopath/src/github.com/hyperledger/fabric/peer/
 peer node start
