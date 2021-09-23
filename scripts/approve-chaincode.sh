@@ -6,16 +6,16 @@ function approveForMyOrg() {
     local chaincodeName=$1
     local channelName=$2
     local orgType=$3
-    local orgId=$4
-    # local orgNum=$4
+    # local orgId=$4
+    local orgNum=$4
     local peerNum=$5
 
     local chaincode_package_path="$CHAINCODE_PACKAGE_DIR/${chaincodeName}.tar.gz"
 
     local maxPeerId=$(($peerNum - 1))
-    # local maxOrgId=$(($orgNum - 1))
+    local maxOrgId=$(($orgNum - 1))
 
-    # for orgId in $(seq 0 $maxOrgId); do
+    for orgId in $(seq 0 $maxOrgId); do
         infoln $orgId
         for peerId in $(seq 0 $maxPeerId); do
             local peer_name="peer${peerId}.${orgType}${orgId}"
@@ -40,7 +40,7 @@ function approveForMyOrg() {
             verifyResult $res "Chaincode definition approved on ${peer_name} on channel '$channelName' failed"
             successln "Chaincode definition approved on ${peer_name} on channel '$channelName'"
         done
-    # done
+    done
 }
 
 approveForMyOrg $1 $2 $3 $4 $5
