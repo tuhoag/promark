@@ -10,6 +10,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/bwesterb/go-ristretto"
@@ -23,15 +24,12 @@ type SmartContract struct {
 var (
 	extURL        = "http://external.promark.com:5000"
 	camRequestURL = extURL + "/camp"
-	// ver1URL       = "http://peer0.bus0.promark.com:5001"
-	// com1URL       = ver1URL + "/comm"
-	// ver2URL = "http://peer0.adv0.promark.com:5002"
-	// com2URL       = ver2URL + "/comm"
-	logURL = "http://logs.promark.com:5003/log"
+	logURL        = "http://logs.promark.com:5003/log"
 )
 
 var com1URL string
 var com2URL string
+var comURL string
 
 var camParam CampaignParam
 
@@ -48,19 +46,17 @@ type DebugLog struct {
 
 // Struct of return data from ext service
 type CampaignParam struct {
-	H  []byte `json:"hvalue"`
-	R1 []byte `json:"r1"`
-	R2 []byte `json:"r2"`
+	H  []byte   `json:"hvalue"`
+	R1 [][]byte `json:"r1"`
+	// R2 []byte `json:"r2"`
 }
 
-// Struct of data store in Blockchain ledger
 type Campaign struct {
 	ID         string `json:"ID"`
 	Name       string `json:"Name"`
 	Advertiser string `json:"Advertiser"`
 	Business   string `json:"Business"`
-	CommC1     string `json:"CommC1"`
-	CommC2     string `json:"CommC2`
+	CommC      string `json:"CommC"`
 }
 
 type CommRequest struct {
@@ -73,13 +69,13 @@ type CollectedData struct {
 	User string `json:"User"`
 	Comm string `json:"Comm"`
 	R1   string `json:"R1"`
-	R2   string `json:"R2"`
+	// R2   string `json:"R2"`
 }
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	campaigns := []Campaign{
-		{ID: "id1", Name: "campaign1", Advertiser: "Adv0", Business: "Bus0", CommC1: "", CommC2: ""},
-		{ID: "id2", Name: "campaign2", Advertiser: "Adv0", Business: "Bus0", CommC1: "", CommC2: ""},
+		{ID: "id1", Name: "campaign1", Advertiser: "Adv0", Business: "Bus0", CommC: ""},
+		// {ID: "id2", Name: "campaign2", Advertiser: "Adv0", Business: "Bus0", CommC1: "", CommC2: ""},
 	}
 
 	for _, campaign := range campaigns {
@@ -155,8 +151,13 @@ func (s *SmartContract) GetAllCollectedData(ctx contractapi.TransactionContextIn
 }
 
 // Create a new campaign
-func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name string, advertiser string, business string, ver1 string, ver2 string) error {
+func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name string, advertiser string, business string, n string, addresses string) error {
 	existing, err := ctx.GetStub().GetState(id)
+
+	// split the verifier address
+	var ver, commStr, totalCommEnc string
+	// var ver1, ver2 string
+	var noVer int
 
 	if err != nil {
 		return errors.New("Unable to read the world state")
@@ -166,37 +167,42 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		return fmt.Errorf("Cannot create asset since its id %s is existed", id)
 	}
 
+	noVer, _ = strconv.Atoi(n)
+	requestCamParams(id, noVer)
+	sendLog("R1-1 value", string(camParam.R1[0]))
+	sendLog("R1-2 value", string(camParam.R1[1]))
+
+	listOfAdd := strings.Split(addresses, ";")
+
 	// Request to external service to get params
-	var C1, C2, C ristretto.Point
+	var Ci, C ristretto.Point
 
-	requestCamParams(id)
-	testVer(ver1)
-	testVer(ver2)
-	com1URL = ver1 + "/comm"
-	com2URL = ver2 + "/comm"
+	for i := 0; i < noVer; i++ {
+		ver = listOfAdd[i]
+		comURL = ver + "/comm"
 
-	sendLog("id", id)
-	sendLog("Hvalue", string(camParam.H))
-	sendLog("R1value", string(camParam.R1))
-	sendLog("com1URL", string(com1URL))
-	sendLog("R2value", string(camParam.R2))
-	sendLog("com2URL", string(com2URL))
+		testVer(ver)
+		sendLog("id", id)
+		sendLog("Hvalue", string(camParam.H))
+		sendLog("R1value", string(camParam.R1[i]))
 
-	comm1 := commCompute(id, com1URL)
-	comm1Dec, _ := b64.StdEncoding.DecodeString(comm1)
-	C1 = convertStringToPoint(string(comm1Dec))
-	sendLog("C1 encoding:", comm1)
+		comm := commCompute(id, comURL, i)
+		commDec, _ := b64.StdEncoding.DecodeString(comm)
+		Ci = convertStringToPoint(string(commDec))
+		sendLog("C1 encoding:", comm)
 
-	comm2 := commCompute(id, com2URL)
-	comm2Dec, _ := b64.StdEncoding.DecodeString(comm2)
-	C2 = convertStringToPoint(string(comm2Dec))
-	sendLog("C2 encoding:", comm2)
+		commStr += comm + ";"
 
-	C.Add(&C1, &C2)
-	CBytes := C.Bytes()
-	totalCommEnc := b64.StdEncoding.EncodeToString(CBytes)
+		if i == 0 {
+			C = Ci
+		} else {
+			C.Add(&C, &Ci)
+		}
+		CBytes := C.Bytes()
+		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
+	}
+
 	sendLog("total Comm encoding:", totalCommEnc)
-
 	// End of comm computation
 
 	campaign := Campaign{
@@ -204,8 +210,8 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		Name:       name,
 		Advertiser: advertiser,
 		Business:   business,
-		CommC1:     comm1,
-		CommC2:     comm2,
+		CommC:      commStr,
+		// CommC2:     comm2,
 	}
 
 	campaignJSON, err := json.Marshal(campaign)
@@ -245,7 +251,7 @@ func (s *SmartContract) DeleteCampaignByID(ctx contractapi.TransactionContextInt
 	return true, err
 }
 
-func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInterface, id string, user string, comm string, r1 string, r2 string, ver1 string, ver2 string) error {
+func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInterface, id string, user string, n string, comm string, r string, addresses string) error {
 	existing, err := ctx.GetStub().GetState(user)
 
 	if err != nil {
@@ -256,40 +262,48 @@ func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInter
 		return fmt.Errorf("Cannot create asset since its id %s is existed", user)
 	}
 
-	// request
-	// requestCamParams(id)
+	var noVer int
+	var rList string
+	noVer, _ = strconv.Atoi(n)
+	listOfVer := strings.Split(addresses, ";")
+	listOfR := strings.Split(r, ";")
 
 	// comm comuptation - start
-	var C1, C2, C, Comm ristretto.Point
-	com1URL = ver1 + "/verify"
-	com2URL = ver2 + "/verify"
+	var Ci, C, Comm ristretto.Point
 
-	// sendLog("id", id)
-	// sendLog("Hvalue", string(camParam.H))
+	for i := 0; i < noVer; i++ {
+		comURL = listOfVer[i] + "/verify"
+
+		commi := commVerify(id, comURL, listOfR[i])
+		sendLog("AddCollectedData - listOfR[i]:", listOfR[i])
+		sendLog("AddCollectedData - commi:", commi)
+
+		tempCommDec, _ := b64.StdEncoding.DecodeString(commi)
+		Ci = convertStringToPoint(string(tempCommDec))
+
+		if i == 0 {
+			C = Ci
+		} else {
+			C.Add(&C, &Ci)
+		}
+
+		rList += listOfR[i] + ";"
+	}
 
 	// convert encoded Comm value
 	commDec, _ := b64.StdEncoding.DecodeString(comm)
 	Comm = convertStringToPoint(string(commDec))
 
-	comm1 := commVerify(id, com1URL, r1)
-	comm1Dec, _ := b64.StdEncoding.DecodeString(comm1)
-	C1 = convertStringToPoint(string(comm1Dec))
-
-	comm2 := commVerify(id, com2URL, r2)
-	comm2Dec, _ := b64.StdEncoding.DecodeString(comm2)
-	C2 = convertStringToPoint(string(comm2Dec))
-
-	C.Add(&C1, &C2)
-	// comm computation - end
-
 	// check the comm conndition
 	checkResult := C.Equals(&Comm)
+	sendLog("AddCollectedData - rList:", string(rList[0]))
+	sendLog("AddCollectedData - rList:", string(rList[1]))
 
 	collectedData := CollectedData{
 		User: user,
 		Comm: comm,
-		R1:   r1,
-		R2:   r2,
+		R1:   rList,
+		// R2:   r2,
 	}
 
 	dataJSON, err := json.Marshal(collectedData)
@@ -298,6 +312,7 @@ func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInter
 	}
 
 	if checkResult {
+		sendLog("AddCollectedData - check comm result value:", "true")
 		err = ctx.GetStub().PutState(user, dataJSON)
 		if err != nil {
 			return err
@@ -415,10 +430,10 @@ func sendLog(name, message string) {
 	fmt.Println("return data all:", string(data))
 }
 
-func requestCamParams(id string) {
+func requestCamParams(id string, n int) {
 	c := &http.Client{}
 
-	message := Cam{id, 2}
+	message := Cam{id, n}
 
 	jsonData, err := json.Marshal(message)
 
@@ -453,7 +468,7 @@ func requestCamParams(id string) {
 	sendLog("returnedH", convertBytesToPoint(camParam.H).String())
 }
 
-func commCompute(campID string, url string) string {
+func commCompute(campID string, url string, i int) string {
 	//connect to verifier: campID,  H , r
 	sendLog("Start of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
 	// var param CommRequest
@@ -464,21 +479,18 @@ func commCompute(campID string, url string) string {
 	hBytes := camParam.H
 	hEnc = b64.StdEncoding.EncodeToString(hBytes)
 
-	if url == com1URL {
-		rBytes = camParam.R1
-		rEnc = b64.StdEncoding.EncodeToString(rBytes)
+	// if url == com1URL {
+	// 	rBytes = camParam.R1
+	// 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
 
-	} else if url == com2URL {
-		rBytes = camParam.R2
-		rEnc = b64.StdEncoding.EncodeToString(rBytes)
-	}
+	// } else if url == com2URL {
+	// 	rBytes = camParam.R2
+	// 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
+	// }
 
+	rBytes = camParam.R1[i]
+	rEnc = b64.StdEncoding.EncodeToString(rBytes)
 	sendLog("commCompute.R in string", string(rBytes))
-
-	// param = CommRequest{ID: campID, H: hBytes, r: rBytes}
-	// sendLog("commCompute.param in string", param.ID)
-	// sendLog("commCompute.param in string", string(param.H))
-	// sendLog("commCompute.param in string", string(param.r))
 
 	// jsonData, _ := json.Marshal(param)
 	message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", campID, hEnc, rEnc)
@@ -525,8 +537,6 @@ func commVerify(campID string, url string, r string) string {
 	message := fmt.Sprintf("{\"id\": \"%s\", \"r\": \"%s\"}", campID, r)
 
 	// request := string(jsonData)
-
-	// sendLog("commVerify.message", message)
 
 	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(message))
 	if err != nil {

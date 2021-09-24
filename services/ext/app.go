@@ -27,9 +27,9 @@ type campaign_request struct {
 }
 
 type campaign_param struct {
-	H  []byte `json:"hvalue"`
-	R1 []byte `json:"r1"`
-	R2 []byte `json:"r2"`
+	H  []byte   `json:"hvalue"`
+	R1 [][]byte `json:"r1"`
+	// R2 [][]byte `json:"r2"`
 }
 
 func main() {
@@ -139,7 +139,9 @@ func redisConnect() {
 
 // Campaign function part
 func setParam(id string, no int) {
-	var r1, r2 ristretto.Scalar
+	// var r1, r2 ristretto.Scalar
+	var r ristretto.Scalar
+	var rArr [][]byte
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
@@ -158,17 +160,31 @@ func setParam(id string, no int) {
 		// hString := convertPointToString(H)
 		fmt.Println("hString:.\n", hBytes)
 
-		r1.Rand()
-		// r1String := string(r1.Bytes())
-		r1Bytes := r1.Bytes()
-		fmt.Println("r1:.\n", r1Bytes)
+		//generate "n" number of R for for n verifiers
+		for i := 0; i < no; i++ {
+			r.Rand()
+			rBytes := r.Bytes()
+			fmt.Println("r:.\n", rBytes)
 
-		r2.Rand()
-		// r2String := string(r2.Bytes())
-		r2Bytes := r2.Bytes()
-		fmt.Println("r1:.\n", r2Bytes)
+			rArr = append(rArr, rBytes)
 
-		jsonParam, err := json.Marshal(campaign_param{H: hBytes, R1: r1Bytes, R2: r2Bytes})
+			// r1.Rand()
+			// // r1String := string(r1.Bytes())
+			// r1Bytes := r1.Bytes()
+			// fmt.Println("r1:.\n", r1Bytes)
+
+			// r2.Rand()
+			// // r2String := string(r2.Bytes())
+			// r2Bytes := r2.Bytes()
+			// fmt.Println("r1:.\n", r2Bytes)
+		}
+
+		// jsonParam, err := json.Marshal(campaign_param{H: hBytes, R1: r1Bytes, R2: r2Bytes})
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+
+		jsonParam, err := json.Marshal(campaign_param{H: hBytes, R1: rArr})
 		if err != nil {
 			fmt.Println(err)
 		}

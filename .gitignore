@@ -11,3 +11,5 @@ caliper/report_100_in30s.html
 caliper/report_3000trans_500tps.html
 caliper/report_linearRate.html	
 caliper/report_linearRate.html
+services/verifier/go.mod
+services/verifier/go.sum
