@@ -296,8 +296,7 @@ func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInter
 
 	// check the comm conndition
 	checkResult := C.Equals(&Comm)
-	sendLog("AddCollectedData - rList:", string(rList[0]))
-	sendLog("AddCollectedData - rList:", string(rList[1]))
+	sendLog("AddCollectedData - rList:", string(rList))
 
 	collectedData := CollectedData{
 		User: user,

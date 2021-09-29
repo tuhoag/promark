@@ -203,7 +203,7 @@ elif [ $MODE = "chaincode" ]; then
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
-elif [ $MODE = "trans" ]; then
+elif [ $MODE = "camp" ]; then
     SUB_MODE=$2
     NO_ORG=$3
     NO_PEERS=$4
@@ -221,7 +221,7 @@ elif [ $MODE = "trans" ]; then
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
-elif [ $MODE = "camp" ]; then
+elif [ $MODE = "data" ]; then
     SUB_MODE=$2
     NO_ORG=$3
     NO_PEERS=$4
@@ -234,11 +234,11 @@ elif [ $MODE = "camp" ]; then
 elif [ $MODE = "service" ]; then
     SUB_MODE=$2
 
-    if [ $SUB_MODE = "run" ]; then
+    if [ $SUB_MODE = "ext" ]; then
         runExternalService
-    elif [ $SUB_MODE = "run1" ]; then
+    elif [ $SUB_MODE = "ver1" ]; then
         runVerifier1Service
-    elif [ $SUB_MODE = "run2" ]; then
+    elif [ $SUB_MODE = "ver2" ]; then
         runVerifier2Service
     elif [ $SUB_MODE = "log" ]; then
         runLogService

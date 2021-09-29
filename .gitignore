@@ -13,3 +13,4 @@ caliper/report_linearRate.html
 caliper/report_linearRate.html
 services/verifier/go.mod
 services/verifier/go.sum
+services/verifier/peer*.*
