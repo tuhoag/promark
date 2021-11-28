@@ -51,7 +51,7 @@ function packageChaincode() {
 }
 
 function installChaincode() {
-    
+
     # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
     $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 
@@ -76,11 +76,11 @@ function commitChaincode() {
 function invokeInitLedger() {
     # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
     $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME $1 $2
-}   
+}
 
 function invokeCreateCamp() {
     $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" $1 $2
-} 
+}
 
 function invokeCollectData() {
     $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" $1 $2
@@ -103,7 +103,7 @@ function buildExternalService() {
     # FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache external.promark.com 2>&1
 
     # FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache verifier1.promark.com 2>&1
-    
+
     FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache peer0.bus0.promark.com 2>&1
 
     FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache peer0.adv0.promark.com 2>&1
@@ -114,7 +114,7 @@ function invokeQueryById() {
 }
 
 function deleteCampById() {
-    $SCRIPTS_DIR/delete-camp-byId.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2 
+    $SCRIPTS_DIR/delete-camp-byId.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 }
 
 function getAllCamp() {
@@ -143,12 +143,12 @@ if [ $MODE = "restart" ]; then
     clear
     initialize
     networkUp
-    createChannel
-    joinChannel
+    # createChannel
+    # joinChannel
 elif [ $MODE = "clean" ]; then
     clearNetwork
 elif [ $MODE = "init" ]; then
-    clear 
+    clear
     sleep 10
     # rm chaincode/main.tar.gz
     initialize
@@ -158,6 +158,8 @@ elif [ $MODE = "clear" ]; then
     clear
 elif [ $MODE = "up" ]; then
     networkUp
+elif [ $MODE = "down" ]; then
+    networkDown
 elif [ $MODE = "monitor" ]; then
     monitor
 elif [ $MODE = "channel" ]; then
@@ -167,11 +169,11 @@ elif [ $MODE = "channel" ]; then
     NO_PEERS=$4
 
     if [ $SUB_MODE = "create" ]; then
-        createChannel $NO_ORG $NO_PEERS
+        createChannel
     elif [ $SUB_MODE = "join" ]; then
         joinChannel $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "all" ]; then
-        createChannel $NO_ORG $NO_PEERS
+        createChannel
         sleep 10
         joinChannel $NO_ORG $NO_PEERS
     else
@@ -207,7 +209,7 @@ elif [ $MODE = "camp" ]; then
     SUB_MODE=$2
     NO_ORG=$3
     NO_PEERS=$4
-    
+
     if [ $SUB_MODE = "init" ]; then
         invokeInitLedger $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "add" ]; then
@@ -225,7 +227,7 @@ elif [ $MODE = "data" ]; then
     SUB_MODE=$2
     NO_ORG=$3
     NO_PEERS=$4
-    
+
     if [ $SUB_MODE = "add" ]; then
         invokeCollectData $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "get" ]; then
@@ -244,7 +246,7 @@ elif [ $MODE = "service" ]; then
         runLogService
     elif [ $SUB_MODE = "build" ]; then
         buildExternalService
-    else 
+    else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
 else

@@ -5,8 +5,10 @@ WORKDIR /code
 #ENV APP_HOME /code
 RUN apk update
 RUN apk upgrade
+RUN apk add ca-certificates
 RUN apk add --no-cache git
-RUN apk --update add redis 
+RUN git config --global http.sslverify false
+RUN apk --update add redis
 RUN go get github.com/bwesterb/go-ristretto
 RUN go get gopkg.in/redis.v4
 ENV REDIS_URL redis:6379
