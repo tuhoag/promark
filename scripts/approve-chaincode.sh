@@ -14,6 +14,8 @@ function approveForMyOrg() {
 
     local maxPeerId=$(($peerNum - 1))
     local maxOrgId=$(($orgNum - 1))
+    infoln "max org id ${maxOrgId}"
+    infoln "max peer id ${maxPeerId}"
 
     for orgId in $(seq 0 $maxOrgId); do
         infoln $orgId

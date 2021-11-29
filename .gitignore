@@ -17,3 +17,4 @@ services/verifier/peer*.*
 /organizations
 node_modules
 /channels
+/go

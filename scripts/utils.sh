@@ -56,14 +56,14 @@ function selectPeer() {
     else
         errorln "Org type $org_type is unsupported."
     fi
-    
+
     local port=$(($base_port + $org_id * 10 + $peer_id))
     local org_name="$org_type$org_id"
     local org_domain=$org_name.$PROJECT_NAME.com
     local peer_domain=peer$peer_id.$org_domain
 
-    infoln "Selecting organization $org_name's peer$peer_id with port $port"
-    echo "selectPeer $port $org_id $peer_id"
+    # infoln "Selecting organization $org_name's peer$peer_id with port $port"
+    infoln "selectPeer peer${peer_id}.${org_type}${org_id}:${port}"
 
     export CORE_PEER_TLS_ENABLED=true
     export CORE_PEER_LOCALMSPID="${org_name}MSP"

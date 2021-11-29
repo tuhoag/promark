@@ -10,14 +10,14 @@ function installChaincode() {
     # local peer_id=$5
     local peerNum=$5
     local chaincode_package_path="$CHAINCODE_PACKAGE_DIR/${chaincode_name}.tar.gz"
-    
+
     local maxPeerId=$(($peerNum - 1))
     local maxOrgId=$(($orgNum - 1))
 
     for org_id in $(seq 0 $maxOrgId); do
-        infoln $org_id
         for peer_id in $(seq 0 $maxPeerId); do
             local peer_name="peer${peer_id}.${org_type}${org_id}"
+            infoln "[${org_type}.${org_id}.${peer_id}] Install chaincode ${chaincode_name}"
             infoln "Installing chaincode ${chaincode_name} in channel ${channel_name} of ${peer_name}..."
             selectPeer $org_type $org_id $peer_id
 

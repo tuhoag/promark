@@ -131,12 +131,17 @@ function runLogService() {
 }
 
 function clearNetwork {
-  docker rm -f $(docker ps -aq) || true
-  docker rmi -f $(docker images -a -q) || true
-  docker volume rm $(docker volume ls)  || true
+    docker rm -f $(docker ps -aq) || true
+    docker rmi -f $(docker images -a -q) || true
+    docker volume rm $(docker volume ls)  || true
+}
+
+function addGoPath {
+    export PATH=$PATH:./go/bin
 }
 
 MODE=$1
+# addGoPath
 
 if [ $MODE = "restart" ]; then
     networkDown
@@ -147,6 +152,8 @@ if [ $MODE = "restart" ]; then
     # joinChannel
 elif [ $MODE = "clean" ]; then
     clearNetwork
+elif [ $MODE = "path" ]; then
+    addGoPath
 elif [ $MODE = "init" ]; then
     clear
     sleep 10
@@ -219,7 +226,7 @@ elif [ $MODE = "camp" ]; then
     elif [ $SUB_MODE = "get" ]; then
         getAllCamp $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "delete" ]; then
-        deleteCampById deleteCampById
+        deleteCampById $NO_ORG $NO_PEERS
     else
         echo "Unsupported $MODE $SUB_MODE command."
     fi
