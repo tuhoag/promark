@@ -4,14 +4,20 @@ const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
 // const id = ['id1', 'id2', 'id3', 'id4', 'id5', 'id6', 'id7', 'id8', 'id9', 'id10'];
 // const names = ['campaign1', 'campaign2', 'campaign3', 'campaign4', 'campaign5', 'campaign6', 'campaign7', 'campaign8', 'campaign9', 'campaign10'];
-const advs = ['adv0', 'adv1', 'adv2'];
-const buss = ['bus0', 'bus1', 'bus2'];
-const vers = ['http://peer0.bus0.promark.com:9000', 
-             'http://peer0.adv0.promark.com:8500', 
-             'http://peer0.adv1.promark.com:8600',
-             'http://peer0.adv2.promark.com:8700',
-             'http://peer0.bus1.promark.com:9100',
-             'http://peer0.bus2.promark.com:9200'];
+const advs = ['adv0',
+// 'adv1',
+// 'adv2'
+];
+const buss = ['bus0',
+// 'bus1', 'bus2'
+];
+const vers = ['http://peer0.bus0.promark.com:9000',
+             'http://peer0.adv0.promark.com:8500',
+            //  'http://peer0.adv1.promark.com:8600',
+            //  'http://peer0.adv2.promark.com:8700',
+            //  'http://peer0.bus1.promark.com:9100',
+            //  'http://peer0.bus2.promark.com:9200'
+            ];
 
 /**
  * Workload module for the benchmark round.

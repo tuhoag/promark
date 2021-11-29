@@ -22,20 +22,20 @@ const r2s = ['FEwboV0vrZDe8Hh9nRaq+LxDJ9fnq+J14iGyJWWbZgs=',
             ];
 
 const ver1s = ['http://peer0.adv0.promark.com:8500',
-                'http://peer1.adv0.promark.com:8501',
-                'http://peer0.adv1.promark.com:8510',
-                'http://peer1.adv1.promark.com:8511',
+                // 'http://peer1.adv0.promark.com:8501',
+                // 'http://peer0.adv1.promark.com:8510',
+                // 'http://peer1.adv1.promark.com:8511',
                 // 'http://peer0.adv0.promark.com:8500',
                 // 'http://peer0.adv2.promark.com:8520',
                 // 'http://peer0.adv3.promark.com:8530',
               ];
 const ver2s = ['http://peer0.bus0.promark.com:9000',
-               'http://peer1.bus0.promark.com:9001',
-                'http://peer0.bus1.promark.com:9010',
-                'http://peer1.bus1.promark.com:9011',
+            //    'http://peer1.bus0.promark.com:9001',
+            //     'http://peer0.bus1.promark.com:9010',
+            //     'http://peer1.bus1.promark.com:9011',
                 // 'http://peer0.bus0.promark.com:9000',
                 // 'http://peer0.bus2.promark.com:9020',
-                // 'http://peer0.bus3.promark.com:9030',               
+                // 'http://peer0.bus3.promark.com:9030',
               ];
 /**
  * Workload module for the benchmark round.
@@ -54,7 +54,7 @@ class CreateCarWorkload extends WorkloadModuleBase {
      * @return {Promise<TxStatus[]>}
      */
     async submitTransaction() {
-    
+
         this.txIndex++;
         let id = ids[Math.floor(Math.random() * ids.length)].toString();
         let index = this.workerIndex + '_' + this.txIndex.toString();
