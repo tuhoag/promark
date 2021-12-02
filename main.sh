@@ -9,68 +9,68 @@ export CHAINCODE_NAME="campaign"
 
 function initialize() {
     # generate all organizations
-    $SCRIPTS_DIR/gen-orgs.sh
+    $BASE_SCRIPTS_DIR/gen-orgs.sh
 
     # generate genesis-block
-    $SCRIPTS_DIR/gen-genesis-block.sh
+    $BASE_SCRIPTS_DIR/gen-genesis-block.sh
 }
 
 function createChannel() {
-    $SCRIPTS_DIR/gen-channel-tx.sh $CHANNEL_NAME
-    $SCRIPTS_DIR/gen-channel.sh $CHANNEL_NAME "adv" 0
+    $BASE_SCRIPTS_DIR/gen-channel-tx.sh $CHANNEL_NAME
+    $BASE_SCRIPTS_DIR/gen-channel.sh $CHANNEL_NAME "adv" 0
 }
 
 function joinChannel() {
      # args: $CHANNEL_NAME <org type> <number of org> <number of peer>
-    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" $1 $2
+    $BASE_SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" $1 $2
         # $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" 1 2
-    $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" $1 $2
+    $BASE_SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" $1 $2
     # $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" 0 2
 }
 
 function networkUp() {
-    $SCRIPTS_DIR/start.sh $LOG_LEVEL
+    $BASE_SCRIPTS_DIR/start.sh $LOG_LEVEL
 }
 
 function networkDown() {
     # docker rm -f logspout
 
-    $SCRIPTS_DIR/stop.sh $LOG_LEVEL
+    $BASE_SCRIPTS_DIR/stop.sh $LOG_LEVEL
 }
 
 function clear() {
-    $SCRIPTS_DIR/clear.sh
+    $BASE_SCRIPTS_DIR/clear.sh
 }
 
 function monitor() {
-    $SCRIPTS_DIR/monitor.sh
+    $BASE_SCRIPTS_DIR/monitor.sh
 }
 
 function packageChaincode() {
-    $SCRIPTS_DIR/package-chaincode.sh $CHAINCODE_NAME
+    $BASE_SCRIPTS_DIR/package-chaincode.sh $CHAINCODE_NAME
 }
 
 function installChaincode() {
 
     # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
-    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
+    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 
-    $SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2
+    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2
 
 }
 
 function approveChaincode {
     # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
-    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
+    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 
-    $SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2
+    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2
 
-    $SCRIPTS_DIR/commit-checkreadiness.sh $CHAINCODE_NAME $CHANNEL_NAME
+    $BASE_SCRIPTS_DIR/commit-checkreadiness.sh $CHAINCODE_NAME $CHANNEL_NAME
 }
 
 function commitChaincode() {
     # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
-    $SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME $1 $2
+    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME $1 $2
 }
 
 function invokeInitLedger() {
@@ -184,7 +184,7 @@ elif [ $MODE = "channel" ]; then
         sleep 10
         joinChannel $NO_ORG $NO_PEERS
     else
-        echo "Unsupported $MODE $SUB_MODE command."
+        errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "chaincode" ]; then
     # deployCC "campaign"
@@ -210,7 +210,7 @@ elif [ $MODE = "chaincode" ]; then
         sleep 15
         commitChaincode $NO_ORG $NO_PEERS
     else
-        echo "Unsupported $MODE $SUB_MODE command."
+        errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "camp" ]; then
     SUB_MODE=$2
@@ -228,7 +228,7 @@ elif [ $MODE = "camp" ]; then
     elif [ $SUB_MODE = "delete" ]; then
         deleteCampById $NO_ORG $NO_PEERS
     else
-        echo "Unsupported $MODE $SUB_MODE command."
+        errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "data" ]; then
     SUB_MODE=$2
@@ -254,8 +254,8 @@ elif [ $MODE = "service" ]; then
     elif [ $SUB_MODE = "build" ]; then
         buildExternalService
     else
-        echo "Unsupported $MODE $SUB_MODE command."
+        errorln "Unsupported $MODE $SUB_MODE command."
     fi
 else
-    echo "Unsupported $MODE command."
+    errorln "Unsupported $MODE command."
 fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. $SCRIPTS_DIR/utils.sh
+. $BASE_SCRIPTS_DIR/utils.sh
 
 function commitChaincode() {
     local chaincodeName=$1
@@ -9,7 +9,7 @@ function commitChaincode() {
     local peerNum=$4
 
     local chaincode_package_path="$CHAINCODE_PACKAGE_DIR/${chaincodeName}.tar.gz"
-    
+
     infoln "Commiting chaincode $chaincodeName in channel '$channelName'..."
 
     parsePeerConnectionParameters $orgNum $peerNum
@@ -39,7 +39,7 @@ function commitChaincode() {
 function parsePeerConnectionParameters() {
     local orgNum=$1
     local peerNum=$2
-   
+
     PEER_CONN_PARMS=""
     PEERS=""
     local peerNames=""

@@ -5,12 +5,12 @@
 #
 # More information at https://github.com/gliderlabs/logspout/tree/master/httpstream
 
-. $SCRIPTS_DIR/utils.sh
+. $BASE_SCRIPTS_DIR/utils.sh
 
-echo Starting monitoring on all containers on the network $NETWORK_NAME
+infoln Starting monitoring on all containers on the network $NETWORK_NAME
 
-echo $NETWORK_NAME
-echo $LOGSPOUT_PORT
+infoln $NETWORK_NAME
+infoln $LOGSPOUT_PORT
 
 docker kill logspout 2> /dev/null 1>&2 || true
 docker rm logspout 2> /dev/null 1>&2 || true

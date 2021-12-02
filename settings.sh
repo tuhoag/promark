@@ -3,6 +3,7 @@
 # environment variables
 export PROJECT_DIR=$PWD
 export SCRIPTS_DIR=$PROJECT_DIR/scripts
+export BASE_SCRIPTS_DIR=$PROJECT_DIR/scripts/base
 export FABRIC_BIN_PATH=$PROJECT_DIR/bin
 export CONFIG_PATH=$PROJECT_DIR/config
 export ORGANIZATION_OUTPUTS=$PROJECT_DIR/organizations

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. $SCRIPTS_DIR/utils.sh
+. $BASE_SCRIPTS_DIR/utils.sh
 
 CC_CREATE_FCN="AddCollectedData"
 CC_READ_ALL_FCN="GetAllCollectedData"
@@ -8,7 +8,7 @@ CC_READ_ALL_FCN="GetAllCollectedData"
 function parsePeerConnectionParameters() {
     local orgNum=$1
     local peerNum=$2
-   
+
     PEER_CONN_PARMS=""
     PEERS=""
     local peerNames=""
@@ -64,9 +64,9 @@ function addData() {
     local orgNum=$5
     local peerNum=$6
 
-    echo "addData: $1 $2 $3 $4 $5 $6"
+    infoln "addData: $1 $2 $3 $4 $5 $6"
 
-    #TODO: need to use the list of orgType 
+    #TODO: need to use the list of orgType
     parsePeerConnectionParameters $orgNum $peerNum
     res=$?
     verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
@@ -76,7 +76,7 @@ function addData() {
 
     infoln "invoke fcn call:${fcn_call}"
     peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call} >&log.txt
-    
+
     res=$?
     { set +x; } 2>/dev/null
     cat log.txt

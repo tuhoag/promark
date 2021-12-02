@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. $SCRIPTS_DIR/utils.sh
+. $BASE_SCRIPTS_DIR/utils.sh
 
 
 function createChannel() {

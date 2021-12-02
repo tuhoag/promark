@@ -1,7 +1,7 @@
 
 #!/bin/bash
 
-. $SCRIPTS_DIR/utils.sh
+. $BASE_SCRIPTS_DIR/utils.sh
 
 function checkCommitReadiness() {
     local chaincodeName=$1
@@ -19,8 +19,6 @@ function checkCommitReadiness() {
         for peerId in $(seq 0 $maxPeerId); do
             #for orgType in "adv" "bus"; do
             selectPeer $orgType $orgId $peerId
-            echo $orgType $orgId $peerId
-            #done
         done
     done
 
@@ -32,7 +30,7 @@ function checkCommitReadiness() {
     #      for peerId in $(seq 0 $maxPeerId); do
     #          for orgType in "adv" "bus"; do
     #              selectPeer $orgType $orgId $peerId
-    #              echo $orgType $orgId $peerId
+
     #          done
     #      done
     #  done
@@ -52,16 +50,16 @@ function checkCommitReadiness() {
         { set +x; } 2>/dev/null
         let rc=0
         for var in "$4"; do
-            echo "checkCommitReadiness: var =$var"
+            infoln "checkCommitReadiness: var =$var"
             grep "$var" log.txt &>/dev/null || let rc=1
         done
         COUNTER=$(expr $COUNTER + 1)
-        echo "checkCommitReadiness: rc =$rc"
+        infoln "checkCommitReadiness: rc =$rc"
     done
 
     cat log.txt
     if test $rc -eq 0; then
-        echo "checkCommitReadiness: res =$res"
+        infoln "checkCommitReadiness: res =$res"
         infoln "Checking the commit readiness of the chaincode definition successful on peer$peerId.$orgType$orgId} on channel '$channelName'"
     else
         fatalln "After $MAX_RETRY attempts, Check commit readiness result on peer$peerId.$orgType$orgId is INVALID!"

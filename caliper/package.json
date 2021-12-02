@@ -9,13 +9,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@hyperledger/caliper-cli": "^0.4.0",
+    "@grpc/grpc-js": "^1.4.4",
+    "@hyperledger/caliper-cli": "^0.4.2",
     "fabric-ca-client": "^2.1.0",
     "fabric-common": "^2.1.0",
     "fabric-network": "^2.1.0",
     "fabric-protos": "^2.1.0",
     "node-gyp": "^8.4.1",
-    "request": "^2.88.2"
+    "request": "^2.65.0"
   },
   "description": ""
 }

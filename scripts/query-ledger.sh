@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. $SCRIPTS_DIR/utils.sh
+. $BASE_SCRIPTS_DIR/utils.sh
 
 CC_QUERYBYID_FCN="QueryLedgerById"
 
@@ -8,7 +8,7 @@ function parsePeerConnectionParameters() {
     local orgNum=$1
     local peerNum=$2
     local orgType=$3
-   
+
     PEER_CONN_PARMS=""
     PEERS=""
     local peerNames=""

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. $SCRIPTS_DIR/utils.sh
+. $BASE_SCRIPTS_DIR/utils.sh
 
 function joinChannel() {
     local channel_name=$1
@@ -9,7 +9,7 @@ function joinChannel() {
     local peerNum=$4
     local org_name=""
 
-    
+
     local maxPeerId=$(($peerNum - 1))
     local maxOrgId=$(($orgNum - 1))
 

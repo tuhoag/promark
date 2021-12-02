@@ -18,3 +18,4 @@ services/verifier/peer*.*
 node_modules
 /channels
 /go
+log.txt
