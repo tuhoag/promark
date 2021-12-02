@@ -114,15 +114,15 @@ function invokeQueryById() {
 }
 
 function deleteCampById() {
-    $SCRIPTS_DIR/delete-camp-byId.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
+    $SCRIPTS_DIR/delete-camp-by-id.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 }
 
 function getAllCamp() {
-    $SCRIPTS_DIR/getAllCamp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
+    $SCRIPTS_DIR/get-all-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 }
 
 function getAllCampaignData() {
-    $SCRIPTS_DIR/getAllCampaignData.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
+    $SCRIPTS_DIR/get-all-campaign-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 
 }
 
@@ -144,12 +144,27 @@ MODE=$1
 # addGoPath
 
 if [ $MODE = "restart" ]; then
+    NO_ORG=$2
+    NO_PEERS=$3
+
     networkDown
     clear
     initialize
     networkUp
-    # createChannel
-    # joinChannel
+
+    sleep 10
+    createChannel
+    sleep 10
+    joinChannel $NO_ORG $NO_PEERS
+
+    # sleep 10
+    # packageChaincode
+    # sleep 10
+    # installChaincode $NO_ORG $NO_PEERS
+    # sleep 15
+    # approveChaincode $NO_ORG $NO_PEERS
+    # sleep 15
+    # commitChaincode $NO_ORG $NO_PEERS
 elif [ $MODE = "clean" ]; then
     clearNetwork
 elif [ $MODE = "path" ]; then

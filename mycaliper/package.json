@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@hyperledger/caliper-cli": "^0.4.0",
+    "fabric-ca-client": "^2.1.0",
+    "fabric-common": "^2.1.0",
+    "fabric-network": "^2.1.0",
+    "fabric-protos": "^2.1.0",
+    "node-gyp": "^8.4.1",
+    "node-pre-gyp": "^0.17.0"
+  }
+}

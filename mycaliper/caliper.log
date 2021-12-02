@@ -1,0 +1,12 @@
+2021.12.02-17:19:51.339[90m debug[39m [caliper] [rateControl.js] 	Constructed a winston logger with the specified settings
+2021.12.02-17:19:51.576[32m info [39m [caliper] [bind] 	Binding for fabric@2.1. This might take some time...
+2021.12.02-17:19:51.577[32m info [39m [caliper] [bind] 	Using working directory: /data/repositories/promark/mycaliper
+2021.12.02-17:19:51.577[32m info [39m [caliper] [bind] 	Calling npm with: install fabric-common@2.1.0 fabric-protos@2.1.0 fabric-network@2.1.0 fabric-ca-client@2.1.0
+2021.12.02-17:21:50.192[90m debug[39m [caliper] [rateControl.js] 	Constructed a winston logger with the specified settings
+2021.12.02-17:21:50.303[32m info [39m [caliper] [bind] 	Binding for fabric@2.1. This might take some time...
+2021.12.02-17:21:50.304[32m info [39m [caliper] [bind] 	Using working directory: /data/repositories/promark/mycaliper
+2021.12.02-17:21:50.304[32m info [39m [caliper] [bind] 	Calling npm with: install fabric-common@2.1.0 fabric-protos@2.1.0 fabric-network@2.1.0 fabric-ca-client@2.1.0
+2021.12.02-17:23:32.632[90m debug[39m [caliper] [rateControl.js] 	Constructed a winston logger with the specified settings
+2021.12.02-17:23:32.748[32m info [39m [caliper] [bind] 	Binding for fabric@2.1. This might take some time...
+2021.12.02-17:23:32.748[32m info [39m [caliper] [bind] 	Using working directory: /data/repositories/promark/mycaliper
+2021.12.02-17:23:32.749[32m info [39m [caliper] [bind] 	Calling npm with: install fabric-common@2.1.0 fabric-protos@2.1.0 fabric-network@2.1.0 fabric-ca-client@2.1.0

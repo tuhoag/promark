@@ -20,7 +20,7 @@ function commitChaincode() {
     # while 'peer chaincode' command can get the orderer endpoint from the
     # peer (if join was successful), let's supply it directly as we know
     # it using the "-o" option
-     set -x
+    set -x
     peer lifecycle chaincode commit -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS --version 1.0 --sequence 1 >&log.txt
 
     #peer lifecycle chaincode commit -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName --version 1.0 --package-id $packageId --sequence 1 >&log.txt
@@ -29,7 +29,7 @@ function commitChaincode() {
 
      { set +x; } 2>/dev/null
      cat log.txt
-     verifyResult $res "Chaincode definition commit failed on peer0.org${ORG} on channel '$channelName' failed"
+     verifyResult $res "Chaincode definition commit failed on peer.org${ORG} on channel '$channelName' failed"
      successln "Chaincode definition committed on channel '$channelName'"
 
     peer lifecycle chaincode querycommitted --channelID $channelName --name $chaincodeName

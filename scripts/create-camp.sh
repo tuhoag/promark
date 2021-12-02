@@ -1,41 +1,10 @@
 #!/bin/bash
 
-. $SCRIPTS_DIR/utils.sh
+. $BASE_SCRIPTS_DIR/utils.sh
 
 CC_CREATE_FCN="CreateCampaign"
 CC_READ_ALL_FCN="GetAllAssets"
 
-function parsePeerConnectionParameters() {
-    local orgNum=$1
-    local peerNum=$2
-
-    PEER_CONN_PARMS=""
-    PEERS=""
-    local peerNames=""
-
-    infoln "$orgNum ; $peerNum"
-
-    local maxOrgId=$(($orgNum - 1))
-    local maxPeerId=$(($peerNum - 1))
-
-    for orgId in $(seq 0 $maxOrgId); do
-         infoln $orgId
-         for peerId in $(seq 0 $maxPeerId); do
-             for orgType in "adv" "bus"; do
-                 local peerName="peer${peerId}.${orgType}${orgId}"
-                 infoln "processed $peerName"
-                 selectPeer $orgType $orgId $peerId
-                 PEERS="$peerNames ${peerName}"
-                 PEER_CONN_PARMS="$PEER_CONN_PARMS --peerAddresses $CORE_PEER_ADDRESS"
-                ## Set path to TLS certificate
-                TLSINFO=$(eval echo "--tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE")
-                PEER_CONN_PARMS="$PEER_CONN_PARMS $TLSINFO"
-             done
-         done
-     done
-
-    infoln "parsePeerConnectionParameters: $PEERS $PEER_CONN_PARMS"
-}
 
 function getData () {
   local chaincodeName=$1
@@ -72,7 +41,7 @@ function createCamp() {
     verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
 
     set -x
-    fcn_call0='{"function":"'${CC_CREATE_FCN}'","Args":["id21","campaign21","Adv0","Bus0","2","http://peer0.adv0.promark.com:8500;http://peer0.bus0.promark.com:9000"]}'
+    fcn_call0='{"function":"'${CC_CREATE_FCN}'","Args":["id1000","campaign100","Adv0","Bus0","http://peer0.adv0.promark.com:8500;http://peer0.bus0.promark.com:9000"]}'
 
     # fcn_call1='{"function":"'${CC_CREATE_FCN}'","Args":["id11","campaign11","Adv1","Bus1","http://peer0.adv1.promark.com:8510","http://peer0.bus1.promark.com:9010"]}'
 

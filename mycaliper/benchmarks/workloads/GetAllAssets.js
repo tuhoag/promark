@@ -19,7 +19,7 @@ const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 /**
  * Workload module for the benchmark round.
  */
-class HelloWorkload extends WorkloadModuleBase {
+class GetAllAssetsWorkload extends WorkloadModuleBase {
 
     /**
      * Initializes the workload module instance.
@@ -55,7 +55,7 @@ class HelloWorkload extends WorkloadModuleBase {
     async submitTransaction() {
         const myArgs = {
             contractId: this.contractId,
-            contractFunction: 'hello',
+            contractFunction: 'GetAllAssets',
             contractArguments: [],
             readOnly: false
         };
@@ -68,7 +68,7 @@ class HelloWorkload extends WorkloadModuleBase {
  * @return {WorkloadModuleInterface}
  */
 function createWorkloadModule() {
-    return new HelloWorkload();
+    return new GetAllAssetsWorkload();
 }
 
 module.exports.createWorkloadModule = createWorkloadModule;

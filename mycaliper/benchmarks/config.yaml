@@ -1,0 +1,18 @@
+test:
+  name: evaluate-getallassets
+  description:
+  workers:
+    type: local
+    number: 1
+  rounds:
+  - label:
+    contractId: campaign
+    txNumber: 50
+    rateControl:
+      type: fixed-rate
+      opts: { tps: 10 }
+    workload:
+      module: benchmarks/workloads/GetAllAssets.js
+      arguments:
+        contractId: campaign
+        contractVersion: 1.0

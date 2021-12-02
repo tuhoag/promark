@@ -1,13 +1,13 @@
 #!/bin/bash
 
-. $SCRIPTS_DIR/utils.sh
+. $BASE_SCRIPTS_DIR/utils.sh
 
 CC_READ_ALL_FCN="GetAllCollectedData"
 
 function parsePeerConnectionParameters() {
     local orgNum=$1
     local peerNum=$2
-   
+
     PEER_CONN_PARMS=""
     PEERS=""
     local peerNames=""
