@@ -1,41 +1,9 @@
 #!/bin/bash
 
-. $SCRIPTS_DIR/utils.sh
+. $BASE_SCRIPTS_DIR/utils.sh
 
 CC_INIT_FCN="InitLedger"
 CC_READ_ALL_FCN="GetAllAssets"
-
-function parsePeerConnectionParameters() {
-    local orgNum=$1
-    local peerNum=$2
-   
-    PEER_CONN_PARMS=""
-    PEERS=""
-    local peerNames=""
-
-    infoln "$orgNum ; $peerNum"
-
-    local maxOrgId=$(($orgNum - 1))
-    local maxPeerId=$(($peerNum - 1))
-
-    for orgId in $(seq 0 $maxOrgId); do
-         infoln $orgId
-         for peerId in $(seq 0 $maxPeerId); do
-             for orgType in "adv" "bus"; do
-                 local peerName="peer${peerId}.${orgType}${orgId}"
-                 infoln "processed $peerName"
-                 selectPeer $orgType $orgId $peerId
-                 PEERS="$peerNames ${peerName}"
-                 PEER_CONN_PARMS="$PEER_CONN_PARMS --peerAddresses $CORE_PEER_ADDRESS"
-                ## Set path to TLS certificate
-                TLSINFO=$(eval echo "--tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE")
-                PEER_CONN_PARMS="$PEER_CONN_PARMS $TLSINFO"
-             done
-         done
-     done
-
-    infoln "parsePeerConnectionParameters1: $PEERS $PEER_CONN_PARMS"
-}
 
 function invokeInitCC() {
   local chaincodeName=$1
@@ -55,7 +23,7 @@ function invokeInitCC() {
   fcn_call='{"function":"'${CC_INIT_FCN}'","Args":[]}'
   infoln "invoke fcn call:${fcn_call}"
   peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call} >&log.txt
-  
+
   res=$?
   { set +x; } 2>/dev/null
   cat log.txt
