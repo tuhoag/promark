@@ -167,8 +167,8 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		return fmt.Errorf("Cannot create asset since its id %s is existed", id)
 	}
 
-	listOfAdd := strings.Split(verifier_addresses, ";")
-	numOfVerifiers = len(listOfAdd)
+	listOfVerifierAddress := strings.Split(verifier_addresses, ";")
+	numOfVerifiers = len(listOfVerifierAddress)
 
 	cryptoParams := requestCampaignCryptoParams(id, numOfVerifiers)
 	sendLog("R1-1 value", string(cryptoParams.R1[0]))
@@ -178,7 +178,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	var Ci, C ristretto.Point
 
 	for i := 0; i < numOfVerifiers; i++ {
-		ver = listOfAdd[i]
+		ver = listOfVerifierAddress[i]
 		comURL = ver + "/comm"
 
 		testVer(ver)
