@@ -157,7 +157,6 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	// split the verifier address
 	var ver, commStr, totalCommEnc string
 	// var ver1, ver2 string
-	var numOfVerifiers int
 
 	if err != nil {
 		return errors.New("Unable to read the world state")
@@ -168,7 +167,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	}
 
 	listOfVerifierAddress := strings.Split(verifier_addresses, ";")
-	numOfVerifiers = len(listOfVerifierAddress)
+	numOfVerifiers := len(listOfVerifierAddress)
 
 	cryptoParams := requestCampaignCryptoParams(id, numOfVerifiers)
 	sendLog("R1-1 value", string(cryptoParams.R1[0]))
