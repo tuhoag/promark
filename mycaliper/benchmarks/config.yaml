@@ -5,12 +5,13 @@ test:
     type: local
     number: 1
   rounds:
-  - label:
+  - label: Test GetAllAssets
     contractId: campaign
-    txNumber: 50
+    txNumber: 5000
     rateControl:
       type: fixed-rate
-      opts: { tps: 10 }
+      opts:
+        tps: 1000
     workload:
       module: benchmarks/workloads/GetAllAssets.js
       arguments:
