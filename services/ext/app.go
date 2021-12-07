@@ -15,21 +15,15 @@ import (
 
 var f *os.File
 
-type Campaign struct {
-	ID string `json:"id"`
-	No int    `json:"ver"`
-	H  byte   `json:`
+type CampaignCryptoRequest struct {
+	ID             string
+	NumOfVerifiers int
 }
 
-type campaign_request struct {
-	ID string `json:"id"`
-	No int    `json:"no"`
-}
-
-type campaign_param struct {
+type CampaignCryptoParams struct {
 	H  []byte   `json:"hvalue"`
 	R1 [][]byte `json:"r1"`
-	// R2 [][]byte `json:"r2"`
+	// R2 []byte `json:"r2"`
 }
 
 func main() {
@@ -42,7 +36,7 @@ func main() {
 
 	http.HandleFunc("/", homeHandler)
 	//http.HandleFunc("/post", postHandler)
-	http.HandleFunc("/camp", campaignParams)
+	http.HandleFunc("/camp", paramsGeneratorHandler)
 
 	// redisConnect()
 
@@ -62,6 +56,8 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// fmt.Println("in generateParams hString: ", hParam)
 	fmt.Fprintf(w, "Hello")
+	f.WriteString("home")
+
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
@@ -76,33 +72,36 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "username = %s\n", name)
 }
 
-func campaignParams(rw http.ResponseWriter, req *http.Request) {
+func paramsGeneratorHandler(rw http.ResponseWriter, req *http.Request) {
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		println(err)
 	}
 	log.Println(string(body))
 
-	var campaign campaign_request
-	var campParam campaign_param
-	err = json.Unmarshal(body, &campaign)
+	f.WriteString("request params: " + string(body) + string("\n"))
+
+	var request CampaignCryptoRequest
+	var cryptoParams CampaignCryptoParams
+	err = json.Unmarshal(body, &request)
 	if err != nil {
 		println(err)
 	}
-	log.Println("campaign is:", campaign.ID, campaign.No)
+
+	log.Println("campaign is:", request.ID, request.NumOfVerifiers)
 
 	// generate and set param
-	setParam(campaign.ID, campaign.No)
+	setParam(request.ID, request.NumOfVerifiers)
 	//get param from db
-	campParam = getParam(campaign.ID)
+	cryptoParams = getParam(request.ID)
 
 	//temporary return
-	param, err := json.Marshal(campParam)
+	param, err := json.Marshal(cryptoParams)
 
 	// for log
-	n, err := f.WriteString(string(param))
+	f.WriteString(string(param))
 
-	fmt.Println("wrote to file:", n)
+	// fmt.Println("wrote to file:", n)
 
 	if err != nil {
 		panic(err)
@@ -184,7 +183,7 @@ func setParam(id string, no int) {
 		// 	fmt.Println(err)
 		// }
 
-		jsonParam, err := json.Marshal(campaign_param{H: hBytes, R1: rArr})
+		jsonParam, err := json.Marshal(CampaignCryptoParams{H: hBytes, R1: rArr})
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -200,7 +199,7 @@ func setParam(id string, no int) {
 	}
 }
 
-func getParam(id string) campaign_param {
+func getParam(id string) CampaignCryptoParams {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
@@ -213,7 +212,7 @@ func getParam(id string) campaign_param {
 	}
 	fmt.Println(val)
 
-	var campaign campaign_param
+	var campaign CampaignCryptoParams
 	err = json.Unmarshal([]byte(val), &campaign)
 	if err != nil {
 		println(err)

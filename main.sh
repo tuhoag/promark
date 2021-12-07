@@ -162,14 +162,14 @@ if [ $MODE = "restart" ]; then
     sleep 10
     joinChannel $NO_ORG $NO_PEERS
 
-    # sleep 10
-    # packageChaincode 1
-    # sleep 10
-    # installChaincode $NO_ORG $NO_PEERS
-    # sleep 15
-    # approveChaincode $NO_ORG $NO_PEERS 1
-    # sleep 15
-    # commitChaincode $NO_ORG $NO_PEERS 1
+    sleep 10
+    packageChaincode 1
+    sleep 10
+    installChaincode $NO_ORG $NO_PEERS
+    sleep 15
+    approveChaincode $NO_ORG $NO_PEERS 1
+    sleep 15
+    commitChaincode $NO_ORG $NO_PEERS 1
 
 elif [ $MODE = "build" ]; then
     SUB_MODE=$2
@@ -249,11 +249,11 @@ elif [ $MODE = "chaincode" ]; then
         SEQUENCE=$5
 
         packageChaincode $SEQUENCE
-        sleep 10
+        sleep 2
         installChaincode $NO_ORG $NO_PEERS
-        sleep 15
+        sleep 2
         approveChaincode $NO_ORG $NO_PEERS $SEQUENCE
-        sleep 15
+        sleep 2
         commitChaincode $NO_ORG $NO_PEERS $SEQUENCE
     else
         errorln "Unsupported $MODE $SUB_MODE command."

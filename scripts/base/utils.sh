@@ -124,7 +124,7 @@ function parsePeerConnectionParameters() {
     local maxOrdId=$(($2 - 1))
     local maxPeerId=$(($3 - 1))
 
-    echo $orgTypes
+    # echo $orgTypes
     peerConnectionParams=""
     peers=""
     for orgType in ${orgTypes[@]}; do

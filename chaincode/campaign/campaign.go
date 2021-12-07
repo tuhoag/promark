@@ -160,7 +160,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	sendLog("business", business)
 
 	// split the verifier address
-	// var verifierURL, commStr, totalCommEnc string
+
 	// var ver1, ver2 string
 
 	if err != nil {
@@ -182,7 +182,8 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	// sendLog("R1-2 value", string(cryptoParams.R1[1]))
 
 	// // Request to external service to get params
-	// var Ci, C ristretto.Point
+	var Ci, C ristretto.Point
+	var commStr, totalCommEnc string
 
 	for i := 0; i < numVerifiers; i++ {
 		verifierURL := verifierURLs[i]
@@ -201,39 +202,39 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		sendLog("C"+string(i)+" encoding:", comm)
 		// sendLog("C"+string(i)+" encoding:", comm)
 
-		// 	commStr += comm + ";"
+		commStr += comm + ";"
 
-		// 	if i == 0 {
-		// 		C = Ci
-		// 	} else {
-		// 		C.Add(&C, &Ci)
-		// 	}
-		// 	CBytes := C.Bytes()
-		// 	totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
+		if i == 0 {
+			C = Ci
+		} else {
+			C.Add(&C, &Ci)
+		}
+		CBytes := C.Bytes()
+		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
 	}
 
-	// sendLog("total Comm encoding:", totalCommEnc)
+	sendLog("total Comm encoding:", totalCommEnc)
 	// // End of comm computation
 
-	// campaign := Campaign{
-	// 	ID:         id,
-	// 	Name:       name,
-	// 	Advertiser: advertiser,
-	// 	Business:   business,
-	// 	CommC:      commStr,
-	// 	// CommC2:     comm2,
-	// }
+	campaign := Campaign{
+		ID:         id,
+		Name:       name,
+		Advertiser: advertiser,
+		Business:   business,
+		CommC:      commStr,
+		// CommC2:     comm2,
+	}
 
-	// campaignJSON, err := json.Marshal(campaign)
-	// if err != nil {
-	// 	return err
-	// }
+	campaignJSON, err := json.Marshal(campaign)
+	if err != nil {
+		return err
+	}
 
-	// err = ctx.GetStub().PutState(id, campaignJSON)
+	err = ctx.GetStub().PutState(id, campaignJSON)
 
-	// if err != nil {
-	// 	return err
-	// }
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -539,7 +540,9 @@ func computeCommitment(campID string, url string, i int, cryptoParams CampaignCr
 	// 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
 	// }
 
+	sendLog("num r values: ", string(len(cryptoParams.R1)))
 	rBytes = cryptoParams.R1[i]
+	// sendLog("R["+string(i)+"]: ", rBytes)
 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
 	sendLog("Encode R["+string(i)+"]: ", rEnc)
 
