@@ -6,8 +6,10 @@ CC_CREATE_FCN="AddCollectedData"
 CC_READ_ALL_FCN="GetAllCollectedData"
 
 function parsePeerConnectionParameters() {
-    local orgNum=$1
-    local peerNum=$2
+    local orgTypes=$1
+    local orgNum=$2
+    local peerNum=$3
+
 
     PEER_CONN_PARMS=""
     PEERS=""
@@ -19,20 +21,20 @@ function parsePeerConnectionParameters() {
     local maxPeerId=$(($peerNum - 1))
 
     for orgId in $(seq 0 $maxOrgId); do
-         infoln $orgId
-         for peerId in $(seq 0 $maxPeerId); do
-             for orgType in "adv" "bus"; do
-                 local peerName="peer${peerId}.${orgType}${orgId}"
-                 infoln "processed $peerName"
-                 selectPeer $orgType $orgId $peerId
-                 PEERS="$peerNames ${peerName}"
-                 PEER_CONN_PARMS="$PEER_CONN_PARMS --peerAddresses $CORE_PEER_ADDRESS"
-                ## Set path to TLS certificate
-                TLSINFO=$(eval echo "--tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE")
-                PEER_CONN_PARMS="$PEER_CONN_PARMS $TLSINFO"
-             done
-         done
-     done
+        infoln $orgId
+        for peerId in $(seq 0 $maxPeerId); do
+            for orgType in "adv" "bus"; do
+                local peerName="peer${peerId}.${orgType}${orgId}"
+                infoln "processed $peerName"
+                selectPeer $orgType $orgId $peerId
+                PEERS="$peerNames ${peerName}"
+                PEER_CONN_PARMS="$PEER_CONN_PARMS --peerAddresses $CORE_PEER_ADDRESS"
+            ## Set path to TLS certificate
+            TLSINFO=$(eval echo "--tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE")
+            PEER_CONN_PARMS="$PEER_CONN_PARMS $TLSINFO"
+            done
+        done
+    done
 
     infoln "parsePeerConnectionParameters: $PEERS $PEER_CONN_PARMS"
 }
