@@ -74,47 +74,72 @@ function selectPeer() {
 }
 
 function getChannelTxPath() {
-    channel_name=$1
-    channel_tx_path=$CHANNEL_PATH/${channel_name}.tx
+    channelName=$1
+    channelTxPath=$CHANNEL_PATH/${channelName}.tx
     # return $channel_tx_path
 }
 
 function getBlockPath() {
-    channel_name=$1
-    block_path="${CHANNEL_PATH}/${channel_name}.block"
-    # return $block_path
+    channelName=$1
+    blockPath="${CHANNEL_PATH}/${channelName}.block"
+    # return $blockPath
 }
 
+# function parsePeerConnectionParameters() {
+#     local orgNum=$1
+#     local peerNum=$2
+
+#     PEER_CONN_PARMS=""
+#     PEERS=""
+#     local peerNames=""
+
+#     infoln "$orgNum ; $peerNum"
+
+#     local maxOrgId=$(($orgNum - 1))
+#     local maxPeerId=$(($peerNum - 1))
+
+#     for orgId in $(seq 0 $maxOrgId); do
+#          infoln $orgId
+#          for peerId in $(seq 0 $maxPeerId); do
+#              for orgType in "adv" "bus"; do
+#                  local peerName="peer${peerId}.${orgType}${orgId}"
+#                  infoln "processed $peerName"
+#                  selectPeer $orgType $orgId $peerId
+#                  PEERS="$peerNames ${peerName}"
+#                  PEER_CONN_PARMS="$PEER_CONN_PARMS --peerAddresses $CORE_PEER_ADDRESS"
+#                 ## Set path to TLS certificate
+#                 TLSINFO=$(eval echo "--tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE")
+#                 PEER_CONN_PARMS="$PEER_CONN_PARMS $TLSINFO"
+#              done
+#          done
+#      done
+
+#     infoln "parsePeerConnectionParameters1: $PEERS $PEER_CONN_PARMS"
+# }
+
 function parsePeerConnectionParameters() {
-    local orgNum=$1
-    local peerNum=$2
+    echo $1
 
-    PEER_CONN_PARMS=""
-    PEERS=""
-    local peerNames=""
+    IFS=',' read -r -a orgTypes <<< $1
+    local maxOrdId=$(($2 - 1))
+    local maxPeerId=$(($3 - 1))
 
-    infoln "$orgNum ; $peerNum"
+    echo $orgTypes
+    peerConnectionParams=""
+    peers=""
+    for orgType in ${orgTypes[@]}; do
+        for orgId in $(seq 0 $maxOrdId); do
+            for peerId in $(seq 0 $maxOrdId); do
+                selectPeer $orgType $orgId $peerId
 
-    local maxOrgId=$(($orgNum - 1))
-    local maxPeerId=$(($peerNum - 1))
+                peers="$peers $CORE_PEER_ADDRESS"
+                peerConnectionParams="$peerConnectionParams --peerAddresses $CORE_PEER_ADDRESS"
+                peerConnectionParams="$peerConnectionParams --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE"
+            done
+        done
+    done
 
-    for orgId in $(seq 0 $maxOrgId); do
-         infoln $orgId
-         for peerId in $(seq 0 $maxPeerId); do
-             for orgType in "adv" "bus"; do
-                 local peerName="peer${peerId}.${orgType}${orgId}"
-                 infoln "processed $peerName"
-                 selectPeer $orgType $orgId $peerId
-                 PEERS="$peerNames ${peerName}"
-                 PEER_CONN_PARMS="$PEER_CONN_PARMS --peerAddresses $CORE_PEER_ADDRESS"
-                ## Set path to TLS certificate
-                TLSINFO=$(eval echo "--tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE")
-                PEER_CONN_PARMS="$PEER_CONN_PARMS $TLSINFO"
-             done
-         done
-     done
-
-    infoln "parsePeerConnectionParameters1: $PEERS $PEER_CONN_PARMS"
+    infoln "parsePeerConnectionParameters: $PEERS $PEER_CONN_PARMS"
 }
 
 export -f errorln

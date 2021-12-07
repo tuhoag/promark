@@ -3,30 +3,34 @@
 . $BASE_SCRIPTS_DIR/utils.sh
 
 function joinChannel() {
-    local channel_name=$1
-    local org_type=$2
+    local channelName=$1
+    IFS=',' read -r -a orgTypes <<< $2
+    # local org_type=$2
     local orgNum=$3
     local peerNum=$4
-    local org_name=""
-
+    local orgName=""
 
     local maxPeerId=$(($peerNum - 1))
     local maxOrgId=$(($orgNum - 1))
 
-    for org_id in $(seq 0 $maxOrgId); do
-        org_name="${org_type}${org_id}"
-        for peer_id in $(seq 0 $maxPeerId); do
-            selectPeer $org_type $org_id $peer_id
+    for orgType in ${orgTypes[@]}; do
+        for orgId in $(seq 0 $maxOrgId); do
+            for peerId in $(seq 0 $maxPeerId); do
+    # for org_id in $(seq 0 $maxOrgId); do
+                orgName="peer${orgId}.${orgType}${orgId}"
+    #     for peer_id in $(seq 0 $maxPeerId); do
+                selectPeer $orgType $orgId $peerId
 
-            infoln "Joining Channel $channel_name from Org $org_name's peer$peer_id"
+                infoln "Joining Channel $channelName from Org $orgName's peer$peerId"
 
-            getBlockPath $channel_name
+                getBlockPath $channelName
 
-            set -x
-            peer channel join -b $block_path
-            res=$?
-            { set +x; } 2>/dev/null
-            #cat log.txt
+                set -x
+                peer channel join -b $blockPath
+                res=$?
+                { set +x; } 2>/dev/null
+                #cat log.txt
+            done
         done
     done
 }

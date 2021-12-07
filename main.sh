@@ -4,7 +4,7 @@
 
 export CHANNEL_NAME="mychannel"
 export LOG_LEVEL=INFO
-export FABRIC_LOGGING_SPEC=DEBUG
+export FABRIC_LOGGING_SPEC=INFO
 export CHAINCODE_NAME="campaign"
 
 function initialize() {
@@ -22,9 +22,9 @@ function createChannel() {
 
 function joinChannel() {
      # args: $CHANNEL_NAME <org type> <number of org> <number of peer>
-    $BASE_SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" $1 $2
+    $BASE_SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv,bus" $1 $2
         # $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" 1 2
-    $BASE_SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" $1 $2
+    # $BASE_SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" $1 $2
     # $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" 0 2
 }
 
@@ -47,30 +47,30 @@ function monitor() {
 }
 
 function packageChaincode() {
-    $BASE_SCRIPTS_DIR/package-chaincode.sh $CHAINCODE_NAME
+    $BASE_SCRIPTS_DIR/package-chaincode.sh $CHAINCODE_NAME $1
 }
 
 function installChaincode() {
 
     # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
-    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
+    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
 
-    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2
+    # $BASE_SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2
 
 }
 
 function approveChaincode {
-    # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
-    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
+    # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer> <sequence>
+    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2 $3
 
-    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2
+    # $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2 $3
 
-    $BASE_SCRIPTS_DIR/commit-checkreadiness.sh $CHAINCODE_NAME $CHANNEL_NAME
+    # $BASE_SCRIPTS_DIR/commit-checkreadiness.sh $CHAINCODE_NAME $CHANNEL_NAME $3
 }
 
 function commitChaincode() {
     # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
-    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME $1 $2
+    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2 $3
 }
 
 function invokeInitLedger() {
@@ -79,7 +79,7 @@ function invokeInitLedger() {
 }
 
 function invokeCreateCamp() {
-    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" $1 $2
+    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
 }
 
 function invokeCollectData() {
@@ -130,6 +130,10 @@ function runLogService() {
     FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} run --service-ports logs.promark.com /bin/sh 2>&1
 }
 
+function buildAllImages() {
+    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build 2>&1
+}
+
 function clearNetwork {
     docker rm -f $(docker ps -aq) || true
     docker rmi -f $(docker images -a -q) || true
@@ -146,6 +150,7 @@ MODE=$1
 if [ $MODE = "restart" ]; then
     NO_ORG=$2
     NO_PEERS=$3
+    # SEQUENCE=$4
 
     networkDown
     clear
@@ -158,13 +163,23 @@ if [ $MODE = "restart" ]; then
     joinChannel $NO_ORG $NO_PEERS
 
     # sleep 10
-    # packageChaincode
+    # packageChaincode 1
     # sleep 10
     # installChaincode $NO_ORG $NO_PEERS
     # sleep 15
-    # approveChaincode $NO_ORG $NO_PEERS
+    # approveChaincode $NO_ORG $NO_PEERS 1
     # sleep 15
-    # commitChaincode $NO_ORG $NO_PEERS
+    # commitChaincode $NO_ORG $NO_PEERS 1
+
+elif [ $MODE = "build" ]; then
+    SUB_MODE=$2
+
+    if [ $SUB_MODE = "all" ]; then
+        buildAllImages
+    else
+        errorln "Unsupported $MODE $SUB_MODE command."
+    fi
+
 elif [ $MODE = "clean" ]; then
     clearNetwork
 elif [ $MODE = "path" ]; then
@@ -205,25 +220,41 @@ elif [ $MODE = "chaincode" ]; then
     # deployCC "campaign"
 
     SUB_MODE=$2
-    NO_ORG=$3
-    NO_PEERS=$4
 
     if [ $SUB_MODE = "package" ]; then
-        packageChaincode
+        SEQUENCE=$3
+
+        packageChaincode $SEQUENCE
     elif [ $SUB_MODE = "install" ]; then
+        NO_ORG=$3
+        NO_PEERS=$4
+        SEQUENCE=$5
+
         installChaincode $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "approve" ]; then
-        approveChaincode $NO_ORG $NO_PEERS
+        NO_ORG=$3
+        NO_PEERS=$4
+        SEQUENCE=$5
+
+        approveChaincode $NO_ORG $NO_PEERS $SEQUENCE
     elif [ $SUB_MODE = "commit" ]; then
-        commitChaincode $NO_ORG $NO_PEERS
+        NO_ORG=$3
+        NO_PEERS=$4
+        SEQUENCE=$5
+
+        commitChaincode $NO_ORG $NO_PEERS $SEQUENCE
     elif [ $SUB_MODE = "all" ]; then
-        packageChaincode
+        NO_ORG=$3
+        NO_PEERS=$4
+        SEQUENCE=$5
+
+        packageChaincode $SEQUENCE
         sleep 10
         installChaincode $NO_ORG $NO_PEERS
         sleep 15
-        approveChaincode $NO_ORG $NO_PEERS
+        approveChaincode $NO_ORG $NO_PEERS $SEQUENCE
         sleep 15
-        commitChaincode $NO_ORG $NO_PEERS
+        commitChaincode $NO_ORG $NO_PEERS $SEQUENCE
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi

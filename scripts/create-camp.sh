@@ -11,7 +11,7 @@ function getData () {
   local channelName=$2
 
   # infoln "Invoking Init Chaincode with $@\n"
-  parsePeerConnectionParameters 1 1
+  parsePeerConnectionParameters "adv,bus" 1 1
   res=$?
   verifyResult $res "Invoke transaction failed on channel '$channelName' due to uneven number of peer and org parameters "
 
@@ -30,13 +30,14 @@ function getData () {
 function createCamp() {
     local chaincodeName=$1
     local channelName=$2
-    local orgNum=$5
-    local peerNum=$6
+    local orgTypes=$3
+    local orgNum=$4
+    local peerNum=$5
 
-    infoln "createCamp: $1 $2 $3 $4 $5 $6"
+    infoln "createCamp: $1 $2 $3 $4 $5"
 
     #TODO: need to use the list of orgType
-    parsePeerConnectionParameters $orgNum $peerNum
+    parsePeerConnectionParameters $orgTypes $orgNum $peerNum
     res=$?
     verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
 
@@ -50,7 +51,9 @@ function createCamp() {
     # fcn_call3='{"function":"'${CC_CREATE_FCN}'","Args":["id13","campaign13","Adv3","Bus3","http://peer0.adv3.promark.com:8530","http://peer0.bus3.promark.com:9030"]}'
 
     infoln "invoke fcn call:${fcn_call}"
-    peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call0} >&log.txt
+    # peer lifecycle chaincode commit -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME  --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName --tls $peerConnectionParams --version $sequence --sequence $sequence
+
+    peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $peerConnectionParams -c ${fcn_call0} >&log.txt
 
     # peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call1} >&log.txt
 
@@ -66,6 +69,6 @@ function createCamp() {
 
 }
 
-createCamp $1 $2 $3 $4 $5 $6
+createCamp $1 $2 $3 $4 $5
 getData $1 $2
 

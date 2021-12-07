@@ -19,3 +19,4 @@ node_modules
 /channels
 /go
 log.txt
+*fuse_hidden*

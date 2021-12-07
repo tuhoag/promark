@@ -2,14 +2,11 @@
 
 . $BASE_SCRIPTS_DIR/utils.sh
 
-
-infoln "Deploying CC"
-
-
 function packageChaincode() {
     local chaincode_name=$1
+    local sequence=$2
     local chaincode_package_path="$CHAINCODE_PACKAGE_DIR/${chaincode_name}.tar.gz"
-    local chaincode_label="${chaincode_name}_1.0"
+    local chaincode_label="${chaincode_name}_${sequence}"
 
     infoln "Packaging chaincode $chaincode_name"
 
@@ -33,4 +30,4 @@ function packageChaincode() {
     successln "Chaincode is packaged"
 }
 
-packageChaincode $1
+packageChaincode $1 $2

@@ -146,7 +146,7 @@ services:
         - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
         - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
         - VER_PORT=8500
-        - VER_NAME=peer0.adv0.promark.com.log
+        # - VER_NAME=peer0.adv0.promark.com.log
         extends:
             file: docker-compose-base.yml
             service: peer-verifier-base

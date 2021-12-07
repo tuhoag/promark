@@ -22,9 +22,9 @@ type SmartContract struct {
 }
 
 var (
-	extURL        = "http://external.promark.com:5000"
-	camRequestURL = extURL + "/camp"
-	logURL        = "http://logs.promark.com:5003/log"
+	cryptoServiceURL       = "http://external.promark.com:5000"
+	cryptoParamsRequestURL = cryptoServiceURL + "/camp"
+	logURL                 = "http://logs.promark.com:5003/log"
 )
 
 var com1URL string
@@ -151,11 +151,16 @@ func (s *SmartContract) GetAllCollectedData(ctx contractapi.TransactionContextIn
 }
 
 // Create a new campaign
-func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name string, advertiser string, business string, verifier_addresses string) error {
+func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, id string, name string, advertiser string, business string, verifierURLStr string) error {
 	existing, err := ctx.GetStub().GetState(id)
 
+	sendLog("campaignId", id)
+	sendLog("campaignName", name)
+	sendLog("advertiser", advertiser)
+	sendLog("business", business)
+
 	// split the verifier address
-	var ver, commStr, totalCommEnc string
+	// var verifierURL, commStr, totalCommEnc string
 	// var ver1, ver2 string
 
 	if err != nil {
@@ -166,63 +171,69 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		return fmt.Errorf("Cannot create asset since its id %s is existed", id)
 	}
 
-	listOfVerifierAddress := strings.Split(verifier_addresses, ";")
-	numOfVerifiers := len(listOfVerifierAddress)
+	verifierURLs := strings.Split(verifierURLStr, ";")
+	numVerifiers := len(verifierURLs)
 
-	cryptoParams := requestCampaignCryptoParams(id, numOfVerifiers)
-	sendLog("R1-1 value", string(cryptoParams.R1[0]))
-	sendLog("R1-2 value", string(cryptoParams.R1[1]))
+	sendLog("numVerifiers", string(numVerifiers))
 
-	// Request to external service to get params
-	var Ci, C ristretto.Point
+	cryptoParams := requestCampaignCryptoParams(id, numVerifiers)
+	sendLog("cryptoParams.H", convertBytesToPoint(cryptoParams.H).String())
+	// sendLog("R1-1 value", string(cryptoParams.R1[0]))
+	// sendLog("R1-2 value", string(cryptoParams.R1[1]))
 
-	for i := 0; i < numOfVerifiers; i++ {
-		ver = listOfVerifierAddress[i]
-		comURL = ver + "/comm"
+	// // Request to external service to get params
+	// var Ci, C ristretto.Point
 
-		testVer(ver)
-		sendLog("id", id)
-		sendLog("Hvalue", string(cryptoParams.H))
-		sendLog("R1value", string(cryptoParams.R1[i]))
+	for i := 0; i < numVerifiers; i++ {
+		verifierURL := verifierURLs[i]
+		comURL = verifierURL + "/comm"
+		sendLog("verifierURL", verifierURL)
+		sendLog("comURL", comURL)
 
-		comm := commCompute(id, comURL, i)
-		commDec, _ := b64.StdEncoding.DecodeString(comm)
-		Ci = convertStringToPoint(string(commDec))
-		sendLog("C1 encoding:", comm)
+		// 	testVer(ver)
+		// 	sendLog("id", id)
+		// 	sendLog("Hvalue", string(cryptoParams.H))
+		// 	sendLog("R1value", string(cryptoParams.R1[i]))
 
-		commStr += comm + ";"
+		comm := computeCommitment(id, comURL, i, cryptoParams)
+		// commDec, _ := b64.StdEncoding.DecodeString(comm)
+		// Ci = convertStringToPoint(string(commDec))
+		sendLog("C"+string(i)+" encoding:", comm)
+		// sendLog("C"+string(i)+" encoding:", comm)
 
-		if i == 0 {
-			C = Ci
-		} else {
-			C.Add(&C, &Ci)
-		}
-		CBytes := C.Bytes()
-		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
+		// 	commStr += comm + ";"
+
+		// 	if i == 0 {
+		// 		C = Ci
+		// 	} else {
+		// 		C.Add(&C, &Ci)
+		// 	}
+		// 	CBytes := C.Bytes()
+		// 	totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
 	}
 
-	sendLog("total Comm encoding:", totalCommEnc)
-	// End of comm computation
+	// sendLog("total Comm encoding:", totalCommEnc)
+	// // End of comm computation
 
-	campaign := Campaign{
-		ID:         id,
-		Name:       name,
-		Advertiser: advertiser,
-		Business:   business,
-		CommC:      commStr,
-		// CommC2:     comm2,
-	}
+	// campaign := Campaign{
+	// 	ID:         id,
+	// 	Name:       name,
+	// 	Advertiser: advertiser,
+	// 	Business:   business,
+	// 	CommC:      commStr,
+	// 	// CommC2:     comm2,
+	// }
 
-	campaignJSON, err := json.Marshal(campaign)
-	if err != nil {
-		return err
-	}
+	// campaignJSON, err := json.Marshal(campaign)
+	// if err != nil {
+	// 	return err
+	// }
 
-	err = ctx.GetStub().PutState(id, campaignJSON)
+	// err = ctx.GetStub().PutState(id, campaignJSON)
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
@@ -429,7 +440,7 @@ func sendLog(name, message string) {
 }
 
 func requestCampaignCryptoParams(id string, numOfVerifiers int) CampaignCryptoParams {
-	var camParam CampaignCryptoParams
+	var cryptoParams CampaignCryptoParams
 
 	c := &http.Client{}
 
@@ -439,35 +450,33 @@ func requestCampaignCryptoParams(id string, numOfVerifiers int) CampaignCryptoPa
 
 	request := string(jsonData)
 
-	reqJSON, err := http.NewRequest("POST", camRequestURL, strings.NewReader(request))
+	reqJSON, err := http.NewRequest("POST", cryptoParamsRequestURL, strings.NewReader(request))
 	if err != nil {
 		fmt.Printf("http.NewRequest() error: %v\n", err)
-		return camParam
+		return cryptoParams
 	}
 
 	respJSON, err := c.Do(reqJSON)
 	if err != nil {
 		fmt.Printf("http.Do() error: %v\n", err)
-		return camParam
+		return cryptoParams
 	}
 	defer respJSON.Body.Close()
 
 	data, err := ioutil.ReadAll(respJSON.Body)
 	if err != nil {
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-		return camParam
+		return cryptoParams
 	}
 
 	fmt.Println("return data all:", string(data))
 
-	err = json.Unmarshal([]byte(data), &camParam)
+	err = json.Unmarshal([]byte(data), &cryptoParams)
 	if err != nil {
 		println(err)
 	}
 
-	sendLog("returnedH", convertBytesToPoint(camParam.H).String())
-
-	return camParam
+	return cryptoParams
 }
 
 func requestCamParams(id string, n int) {
@@ -479,7 +488,7 @@ func requestCamParams(id string, n int) {
 
 	request := string(jsonData)
 
-	reqJSON, err := http.NewRequest("POST", camRequestURL, strings.NewReader(request))
+	reqJSON, err := http.NewRequest("POST", cryptoParamsRequestURL, strings.NewReader(request))
 	if err != nil {
 		fmt.Printf("http.NewRequest() error: %v\n", err)
 		return
@@ -508,16 +517,18 @@ func requestCamParams(id string, n int) {
 	sendLog("returnedH", convertBytesToPoint(camParam.H).String())
 }
 
-func commCompute(campID string, url string, i int) string {
+func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
 	//connect to verifier: campID,  H , r
 	sendLog("Start of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
 	// var param CommRequest
 	var rBytes []byte
 	var rEnc, hEnc string
-	c := &http.Client{}
+	client := &http.Client{}
+	// sendLog("create connection of commCompute:", "")
 
-	hBytes := camParam.H
+	hBytes := cryptoParams.H
 	hEnc = b64.StdEncoding.EncodeToString(hBytes)
+	sendLog("Encode H: ", hEnc)
 
 	// if url == com1URL {
 	// 	rBytes = camParam.R1
@@ -528,9 +539,9 @@ func commCompute(campID string, url string, i int) string {
 	// 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
 	// }
 
-	rBytes = camParam.R1[i]
+	rBytes = cryptoParams.R1[i]
 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
-	sendLog("commCompute.R in string", string(rBytes))
+	sendLog("Encode R["+string(i)+"]: ", rEnc)
 
 	// jsonData, _ := json.Marshal(param)
 	message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", campID, hEnc, rEnc)
@@ -543,7 +554,7 @@ func commCompute(campID string, url string, i int) string {
 		fmt.Printf("http.NewRequest() error: %v\n", err)
 	}
 
-	respJSON, err := c.Do(reqJSON)
+	respJSON, err := client.Do(reqJSON)
 	if err != nil {
 		fmt.Printf("http.Do() error: %v\n", err)
 	}

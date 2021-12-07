@@ -5,44 +5,42 @@
 function approveForMyOrg() {
     local chaincodeName=$1
     local channelName=$2
-    local orgType=$3
-    # local orgId=$4
+    IFS=',' read -r -a orgTypes <<< $3
     local orgNum=$4
     local peerNum=$5
-
+    local sequence=$6
     local chaincode_package_path="$CHAINCODE_PACKAGE_DIR/${chaincodeName}.tar.gz"
 
     local maxPeerId=$(($peerNum - 1))
     local maxOrgId=$(($orgNum - 1))
-    infoln "max org id ${maxOrgId}"
-    infoln "max peer id ${maxPeerId}"
 
-    for orgId in $(seq 0 $maxOrgId); do
-        infoln $orgId
-        for peerId in $(seq 0 $maxPeerId); do
-            local peer_name="peer${peerId}.${orgType}${orgId}"
+    for orgType in ${orgTypes[@]}; do
+        for orgId in $(seq 0 $maxOrgId); do
+            for peerId in $(seq 0 $maxPeerId); do
+                local peerName="peer${peerId}.${orgType}${orgId}"
 
-            infoln "Approving chaincode ${chaincodeName} in channel ${channelName} of ${peer_name}..."
+                infoln "Approving chaincode ${chaincodeName} in channel ${channelName} of ${peerName}..."
 
-            selectPeer $orgType $orgId $peerId
+                selectPeer $orgType $orgId $peerId
 
-            local packageId=$(peer lifecycle chaincode queryinstalled)
-            packageId=${packageId%,*}
-            packageId=${packageId#*:}
-            packageId=${packageId##* }
-            infoln "My package id: $packageId"
+                local packageId=$(peer lifecycle chaincode queryinstalled)
+                packageId=${packageId%,*}
+                packageId=${packageId#*:}
+                packageId=${packageId##* }
+                infoln "My package id: $packageId"
 
-            set -x
-            peer lifecycle chaincode approveformyorg -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName --version 1.0 --package-id $packageId --sequence 1 >&log.txt
-            res=$?
-            { set +x; } 2>/dev/null
+                set -x
+                peer lifecycle chaincode approveformyorg -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName --version $sequence --package-id $packageId --sequence $sequence >&log.txt
+                res=$?
+                { set +x; } 2>/dev/null
 
-            cat log.txt
+                cat log.txt
 
-            verifyResult $res "Chaincode definition approved on ${peer_name} on channel '$channelName' failed"
-            successln "Chaincode definition approved on ${peer_name} on channel '$channelName'"
+                verifyResult $res "Chaincode definition approved on ${peerName} on channel '$channelName' failed"
+                successln "Chaincode definition approved on ${peerName} on channel '$channelName'"
+            done
         done
     done
 }
 
-approveForMyOrg $1 $2 $3 $4 $5
+approveForMyOrg $1 $2 $3 $4 $5 $6

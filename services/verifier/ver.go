@@ -69,12 +69,15 @@ var sValue SecretNumber
 
 func main() {
 	var err error
-	var fname string
+	// var verifierID string
 	var port string
-	fname = os.Getenv("VER_NAME")
+	verifierID := os.Getenv("CORE_PEER_ID")
 	port = os.Getenv("VER_PORT")
-	fmt.Println(fname)
-	f, err = os.Create(fname)
+	logName := verifierID + ".log"
+
+	fmt.Println("Verifier ID: " + verifierID)
+	fmt.Println("LogName: " + logName)
+	f, err = os.Create(logName)
 
 	if err != nil {
 		panic(err)
@@ -94,21 +97,20 @@ func main() {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-
-	if r.URL.Path != "/" {
-		http.Error(w, "404 not found.", http.StatusNotFound)
-		return
-	}
-
 	if r.Method != "GET" {
 		http.Error(w, "Method is not supported.", http.StatusNotFound)
 		return
 	}
 
-	n, _ := f.WriteString("Welcome to verifying service" + string("\n"))
-	fmt.Println(n)
+	verifierId := os.Getenv("CORE_PEER_ID")
+	port := os.Getenv("VER_PORT")
 
-	fmt.Fprintf(w, "Hello")
+	verifierURL := verifierId + ":" + port
+
+	// n, _ := f.WriteString("Welcome to verifying service" + string("\n"))
+	// fmt.Println(n)
+
+	fmt.Fprintf(w, "VerifierURL: "+verifierURL)
 }
 
 func computeComm(rw http.ResponseWriter, req *http.Request) {

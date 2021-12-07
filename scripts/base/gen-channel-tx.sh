@@ -7,12 +7,12 @@ function createChannelTx() {
 #     mkdir channels
 #   fi
 
-    channel_name=$1
-	getChannelTxPath $channel_name
+    channelName=$1
+	getChannelTxPath $channelName
 	# channel_tx_path=$?
 
 	set -x
-	configtxgen -profile TwoOrgsChannel -outputCreateChannelTx $channel_tx_path -channelID $channel_name -configPath $CONFIG_PATH
+	configtxgen -profile TwoOrgsChannel -outputCreateChannelTx $channelTxPath -channelID $channelName -configPath $CONFIG_PATH
 	res=$?
 	{ set +x; } 2>/dev/null
 
@@ -21,6 +21,6 @@ function createChannelTx() {
 
 
 
-channel_name=$1
+# channelName=$1
 
-createChannelTx $channel_name
+createChannelTx $1
