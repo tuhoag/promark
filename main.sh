@@ -114,6 +114,10 @@ function invokeGetCustomerProof() {
     $SCRIPTS_DIR/query-customer-proof.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
 }
 
+function invokeCollectCustomerProof() {
+    $SCRIPTS_DIR/collect-proof.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2 $3 $4 $5
+}
+
 function invokeCollectData() {
     $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
 }
@@ -290,6 +294,11 @@ elif [ $MODE = "user" ]; then
 
     if [ $SUB_MODE = "proof" ]; then
         invokeGetCustomerProof $NO_ORG $NO_PEERS
+    elif [ $SUB_MODE = "collect" ]; then
+        proofId=$5
+        comm=$6
+        rsStr=$7
+        invokeCollectCustomerProof $NO_ORG $NO_PEERS $proofId $comm $rsStr
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi

@@ -2,7 +2,7 @@
 
 . $BASE_SCRIPTS_DIR/utils.sh
 
-CC_READ_ALL_FCN="GetAllAssets"
+CC_READ_ALL_FCN="GetAllCampaigns"
 
 function getData () {
   local chaincodeName=$1

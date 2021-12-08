@@ -2,7 +2,7 @@
 
 . $BASE_SCRIPTS_DIR/utils.sh
 
-CC_QUERY_CUSTOMER_CAMPAIGN_PROOF_FCN="GetProofCustomerCampaign"
+CC_QUERY_CUSTOMER_CAMPAIGN_PROOF_FCN="GetCustomerCampaignProof"
 
 
 function queryProofCustomerCampaign() {
