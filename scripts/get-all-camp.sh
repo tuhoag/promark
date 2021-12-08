@@ -7,9 +7,14 @@ CC_READ_ALL_FCN="GetAllAssets"
 function getData () {
   local chaincodeName=$1
   local channelName=$2
+  local orgTypes=$3
+  local orgNum=$4
+  local peerNum=$5
+
+  infoln "getData: $1 $2 $3 $4 $5"
 
   # infoln "Invoking Init Chaincode with $@\n"
-  parsePeerConnectionParameters 1 1
+  parsePeerConnectionParameters $orgTypes $orgNum $peerNum
   res=$?
   verifyResult $res "Invoke transaction failed on channel '$channelName' due to uneven number of peer and org parameters "
 
@@ -24,4 +29,4 @@ function getData () {
   cat log.txt
 }
 
-getData $1 $2
+getData $1 $2 $3 $4 $5

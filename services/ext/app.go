@@ -16,8 +16,9 @@ import (
 var f *os.File
 
 type CampaignCryptoRequest struct {
-	ID             string
-	NumOfVerifiers int
+	ID           string
+	CustomerId   string
+	NumVerifiers int
 }
 
 type CampaignCryptoParams struct {
@@ -37,10 +38,47 @@ func main() {
 	http.HandleFunc("/", homeHandler)
 	//http.HandleFunc("/post", postHandler)
 	http.HandleFunc("/camp", paramsGeneratorHandler)
+	http.HandleFunc("/usercamp", userParamsGeneratorHandler)
+	http.HandleFunc("/data", getAllDataHandler)
 
 	// redisConnect()
 
 	http.ListenAndServe(":5000", nil)
+}
+
+func getAllDataHandler(w http.ResponseWriter, r *http.Request) {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	// keys, err := redis.Strings(cn.Do("KEYS", "*"))
+	var cursor uint64
+	var n int
+	for {
+		var keys []string
+		var err error
+		keys, cursor, err = client.Scan(cursor, "", 10).Result()
+		if err != nil {
+			panic(err)
+		}
+		n += len(keys)
+		if cursor == 0 {
+			break
+		}
+
+		for _, key := range keys {
+			val, _ := client.Get(key).Result()
+			fmt.Fprintf(w, key+":"+val)
+
+			// values = append(values, val)
+		}
+
+	}
+
+	// return keys, values
+
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -88,10 +126,48 @@ func paramsGeneratorHandler(rw http.ResponseWriter, req *http.Request) {
 		println(err)
 	}
 
-	log.Println("campaign is:", request.ID, request.NumOfVerifiers)
+	log.Println("campaign is:", request.ID, request.NumVerifiers)
 
 	// generate and set param
-	setParam(request.ID, request.NumOfVerifiers)
+	setParam(request.ID, request.NumVerifiers)
+	//get param from db
+	cryptoParams = getParam(request.ID)
+
+	//temporary return
+	param, err := json.Marshal(cryptoParams)
+
+	// for log
+	f.WriteString(string(param))
+
+	// fmt.Println("wrote to file:", n)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Fprintf(rw, string(param))
+}
+
+func userParamsGeneratorHandler(rw http.ResponseWriter, req *http.Request) {
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		println(err)
+	}
+	log.Println(string(body))
+
+	f.WriteString("request params: " + string(body) + string("\n"))
+
+	var request CampaignCryptoRequest
+	var cryptoParams CampaignCryptoParams
+	err = json.Unmarshal(body, &request)
+	if err != nil {
+		println(err)
+	}
+
+	log.Println("campaign is:", request.ID, request.NumVerifiers)
+
+	// generate and set param
+	setParam(request.ID, request.NumVerifiers)
 	//get param from db
 	cryptoParams = getParam(request.ID)
 

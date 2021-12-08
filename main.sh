@@ -4,7 +4,7 @@
 
 export CHANNEL_NAME="mychannel"
 export LOG_LEVEL=INFO
-export FABRIC_LOGGING_SPEC=INFO
+export FABRIC_LOGGING_SPEC=DEBUG
 export CHAINCODE_NAME="campaign"
 
 function initialize() {
@@ -73,19 +73,6 @@ function commitChaincode() {
     $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2 $3
 }
 
-function invokeInitLedger() {
-    # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
-    $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME $1 $2
-}
-
-function invokeCreateCamp() {
-    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
-}
-
-function invokeCollectData() {
-    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" "bus" $1 $2
-}
-
 function runExternalService() {
     $SCRIPTS_DIR/external-service.sh $LOG_LEVEL 0
 }
@@ -109,17 +96,37 @@ function buildExternalService() {
     FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache peer0.adv0.promark.com 2>&1
 }
 
+
+function invokeInitLedger() {
+    # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
+    $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME $1 $2
+}
+
+function invokeCreateCamp() {
+    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
+}
+
+function getAllCamp() {
+    $SCRIPTS_DIR/get-all-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
+}
+
+function invokeGetCustomerProof() {
+    $SCRIPTS_DIR/query-customer-proof.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
+}
+
+function invokeCollectData() {
+    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
+}
+
 function invokeQueryById() {
     $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 }
 
 function deleteCampById() {
-    $SCRIPTS_DIR/delete-camp-by-id.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
+    $SCRIPTS_DIR/delete-camp-by-id.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
 }
 
-function getAllCamp() {
-    $SCRIPTS_DIR/get-all-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
-}
+
 
 function getAllCampaignData() {
     $SCRIPTS_DIR/get-all-campaign-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
@@ -267,15 +274,26 @@ elif [ $MODE = "camp" ]; then
         invokeInitLedger $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "add" ]; then
         invokeCreateCamp $NO_ORG $NO_PEERS
+    elif [ $SUB_MODE = "all" ]; then
+        getAllCamp $NO_ORG $NO_PEERS
+    elif [ $SUB_MODE = "del" ]; then
+        deleteCampById $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "query" ]; then
         invokeQueryById $NO_ORG $NO_PEERS
-    elif [ $SUB_MODE = "get" ]; then
-        getAllCamp $NO_ORG $NO_PEERS
-    elif [ $SUB_MODE = "delete" ]; then
-        deleteCampById $NO_ORG $NO_PEERS
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
+elif [ $MODE = "user" ]; then
+    SUB_MODE=$2
+    NO_ORG=$3
+    NO_PEERS=$4
+
+    if [ $SUB_MODE = "proof" ]; then
+        invokeGetCustomerProof $NO_ORG $NO_PEERS
+    else
+        errorln "Unsupported $MODE $SUB_MODE command."
+    fi
+
 elif [ $MODE = "data" ]; then
     SUB_MODE=$2
     NO_ORG=$3

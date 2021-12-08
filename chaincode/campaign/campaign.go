@@ -22,9 +22,10 @@ type SmartContract struct {
 }
 
 var (
-	cryptoServiceURL       = "http://external.promark.com:5000"
-	cryptoParamsRequestURL = cryptoServiceURL + "/camp"
-	logURL                 = "http://logs.promark.com:5003/log"
+	cryptoServiceURL           = "http://external.promark.com:5000"
+	cryptoParamsRequestURL     = cryptoServiceURL + "/camp"
+	userCryptoParamsRequestURL = cryptoServiceURL + "/usercamp"
+	logURL                     = "http://logs.promark.com:5003/log"
 )
 
 var com1URL string
@@ -35,8 +36,9 @@ var camParam CampaignCryptoParams
 
 // Struct of request data to ext service
 type CampaignCryptoRequest struct {
-	ID             string
-	NumOfVerifiers int
+	ID           string
+	CustomerId   string
+	NumVerifiers int
 }
 
 type DebugLog struct {
@@ -52,11 +54,17 @@ type CampaignCryptoParams struct {
 }
 
 type Campaign struct {
-	ID         string `json:"ID"`
-	Name       string `json:"Name"`
-	Advertiser string `json:"Advertiser"`
-	Business   string `json:"Business"`
-	CommC      string `json:"CommC"`
+	ID           string   `json:"ID"`
+	Name         string   `json:"Name"`
+	Advertiser   string   `json:"Advertiser"`
+	Business     string   `json:"Business"`
+	CommC        string   `json:"CommC"`
+	VerifierURLs []string `json:"VerifierURLs"`
+}
+
+type ProofCustomerCampaign struct {
+	Comm   string   `json:CommC`
+	Nonces []string `json:Nonces`
 }
 
 type CommRequest struct {
@@ -223,6 +231,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		Business:   business,
 		CommC:      commStr,
 		// CommC2:     comm2,
+		VerifierURLs: verifierURLs,
 	}
 
 	campaignJSON, err := json.Marshal(campaign)
@@ -240,12 +249,14 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 }
 
 func (s *SmartContract) DeleteCampaignByID(ctx contractapi.TransactionContextInterface, id string) (bool, error) {
+
 	campaignJSON, err := ctx.GetStub().GetState(id)
+	// backupJSON, err := ctx.GetStub().GetState(backupID)
 	if err != nil {
 		return false, fmt.Errorf("failed to read from world state: %v", err)
 	}
 	if campaignJSON == nil {
-		return false, fmt.Errorf("the backup %s does not exist", id)
+		return false, fmt.Errorf("the campaign id %s does not exist", id)
 	}
 
 	var campaign Campaign
@@ -260,6 +271,77 @@ func (s *SmartContract) DeleteCampaignByID(ctx contractapi.TransactionContextInt
 	}
 
 	return true, err
+}
+
+func (s *SmartContract) GetProofCustomerCampaign(ctx contractapi.TransactionContextInterface, id string, userId string) (*ProofCustomerCampaign, error) {
+	sendLog("GetProofCustomerCampaign", "")
+	sendLog("Campaign:", id)
+	sendLog("userId", userId)
+
+	campaignJSON, err := ctx.GetStub().GetState(id)
+
+	if err != nil {
+		return nil, errors.New("Unable to read the world state")
+	}
+
+	if campaignJSON == nil {
+		return nil, fmt.Errorf("Cannot get campaign since its id %s is unexisted", id)
+	}
+
+	var campaign Campaign
+	err = json.Unmarshal(campaignJSON, &campaign)
+	if err != nil {
+		return nil, err
+	}
+
+	// generate a random values for each verifiers
+	numVerifiers := len(campaign.VerifierURLs)
+	sendLog("numVerifiers", string(numVerifiers))
+
+	// get crypto params
+	cryptoParams := requestCustomerCampaignCryptoParams(id, userId, numVerifiers)
+
+	var Ci, C ristretto.Point
+	var totalCommEnc string
+
+	var randomValues []string
+	for i := 0; i < numVerifiers; i++ {
+		verifierURL := campaign.VerifierURLs[i]
+		comURL = verifierURL + "/comm"
+		sendLog("verifierURL", verifierURL)
+		sendLog("comURL", comURL)
+
+		// 	testVer(ver)
+		// 	sendLog("id", id)
+		// 	sendLog("Hvalue", string(cryptoParams.H))
+		// 	sendLog("R1value", string(cryptoParams.R1[i]))
+
+		comm := computeCommitment(id, comURL, i, cryptoParams)
+		// commDec, _ := b64.StdEncoding.DecodeString(comm)
+		// Ci = convertStringToPoint(string(commDec))
+		sendLog("C"+string(i)+" encoding:", comm)
+		// sendLog("C"+string(i)+" encoding:", comm)
+
+		if i == 0 {
+			C = Ci
+		} else {
+			C.Add(&C, &Ci)
+		}
+		CBytes := C.Bytes()
+		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
+
+		randomValues = append(randomValues, b64.StdEncoding.EncodeToString(cryptoParams.R1[i]))
+	}
+
+	// get all verifiers URLs
+
+	// calculate commitment
+	proof := ProofCustomerCampaign{
+		Comm:   totalCommEnc,
+		Nonces: randomValues,
+	}
+
+	return &proof, nil
 }
 
 func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInterface, id string, user string, n string, comm string, r string, addresses string) error {
@@ -440,12 +522,63 @@ func sendLog(name, message string) {
 	fmt.Println("return data all:", string(data))
 }
 
-func requestCampaignCryptoParams(id string, numOfVerifiers int) CampaignCryptoParams {
+func requestCustomerCampaignCryptoParams(id string, userId string, numVerifiers int) CampaignCryptoParams {
 	var cryptoParams CampaignCryptoParams
 
 	c := &http.Client{}
 
-	message := CampaignCryptoRequest{id, numOfVerifiers}
+	// ID             string
+	// CustomerId	   string
+	// NumOfVerifiers int
+	message := CampaignCryptoRequest{
+		ID:           id,
+		CustomerId:   userId,
+		NumVerifiers: numVerifiers,
+	}
+
+	jsonData, err := json.Marshal(message)
+
+	request := string(jsonData)
+
+	reqJSON, err := http.NewRequest("POST", cryptoParamsRequestURL, strings.NewReader(request))
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+		return cryptoParams
+	}
+
+	respJSON, err := c.Do(reqJSON)
+	if err != nil {
+		fmt.Printf("http.Do() error: %v\n", err)
+		return cryptoParams
+	}
+	defer respJSON.Body.Close()
+
+	data, err := ioutil.ReadAll(respJSON.Body)
+	if err != nil {
+		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+		return cryptoParams
+	}
+
+	fmt.Println("return data all:", string(data))
+
+	err = json.Unmarshal([]byte(data), &cryptoParams)
+	if err != nil {
+		println(err)
+	}
+
+	return cryptoParams
+}
+
+func requestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoParams {
+	var cryptoParams CampaignCryptoParams
+
+	c := &http.Client{}
+
+	message := CampaignCryptoRequest{
+		ID:           id,
+		CustomerId:   "",
+		NumVerifiers: numVerifiers,
+	}
 
 	jsonData, err := json.Marshal(message)
 
@@ -483,7 +616,7 @@ func requestCampaignCryptoParams(id string, numOfVerifiers int) CampaignCryptoPa
 func requestCamParams(id string, n int) {
 	c := &http.Client{}
 
-	message := CampaignCryptoRequest{id, n}
+	message := CampaignCryptoRequest{id, "", n}
 
 	jsonData, err := json.Marshal(message)
 
