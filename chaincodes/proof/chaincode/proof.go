@@ -16,7 +16,7 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-type SmartContract struct {
+type ProofSmartContract struct {
 	contractapi.Contract
 }
 
@@ -85,7 +85,7 @@ type CollectedData struct {
 	// R2   string `json:"R2"`
 }
 
-func (s *SmartContract) GetCustomerCampaignProof(ctx contractapi.TransactionContextInterface, camId string, userId string) (*ProofCustomerCampaign, error) {
+func (s *ProofSmartContract) GetCustomerCampaignProof(ctx contractapi.TransactionContextInterface, camId string, userId string) (*ProofCustomerCampaign, error) {
 	sendLog("GetCustomerCampaignProof", "")
 	sendLog("Campaign:", camId)
 	sendLog("userId", userId)
@@ -156,7 +156,36 @@ func (s *SmartContract) GetCustomerCampaignProof(ctx contractapi.TransactionCont
 	return &proof, nil
 }
 
-func (s *SmartContract) CollectCustomerProofCampaign(ctx contractapi.TransactionContextInterface, proofId string, comm string, rsStr string) error {
+func (s *ProofSmartContract) GetAllProofs(ctx contractapi.TransactionContextInterface) ([]*CollectedCustomerProof, error) {
+	// range query with empty string for startKey and endKey does an
+	// open-ended query of all assets in the chaincode namespace.
+	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+	if err != nil {
+		return nil, err
+	}
+	// close the resultsIterator when this function is finished
+	defer resultsIterator.Close()
+
+	var proofs []*CollectedCustomerProof
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		sendLog("queryResponse.Value", string(queryResponse.Value))
+		var proof CollectedCustomerProof
+		err = json.Unmarshal(queryResponse.Value, &proof)
+		if err != nil {
+			return nil, err
+		}
+		proofs = append(proofs, &proof)
+	}
+
+	return proofs, nil
+}
+
+func (s *ProofSmartContract) AddCustomerProofCampaign(ctx contractapi.TransactionContextInterface, proofId string, comm string, rsStr string) error {
 	sendLog("CollectCustomerProofCampaign", "")
 	sendLog("proofId", proofId)
 	sendLog("comm", comm)
@@ -193,7 +222,7 @@ func (s *SmartContract) CollectCustomerProofCampaign(ctx contractapi.Transaction
 	return nil
 }
 
-func (s *SmartContract) GetProofById(ctx contractapi.TransactionContextInterface, proofId string) (*CollectedCustomerProof, error) {
+func (s *ProofSmartContract) GetProofById(ctx contractapi.TransactionContextInterface, proofId string) (*CollectedCustomerProof, error) {
 	proofJSON, err := ctx.GetStub().GetState(proofId)
 	// backupJSON, err := ctx.GetStub().GetState(backupID)
 	if err != nil {
@@ -336,88 +365,88 @@ func requestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoPara
 	return cryptoParams
 }
 
-// Create a new campaign
-func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) error {
-	sendLog("campaignId", camId)
-	sendLog("campaignName", name)
-	sendLog("advertiser", advertiser)
-	sendLog("business", business)
+// // Create a new campaign
+// func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) error {
+// 	sendLog("campaignId", camId)
+// 	sendLog("campaignName", name)
+// 	sendLog("advertiser", advertiser)
+// 	sendLog("business", business)
 
-	existing, err := ctx.GetStub().GetState(camId)
-	if err != nil {
-		return errors.New("Unable to read the world state")
-	}
+// 	existing, err := ctx.GetStub().GetState(camId)
+// 	if err != nil {
+// 		return errors.New("Unable to read the world state")
+// 	}
 
-	if existing != nil {
-		return fmt.Errorf("Cannot create asset since its raw id %s is existed", camId)
-	}
+// 	if existing != nil {
+// 		return fmt.Errorf("Cannot create asset since its raw id %s is existed", camId)
+// 	}
 
-	verifierURLs := strings.Split(verifierURLStr, ";")
-	numVerifiers := len(verifierURLs)
+// 	verifierURLs := strings.Split(verifierURLStr, ";")
+// 	numVerifiers := len(verifierURLs)
 
-	sendLog("numVerifiers", string(numVerifiers))
+// 	sendLog("numVerifiers", string(numVerifiers))
 
-	cryptoParams := requestCampaignCryptoParams(camId, numVerifiers)
-	sendLog("cryptoParams.H", convertBytesToPoint(cryptoParams.H).String())
+// 	cryptoParams := requestCampaignCryptoParams(camId, numVerifiers)
+// 	sendLog("cryptoParams.H", convertBytesToPoint(cryptoParams.H).String())
 
-	// // Request to external service to get params
-	var Ci, C ristretto.Point
-	var commStr, totalCommEnc string
+// 	// // Request to external service to get params
+// 	var Ci, C ristretto.Point
+// 	var commStr, totalCommEnc string
 
-	for i := 0; i < numVerifiers; i++ {
-		verifierURL := verifierURLs[i]
-		comURL = verifierURL + "/comm"
-		sendLog("verifierURL", verifierURL)
-		sendLog("comURL", comURL)
+// 	for i := 0; i < numVerifiers; i++ {
+// 		verifierURL := verifierURLs[i]
+// 		comURL = verifierURL + "/comm"
+// 		sendLog("verifierURL", verifierURL)
+// 		sendLog("comURL", comURL)
 
-		// 	testVer(ver)
-		// 	sendLog("id", id)
-		// 	sendLog("Hvalue", string(cryptoParams.H))
-		// 	sendLog("R1value", string(cryptoParams.R1[i]))
+// 		// 	testVer(ver)
+// 		// 	sendLog("id", id)
+// 		// 	sendLog("Hvalue", string(cryptoParams.H))
+// 		// 	sendLog("R1value", string(cryptoParams.R1[i]))
 
-		comm := computeCommitment(camId, comURL, i, cryptoParams)
-		// commDec, _ := b64.StdEncoding.DecodeString(comm)
-		// Ci = convertStringToPoint(string(commDec))
-		sendLog("C"+string(i)+" encoding:", comm)
-		// sendLog("C"+string(i)+" encoding:", comm)
+// 		comm := computeCommitment(camId, comURL, i, cryptoParams)
+// 		// commDec, _ := b64.StdEncoding.DecodeString(comm)
+// 		// Ci = convertStringToPoint(string(commDec))
+// 		sendLog("C"+string(i)+" encoding:", comm)
+// 		// sendLog("C"+string(i)+" encoding:", comm)
 
-		commStr += comm + ";"
+// 		commStr += comm + ";"
 
-		if i == 0 {
-			C = Ci
-		} else {
-			C.Add(&C, &Ci)
-		}
-		CBytes := C.Bytes()
-		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
-	}
+// 		if i == 0 {
+// 			C = Ci
+// 		} else {
+// 			C.Add(&C, &Ci)
+// 		}
+// 		CBytes := C.Bytes()
+// 		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
+// 	}
 
-	sendLog("total Comm encoding:", totalCommEnc)
-	// // End of comm computation
+// 	sendLog("total Comm encoding:", totalCommEnc)
+// 	// // End of comm computation
 
-	campaign := Campaign{
-		ID:         camId,
-		Name:       name,
-		Advertiser: advertiser,
-		Business:   business,
-		CommC:      commStr,
-		// CommC2:     comm2,
-		VerifierURLs: verifierURLs,
-	}
+// 	campaign := Campaign{
+// 		ID:         camId,
+// 		Name:       name,
+// 		Advertiser: advertiser,
+// 		Business:   business,
+// 		CommC:      commStr,
+// 		// CommC2:     comm2,
+// 		VerifierURLs: verifierURLs,
+// 	}
 
-	campaignJSON, err := json.Marshal(campaign)
-	if err != nil {
-		return err
-	}
+// 	campaignJSON, err := json.Marshal(campaign)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	err = ctx.GetStub().PutState(camId, campaignJSON)
+// 	err = ctx.GetStub().PutState(camId, campaignJSON)
 
-	if err != nil {
-		return err
-	}
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
 	//connect to verifier: campID,  H , r

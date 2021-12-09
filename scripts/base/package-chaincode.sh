@@ -10,11 +10,11 @@ function packageChaincode() {
     local chaincode_package_src_path="${CHAINCODE_SRC_PATH}/${chaincode_name}"
     infoln "Packaging chaincode $chaincode_name"
 
-    infoln "Vendoring Go dependencies at $chaincode_package_src_path"
-    pushd $chaincode_package_src_path
-    GO111MODULE=on go mod vendor
-    popd
-    successln "Finished vendoring Go dependencies"
+    # infoln "Vendoring Go dependencies at $chaincode_package_src_path"
+    # pushd $chaincode_package_src_path
+    # GO111MODULE=on go mod vendor
+    # popd
+    # successln "Finished vendoring Go dependencies"
 
     # if [ ! -d $CC_PACKAGE_FOLDER_OUTPUT ]; then
     #     mkdir $CC_PACKAGE_FOLDER_OUTPUT

@@ -52,22 +52,21 @@ function packageChaincode() {
 function installChaincode() {
 
     # args: $CHANNEL_NAME $CHAINCODE_NAME  <org name> <org id> <number of peer>
-    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
     $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
-    # $BASE_SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2
-
+    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
 function approveChaincode {
     # args: $CHANNEL_NAME $CHAINCODE_NAME  <org name> <org id> <number of peer> <sequence>
-    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
     $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
 }
 
 function commitChaincode() {
     # args: $CHANNEL_NAME $CHAINCODE_NAME  <number of org> <number of peer>
-    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
     $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
+
 }
 
 function runExternalService() {
@@ -94,11 +93,6 @@ function buildExternalService() {
 }
 
 
-function invokeInitLedger() {
-    # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
-    $SCRIPTS_DIR/init-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME $1 $2
-}
-
 function invokeCreateCamp() {
     $SCRIPTS_DIR/create-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
 }
@@ -107,20 +101,20 @@ function getAllCamp() {
     $SCRIPTS_DIR/get-all-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
+function deleteCampById() {
+    $SCRIPTS_DIR/delete-camp-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME  "adv,bus" $1 $2
+}
+
+function getCampById() {
+    $SCRIPTS_DIR/get-campaign-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
+}
+
 function invokeGetCustomerProof() {
     $SCRIPTS_DIR/query-customer-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
 function invokeCollectCustomerProof() {
     $SCRIPTS_DIR/collect-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
-}
-
-function deleteCampById() {
-    $SCRIPTS_DIR/delete-camp-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME  "adv,bus" $1 $2
-}
-
-function getCampById() {
-    $SCRIPTS_DIR/get-campaign-by-id.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
 }
 
 function getAllCampaignData() {
@@ -132,9 +126,9 @@ function invokeCollectData() {
     $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
 }
 
-function invokeQueryById() {
-    $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
-}
+# function invokeQueryById() {
+#     $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
+# }
 
 function runLogService() {
     FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} run --service-ports logs.promark.com /bin/sh 2>&1
@@ -167,19 +161,19 @@ if [ $MODE = "restart" ]; then
     initialize
     networkUp
 
-    sleep 10
+    sleep 1
     createChannel
-    sleep 10
+    sleep 1
     joinChannel $NO_ORG $NO_PEERS
 
-    # sleep 10
-    # packageChaincode 1
-    # sleep 10
-    # installChaincode $NO_ORG $NO_PEERS
-    # sleep 15
-    # approveChaincode $NO_ORG $NO_PEERS 1
-    # sleep 15
-    # commitChaincode $NO_ORG $NO_PEERS 1
+    sleep 1
+    packageChaincode 1
+    sleep 1
+    installChaincode $NO_ORG $NO_PEERS
+    sleep 1
+    approveChaincode $NO_ORG $NO_PEERS 1
+    sleep 1
+    commitChaincode $NO_ORG $NO_PEERS 1
 
 elif [ $MODE = "build" ]; then
     SUB_MODE=$2
@@ -281,8 +275,8 @@ elif [ $MODE = "camp" ]; then
         deleteCampById $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "get" ]; then
         getCampById $NO_ORG $NO_PEERS
-    elif [ $SUB_MODE = "query" ]; then
-        invokeQueryById $NO_ORG $NO_PEERS
+    # elif [ $SUB_MODE = "query" ]; then
+    #     invokeQueryById $NO_ORG $NO_PEERS
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi

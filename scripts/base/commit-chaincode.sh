@@ -44,7 +44,9 @@ function commitChaincode() {
     verifyResult $res "Chaincode definition commit failed on peer.org${ORG} on channel '$channelName' failed"
     successln "Chaincode definition committed on channel '$channelName'"
 
-    peer lifecycle chaincode querycommitted --channelID $channelName --name $chaincodeName
+    peer lifecycle chaincode querycommitted --channelID $channelName --name "proof"
+    peer lifecycle chaincode querycommitted --channelID $channelName --name "campaign"
+
 
 }
 

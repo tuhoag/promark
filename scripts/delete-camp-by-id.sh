@@ -5,8 +5,8 @@
 CC_DELETE_BY_ID_FCN="DeleteCampaignByID"
 
 function deleteById() {
-    local chaincodeName=$1
-    local channelName=$2
+    local channelName=$1
+    local chaincodeName=$2
     local orgTypes=$3
     local orgNum=$4
     local peerNum=$5

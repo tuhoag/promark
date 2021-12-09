@@ -3,29 +3,6 @@
 . $BASE_SCRIPTS_DIR/utils.sh
 
 CC_CREATE_FCN="CreateCampaign"
-CC_READ_ALL_FCN="GetAllAssets"
-
-
-function getData () {
-  local chaincodeName=$1
-  local channelName=$2
-
-  # infoln "Invoking Init Chaincode with $@\n"
-  parsePeerConnectionParameters "adv,bus" 1 1
-  res=$?
-  verifyResult $res "Invoke transaction failed on channel '$channelName' due to uneven number of peer and org parameters "
-
-  sleep $DELAY
-  infoln "Attempting to Query peer0.org${ORG}, Retry after $DELAY seconds."
-  set -x
-  peer chaincode query --channelID $channelName --name $chaincodeName  -c '{"Args":["'${CC_READ_ALL_FCN}'"]}' >&log.txt
-  res=$?
-  { set +x; } 2>/dev/null
-
-  let rc=$res
-  cat log.txt
-}
-
 
 function createCamp() {
     local channelName=$1
@@ -34,7 +11,8 @@ function createCamp() {
     local orgNum=$4
     local peerNum=$5
 
-    infoln "createCamp: $1 $2 $3 $4 $5"
+    infoln
+    infoln "createCamp: channelName: ${channelName} - chaincodeName: ${chaincodeName}"
 
     #TODO: need to use the list of orgType
     parsePeerConnectionParameters $orgTypes $orgNum $peerNum
@@ -50,7 +28,7 @@ function createCamp() {
 
     # fcn_call3='{"function":"'${CC_CREATE_FCN}'","Args":["id13","campaign13","Adv3","Bus3","http://peer0.adv3.promark.com:8530","http://peer0.bus3.promark.com:9030"]}'
 
-    infoln "invoke fcn call:${fcn_call}"
+    infoln "invoke fcn call:${fcn_call0}"
     # peer lifecycle chaincode commit -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME  --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName --tls $peerConnectionParams --version $sequence --sequence $sequence
 
     peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $peerConnectionParams -c ${fcn_call0} >&log.txt
@@ -70,5 +48,3 @@ function createCamp() {
 }
 
 createCamp $1 $2 $3 $4 $5
-getData $1 $2
-
