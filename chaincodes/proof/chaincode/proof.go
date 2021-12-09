@@ -3,12 +3,16 @@ package chaincode
 import (
 	b64 "encoding/base64"
 	"encoding/json"
+	"strconv"
+
 	// "errors"
 	"fmt"
 	"io/ioutil"
+
 	// "log"
 	"math/big"
 	"net/http"
+
 	// "strconv"
 	"strings"
 
@@ -93,13 +97,23 @@ func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.Trans
 
 	campaignChaincodeArgs := util.ToChaincodeArgs("GetCampaignById", camId)
 	response := ctx.GetStub().InvokeChaincode("campaign", campaignChaincodeArgs, "mychannel")
-	sendLog("response", string(response.Payload))
-	var campaign Campaign
-	json.Unmarshal([]byte(response.Payload), &campaign)
 
-	// if err != nil {
-	// 	return nil, err
-	// }
+	sendLog("response.Payload", string(response.Payload))
+	sendLog("response.Status", string(response.Status))
+	sendLog("response.message", string(response.Message))
+	// sendLog("response.error", string(response.Error))
+	// sendLog("response.message is nil", strconv.FormatBool(response.Message == ""))
+
+	if response.Message != "" {
+		return nil, fmt.Errorf(response.Message)
+	}
+
+	var campaign Campaign
+
+	err := json.Unmarshal([]byte(response.Payload), &campaign)
+	if err != nil {
+		return nil, err
+	}
 
 	// generate a random values for each verifiers
 	numVerifiers := len(campaign.VerifierURLs)
@@ -234,6 +248,25 @@ func (s *ProofSmartContract) GetProofById(ctx contractapi.TransactionContextInte
 	}
 
 	return &proof, nil
+}
+
+func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionContextInterface, camId string, proofId string) (bool, error) {
+	proofJSON, err := ctx.GetStub().GetState(proofId)
+	// backupJSON, err := ctx.GetStub().GetState(backupID)
+	if err != nil {
+		return false, fmt.Errorf("failed to read from world state: %v", err)
+	}
+	if proofJSON == nil {
+		return false, fmt.Errorf("the campaign raw id %s does not exist", proofId)
+	}
+
+	var proof CollectedCustomerProof
+	err = json.Unmarshal(proofJSON, &proof)
+	if err != nil {
+		return false, err
+	}
+
+	return false, nil
 }
 
 func sendLog(name, message string) {
