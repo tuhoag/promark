@@ -2,12 +2,12 @@
 
 . $BASE_SCRIPTS_DIR/utils.sh
 
-CC_QUERY_CUSTOMER_CAMPAIGN_PROOF_FCN="GetCustomerCampaignProof"
+CC_GENERATE_CUSTOMER_CAMPAIGN_PROOF_FCN="GenerateCustomerCampaignProof"
 
 
-function queryProofCustomerCampaign() {
-    local chaincodeName=$1
-    local channelName=$2
+function generateProofCustomerCampaign() {
+    local channelName=$1
+    local chaincodeName=$2
     local orgTypes=$3
     local orgNum=$4
     local peerNum=$5
@@ -17,7 +17,7 @@ function queryProofCustomerCampaign() {
     verifyResult $res "Invoke transaction failed on channel '$channelName' due to uneven number of peer and org parameters "
 
     set -x
-    fcn_call0='{"function":"'${CC_QUERY_CUSTOMER_CAMPAIGN_PROOF_FCN}'","Args":["c:001","u:001"]}'
+    fcn_call0='{"function":"'${CC_GENERATE_CUSTOMER_CAMPAIGN_PROOF_FCN}'","Args":["c:001","u:001"]}'
     { set +x; } 2>/dev/null
 
     set -x
@@ -29,4 +29,4 @@ function queryProofCustomerCampaign() {
     cat log.txt
 }
 
-queryProofCustomerCampaign $1 $2 $3 $4 $5
+generateProofCustomerCampaign $1 $2 $3 $4 $5

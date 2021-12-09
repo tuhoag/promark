@@ -118,8 +118,6 @@ function getBlockPath() {
 # }
 
 function parsePeerConnectionParameters() {
-    echo $1
-
     IFS=',' read -r -a orgTypes <<< $1
     local maxOrdId=$(($2 - 1))
     local maxPeerId=$(($3 - 1))

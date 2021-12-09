@@ -2,12 +2,12 @@
 
 . $BASE_SCRIPTS_DIR/utils.sh
 
-CC_COLLECT_PROOF_FCN="CollectCustomerProofCampaign"
+CC_COLLECT_PROOF_FCN="AddCustomerProofCampaign"
 
 
-function collectCustomerProof() {
-    local chaincodeName=$1
-    local channelName=$2
+function addCustomerProof() {
+    local channelName=$1
+    local chaincodeName=$2
     local orgTypes=$3
     local orgNum=$4
     local peerNum=$5
@@ -40,4 +40,4 @@ function collectCustomerProof() {
 
 }
 
-collectCustomerProof $1 $2 $3 $4 $5 $6 $7 $8
+addCustomerProof $1 $2 $3 $4 $5 $6 $7 $8

@@ -45,28 +45,42 @@ function monitor() {
 }
 
 function packageChaincode() {
-    $BASE_SCRIPTS_DIR/package-chaincode.sh $CAMPAIGN_CHAINCODE_NAME $1
-    $BASE_SCRIPTS_DIR/package-chaincode.sh $PROOF_CHAINCODE_NAME $1
+    $BASE_SCRIPTS_DIR/package-chaincode.sh $1 $2
 }
 
 function installChaincode() {
-
     # args: $CHANNEL_NAME $CHAINCODE_NAME  <org name> <org id> <number of peer>
-    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
-    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
+    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $1 "adv,bus" $2 $3
+    # $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
 function approveChaincode {
     # args: $CHANNEL_NAME $CHAINCODE_NAME  <org name> <org id> <number of peer> <sequence>
-    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
-    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $1 "adv,bus" $2 $3 $4
+    # $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
 }
 
 function commitChaincode() {
     # args: $CHANNEL_NAME $CHAINCODE_NAME  <number of org> <number of peer>
-    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
-    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $1 "adv,bus" $2 $3 $4
+    # $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
+}
 
+function deployChaincode() {
+    # args: $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
+    local CHAINCODE_NAME=$1
+    local NO_ORG=$2
+    local NO_PEERS=$3
+    local SEQUENCE=$4
+
+    sleep 1
+    packageChaincode $CHAINCODE_NAME $SEQUENCE
+    sleep 1
+    installChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
+    sleep 1
+    approveChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
+    sleep 1
+    commitChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
 }
 
 function runExternalService() {
@@ -109,12 +123,20 @@ function getCampById() {
     $SCRIPTS_DIR/get-campaign-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
-function invokeGetCustomerProof() {
-    $SCRIPTS_DIR/query-customer-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
+function invokeGenerateCustomerProof() {
+    $SCRIPTS_DIR/generate-customer-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
-function invokeCollectCustomerProof() {
-    $SCRIPTS_DIR/collect-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
+function invokeAddCustomerProof() {
+    $SCRIPTS_DIR/add-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
+}
+
+function invokeGetAllCustomerProofs() {
+    $SCRIPTS_DIR/get-all-proofs.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
+}
+
+function invokeGetCustomerProofById() {
+    $SCRIPTS_DIR/get-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
 }
 
 function getAllCampaignData() {
@@ -167,13 +189,9 @@ if [ $MODE = "restart" ]; then
     joinChannel $NO_ORG $NO_PEERS
 
     sleep 1
-    packageChaincode 1
-    sleep 1
-    installChaincode $NO_ORG $NO_PEERS
-    sleep 1
-    approveChaincode $NO_ORG $NO_PEERS 1
-    sleep 1
-    commitChaincode $NO_ORG $NO_PEERS 1
+    deployChaincode $CAMPAIGN_CHAINCODE_NAME $NO_ORG $NO_PEERS 1
+    sleep 5
+    deployChaincode $PROOF_CHAINCODE_NAME $NO_ORG $NO_PEERS 1
 
 elif [ $MODE = "build" ]; then
     SUB_MODE=$2
@@ -221,44 +239,37 @@ elif [ $MODE = "channel" ]; then
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "chaincode" ]; then
-    # deployCC $CAMPAIGN_CHAINCODE_NAME
-
     SUB_MODE=$2
+    CHAINCODE_NAME=$3
 
     if [ $SUB_MODE = "package" ]; then
-        SEQUENCE=$3
+        SEQUENCE=$4
 
-        packageChaincode $SEQUENCE
+        packageChaincode $CHAINCODE_NAME $SEQUENCE
     elif [ $SUB_MODE = "install" ]; then
-        NO_ORG=$3
-        NO_PEERS=$4
-        SEQUENCE=$5
+        NO_ORG=$4
+        NO_PEERS=$5
+        SEQUENCE=$6
 
-        installChaincode $NO_ORG $NO_PEERS
+        installChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "approve" ]; then
-        NO_ORG=$3
-        NO_PEERS=$4
-        SEQUENCE=$5
+        NO_ORG=$4
+        NO_PEERS=$5
+        SEQUENCE=$6
 
-        approveChaincode $NO_ORG $NO_PEERS $SEQUENCE
+        approveChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
     elif [ $SUB_MODE = "commit" ]; then
-        NO_ORG=$3
-        NO_PEERS=$4
-        SEQUENCE=$5
+        NO_ORG=$4
+        NO_PEERS=$5
+        SEQUENCE=$6
 
-        commitChaincode $NO_ORG $NO_PEERS $SEQUENCE
-    elif [ $SUB_MODE = "all" ]; then
-        NO_ORG=$3
-        NO_PEERS=$4
-        SEQUENCE=$5
+        commitChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
+    elif [ $SUB_MODE = "deploy" ]; then
+        NO_ORG=$4
+        NO_PEERS=$5
+        SEQUENCE=$6
 
-        packageChaincode $SEQUENCE
-        sleep 2
-        installChaincode $NO_ORG $NO_PEERS
-        sleep 2
-        approveChaincode $NO_ORG $NO_PEERS $SEQUENCE
-        sleep 2
-        commitChaincode $NO_ORG $NO_PEERS $SEQUENCE
+        deployChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
@@ -285,13 +296,16 @@ elif [ $MODE = "proof" ]; then
     NO_ORG=$3
     NO_PEERS=$4
 
-    if [ $SUB_MODE = "get" ]; then
-        invokeGetCustomerProof $NO_ORG $NO_PEERS
+    if [ $SUB_MODE = "gen" ]; then
+        invokeGenerateCustomerProof $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "add" ]; then
         proofId=$5
         comm=$6
         rsStr=$7
-        invokeCollectCustomerProof $NO_ORG $NO_PEERS $proofId $comm $rsStr
+        invokeAddCustomerProof $NO_ORG $NO_PEERS $proofId $comm $rsStr
+    elif [ $SUB_MODE = "all" ]; then
+        proofId=$5
+        invokeGetAllCustomerProofs $NO_ORG $NO_PEERS
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi

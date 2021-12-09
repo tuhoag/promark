@@ -3,7 +3,7 @@ package chaincode
 import (
 	b64 "encoding/base64"
 	"encoding/json"
-	"errors"
+	// "errors"
 	"fmt"
 	"io/ioutil"
 	// "log"
@@ -14,6 +14,7 @@ import (
 
 	"github.com/bwesterb/go-ristretto"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/hyperledger/fabric/common/util"
 )
 
 type ProofSmartContract struct {
@@ -85,26 +86,20 @@ type CollectedData struct {
 	// R2   string `json:"R2"`
 }
 
-func (s *ProofSmartContract) GetCustomerCampaignProof(ctx contractapi.TransactionContextInterface, camId string, userId string) (*ProofCustomerCampaign, error) {
-	sendLog("GetCustomerCampaignProof", "")
+func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.TransactionContextInterface, camId string, userId string) (*ProofCustomerCampaign, error) {
+	sendLog("GenerateCustomerCampaignProof", "")
 	sendLog("Campaign:", camId)
 	sendLog("userId", userId)
 
-	campaignJSON, err := ctx.GetStub().GetState(camId)
-
-	if err != nil {
-		return nil, errors.New("Unable to read the world state")
-	}
-
-	if campaignJSON == nil {
-		return nil, fmt.Errorf("Cannot get campaign since its raw id %s is unexisted", camId)
-	}
-
+	campaignChaincodeArgs := util.ToChaincodeArgs("GetCampaignById", camId)
+	response := ctx.GetStub().InvokeChaincode("campaign", campaignChaincodeArgs, "mychannel")
+	sendLog("response", string(response.Payload))
 	var campaign Campaign
-	err = json.Unmarshal(campaignJSON, &campaign)
-	if err != nil {
-		return nil, err
-	}
+	json.Unmarshal([]byte(response.Payload), &campaign)
+
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// generate a random values for each verifiers
 	numVerifiers := len(campaign.VerifierURLs)
