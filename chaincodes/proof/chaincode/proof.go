@@ -336,6 +336,89 @@ func requestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoPara
 	return cryptoParams
 }
 
+// Create a new campaign
+func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) error {
+	sendLog("campaignId", camId)
+	sendLog("campaignName", name)
+	sendLog("advertiser", advertiser)
+	sendLog("business", business)
+
+	existing, err := ctx.GetStub().GetState(camId)
+	if err != nil {
+		return errors.New("Unable to read the world state")
+	}
+
+	if existing != nil {
+		return fmt.Errorf("Cannot create asset since its raw id %s is existed", camId)
+	}
+
+	verifierURLs := strings.Split(verifierURLStr, ";")
+	numVerifiers := len(verifierURLs)
+
+	sendLog("numVerifiers", string(numVerifiers))
+
+	cryptoParams := requestCampaignCryptoParams(camId, numVerifiers)
+	sendLog("cryptoParams.H", convertBytesToPoint(cryptoParams.H).String())
+
+	// // Request to external service to get params
+	var Ci, C ristretto.Point
+	var commStr, totalCommEnc string
+
+	for i := 0; i < numVerifiers; i++ {
+		verifierURL := verifierURLs[i]
+		comURL = verifierURL + "/comm"
+		sendLog("verifierURL", verifierURL)
+		sendLog("comURL", comURL)
+
+		// 	testVer(ver)
+		// 	sendLog("id", id)
+		// 	sendLog("Hvalue", string(cryptoParams.H))
+		// 	sendLog("R1value", string(cryptoParams.R1[i]))
+
+		comm := computeCommitment(camId, comURL, i, cryptoParams)
+		// commDec, _ := b64.StdEncoding.DecodeString(comm)
+		// Ci = convertStringToPoint(string(commDec))
+		sendLog("C"+string(i)+" encoding:", comm)
+		// sendLog("C"+string(i)+" encoding:", comm)
+
+		commStr += comm + ";"
+
+		if i == 0 {
+			C = Ci
+		} else {
+			C.Add(&C, &Ci)
+		}
+		CBytes := C.Bytes()
+		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
+	}
+
+	sendLog("total Comm encoding:", totalCommEnc)
+	// // End of comm computation
+
+	campaign := Campaign{
+		ID:         camId,
+		Name:       name,
+		Advertiser: advertiser,
+		Business:   business,
+		CommC:      commStr,
+		// CommC2:     comm2,
+		VerifierURLs: verifierURLs,
+	}
+
+	campaignJSON, err := json.Marshal(campaign)
+	if err != nil {
+		return err
+	}
+
+	err = ctx.GetStub().PutState(camId, campaignJSON)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
 	//connect to verifier: campID,  H , r
 	sendLog("Start of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")

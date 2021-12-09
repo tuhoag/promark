@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	campaignChaincode, err := contractapi.NewChaincode(&chaincode.SmartContract{})
+	campaignChaincode, err := contractapi.NewChaincode(&chaincode.CampaignSmartContract{})
 	if err != nil {
 		log.Panicf("Error creating campaign chaincode: %v", err)
 	}

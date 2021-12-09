@@ -17,7 +17,7 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-type SmartContract struct {
+type CampaignSmartContract struct {
 	contractapi.Contract
 }
 
@@ -86,7 +86,7 @@ type CollectedData struct {
 	// R2   string `json:"R2"`
 }
 
-func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
+func (s *CampaignSmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	campaigns := []Campaign{
 		{ID: "id1", Name: "campaign1", Advertiser: "Adv0", Business: "Bus0", CommC: ""},
 		// {ID: "id2", Name: "campaign2", Advertiser: "Adv0", Business: "Bus0", CommC1: "", CommC2: ""},
@@ -107,16 +107,8 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 	return nil
 }
 
-func GetRawCampaignId(camId string) string {
-	return "c:" + camId
-}
-
-func GetRawProofId(proofId string) string {
-	return "p:" + proofId
-}
-
 // GetAllAssets returns all assets found in world state
-func (s *SmartContract) GetAllCampaigns(ctx contractapi.TransactionContextInterface) ([]*Campaign, error) {
+func (s *CampaignSmartContract) GetAllCampaigns(ctx contractapi.TransactionContextInterface) ([]*Campaign, error) {
 	// queryString := fmt.Sprintf(`{"selector":{"id":{"$regex": %s}}}`, "c:")
 	// // "$regex": "bro"
 	// resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
@@ -176,7 +168,7 @@ func (s *SmartContract) GetAllCampaigns(ctx contractapi.TransactionContextInterf
 	return campaigns, nil
 }
 
-func (s *SmartContract) GetAllCollectedData(ctx contractapi.TransactionContextInterface) ([]*CollectedData, error) {
+func (s *CampaignSmartContract) GetAllCollectedData(ctx contractapi.TransactionContextInterface) ([]*CollectedData, error) {
 	// range query with empty string for startKey and endKey does an
 	// open-ended query of all assets in the chaincode namespace.
 	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
@@ -205,22 +197,21 @@ func (s *SmartContract) GetAllCollectedData(ctx contractapi.TransactionContextIn
 }
 
 // Create a new campaign
-func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) error {
+func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) error {
 	sendLog("campaignId", camId)
 	sendLog("campaignName", name)
 	sendLog("advertiser", advertiser)
 	sendLog("business", business)
 
-	rawCamId := GetRawCampaignId(camId)
-	sendLog("rawCamId", rawCamId)
+	sendLog("camId", camId)
 
-	existing, err := ctx.GetStub().GetState(rawCamId)
+	existing, err := ctx.GetStub().GetState(camId)
 	if err != nil {
 		return errors.New("Unable to read the world state")
 	}
 
 	if existing != nil {
-		return fmt.Errorf("Cannot create asset since its raw id %s is existed", rawCamId)
+		return fmt.Errorf("Cannot create asset since its raw id %s is existed", camId)
 	}
 
 	verifierURLs := strings.Split(verifierURLStr, ";")
@@ -228,7 +219,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 
 	sendLog("numVerifiers", string(numVerifiers))
 
-	cryptoParams := requestCampaignCryptoParams(rawCamId, numVerifiers)
+	cryptoParams := requestCampaignCryptoParams(camId, numVerifiers)
 	sendLog("cryptoParams.H", convertBytesToPoint(cryptoParams.H).String())
 
 	// // Request to external service to get params
@@ -246,7 +237,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		// 	sendLog("Hvalue", string(cryptoParams.H))
 		// 	sendLog("R1value", string(cryptoParams.R1[i]))
 
-		comm := computeCommitment(rawCamId, comURL, i, cryptoParams)
+		comm := computeCommitment(camId, comURL, i, cryptoParams)
 		// commDec, _ := b64.StdEncoding.DecodeString(comm)
 		// Ci = convertStringToPoint(string(commDec))
 		sendLog("C"+string(i)+" encoding:", comm)
@@ -267,7 +258,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	// // End of comm computation
 
 	campaign := Campaign{
-		ID:         rawCamId,
+		ID:         camId,
 		Name:       name,
 		Advertiser: advertiser,
 		Business:   business,
@@ -281,7 +272,7 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 		return err
 	}
 
-	err = ctx.GetStub().PutState(rawCamId, campaignJSON)
+	err = ctx.GetStub().PutState(camId, campaignJSON)
 
 	if err != nil {
 		return err
@@ -290,15 +281,14 @@ func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterfa
 	return nil
 }
 
-func (s *SmartContract) DeleteCampaignByID(ctx contractapi.TransactionContextInterface, camId string) (bool, error) {
-	rawCamId := GetRawCampaignId(camId)
-	campaignJSON, err := ctx.GetStub().GetState(rawCamId)
+func (s *CampaignSmartContract) DeleteCampaignByID(ctx contractapi.TransactionContextInterface, camId string) (bool, error) {
+	campaignJSON, err := ctx.GetStub().GetState(camId)
 	// backupJSON, err := ctx.GetStub().GetState(backupID)
 	if err != nil {
 		return false, fmt.Errorf("failed to read from world state: %v", err)
 	}
 	if campaignJSON == nil {
-		return false, fmt.Errorf("the campaign raw id %s does not exist", rawCamId)
+		return false, fmt.Errorf("the campaign raw id %s does not exist", camId)
 	}
 
 	var campaign Campaign
@@ -307,7 +297,7 @@ func (s *SmartContract) DeleteCampaignByID(ctx contractapi.TransactionContextInt
 		return false, err
 	}
 
-	err = ctx.GetStub().DelState(rawCamId)
+	err = ctx.GetStub().DelState(camId)
 	if err != nil {
 		return false, fmt.Errorf("Failed to delete state:" + err.Error())
 	}
@@ -315,21 +305,19 @@ func (s *SmartContract) DeleteCampaignByID(ctx contractapi.TransactionContextInt
 	return true, err
 }
 
-func (s *SmartContract) GetCustomerCampaignProof(ctx contractapi.TransactionContextInterface, camId string, userId string) (*ProofCustomerCampaign, error) {
+func (s *CampaignSmartContract) GetCustomerCampaignProof(ctx contractapi.TransactionContextInterface, camId string, userId string) (*ProofCustomerCampaign, error) {
 	sendLog("GetCustomerCampaignProof", "")
 	sendLog("Campaign:", camId)
 	sendLog("userId", userId)
 
-	rawCamId := GetRawCampaignId(camId)
-
-	campaignJSON, err := ctx.GetStub().GetState(rawCamId)
+	campaignJSON, err := ctx.GetStub().GetState(camId)
 
 	if err != nil {
 		return nil, errors.New("Unable to read the world state")
 	}
 
 	if campaignJSON == nil {
-		return nil, fmt.Errorf("Cannot get campaign since its raw id %s is unexisted", rawCamId)
+		return nil, fmt.Errorf("Cannot get campaign since its raw id %s is unexisted", camId)
 	}
 
 	var campaign Campaign
@@ -343,7 +331,7 @@ func (s *SmartContract) GetCustomerCampaignProof(ctx contractapi.TransactionCont
 	sendLog("numVerifiers", string(numVerifiers))
 
 	// get crypto params
-	cryptoParams := requestCustomerCampaignCryptoParams(rawCamId, userId, numVerifiers)
+	cryptoParams := requestCustomerCampaignCryptoParams(camId, userId, numVerifiers)
 
 	var Ci, C ristretto.Point
 	var totalCommEnc string
@@ -360,7 +348,7 @@ func (s *SmartContract) GetCustomerCampaignProof(ctx contractapi.TransactionCont
 		// 	sendLog("Hvalue", string(cryptoParams.H))
 		// 	sendLog("R1value", string(cryptoParams.R1[i]))
 
-		comm := computeCommitment(rawCamId, comURL, i, cryptoParams)
+		comm := computeCommitment(camId, comURL, i, cryptoParams)
 		// commDec, _ := b64.StdEncoding.DecodeString(comm)
 		// Ci = convertStringToPoint(string(commDec))
 		sendLog("C"+string(i)+" encoding:", comm)
@@ -388,27 +376,25 @@ func (s *SmartContract) GetCustomerCampaignProof(ctx contractapi.TransactionCont
 	return &proof, nil
 }
 
-func (s *SmartContract) CollectCustomerProofCampaign(ctx contractapi.TransactionContextInterface, proofId string, comm string, rsStr string) error {
+func (s *CampaignSmartContract) CollectCustomerProofCampaign(ctx contractapi.TransactionContextInterface, proofId string, comm string, rsStr string) error {
 	sendLog("CollectCustomerProofCampaign", "")
 	sendLog("proofId", proofId)
 	sendLog("comm", comm)
 	sendLog("rsStr", rsStr)
 
-	rawProofId := GetRawProofId(proofId)
-
-	proofJSON, err := ctx.GetStub().GetState(rawProofId)
+	proofJSON, err := ctx.GetStub().GetState(proofId)
 	if err != nil {
 		return fmt.Errorf("failed to read from world state: %v", err)
 	}
 
 	if proofJSON != nil {
-		return fmt.Errorf("the user proof raw id %s is existed", rawProofId)
+		return fmt.Errorf("the user proof raw id %s is existed", proofId)
 	}
 
 	rs := strings.Split(rsStr, ";")
 
 	collectedProof := CollectedCustomerProof{
-		ID:   rawProofId,
+		ID:   proofId,
 		Comm: comm,
 		Rs:   rs,
 	}
@@ -418,7 +404,7 @@ func (s *SmartContract) CollectCustomerProofCampaign(ctx contractapi.Transaction
 		return err
 	}
 
-	err = ctx.GetStub().PutState(rawProofId, collectedProofJSON)
+	err = ctx.GetStub().PutState(proofId, collectedProofJSON)
 
 	if err != nil {
 		return err
@@ -427,15 +413,14 @@ func (s *SmartContract) CollectCustomerProofCampaign(ctx contractapi.Transaction
 	return nil
 }
 
-func (s *SmartContract) GetCampaignById(ctx contractapi.TransactionContextInterface, camId string) (*Campaign, error) {
-	rawCamId := GetRawCampaignId(camId)
-	campaignJSON, err := ctx.GetStub().GetState(rawCamId)
+func (s *CampaignSmartContract) GetCampaignById(ctx contractapi.TransactionContextInterface, camId string) (*Campaign, error) {
+	campaignJSON, err := ctx.GetStub().GetState(camId)
 	// backupJSON, err := ctx.GetStub().GetState(backupID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from world state: %v", err)
 	}
 	if campaignJSON == nil {
-		return nil, fmt.Errorf("the campaign raw id %s does not exist", rawCamId)
+		return nil, fmt.Errorf("the campaign raw id %s does not exist", camId)
 	}
 
 	var campaign Campaign
@@ -447,15 +432,14 @@ func (s *SmartContract) GetCampaignById(ctx contractapi.TransactionContextInterf
 	return &campaign, nil
 }
 
-func (s *SmartContract) GetProofById(ctx contractapi.TransactionContextInterface, proofId string) (*CollectedCustomerProof, error) {
-	rawProofId := GetRawProofId(proofId)
-	proofJSON, err := ctx.GetStub().GetState(rawProofId)
+func (s *CampaignSmartContract) GetProofById(ctx contractapi.TransactionContextInterface, proofId string) (*CollectedCustomerProof, error) {
+	proofJSON, err := ctx.GetStub().GetState(proofId)
 	// backupJSON, err := ctx.GetStub().GetState(backupID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from world state: %v", err)
 	}
 	if proofJSON == nil {
-		return nil, fmt.Errorf("the campaign raw id %s does not exist", rawProofId)
+		return nil, fmt.Errorf("the campaign raw id %s does not exist", proofId)
 	}
 
 	var proof CollectedCustomerProof
@@ -467,7 +451,7 @@ func (s *SmartContract) GetProofById(ctx contractapi.TransactionContextInterface
 	return &proof, nil
 }
 
-func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInterface, id string, user string, n string, comm string, r string, addresses string) error {
+func (s *CampaignSmartContract) AddCollectedData(ctx contractapi.TransactionContextInterface, id string, user string, n string, comm string, r string, addresses string) error {
 	existing, err := ctx.GetStub().GetState(user)
 
 	if err != nil {
@@ -537,7 +521,7 @@ func (s *SmartContract) AddCollectedData(ctx contractapi.TransactionContextInter
 	return nil
 }
 
-func (s *SmartContract) DeleteDataByUserId(ctx contractapi.TransactionContextInterface, userId string) (bool, error) {
+func (s *CampaignSmartContract) DeleteDataByUserId(ctx contractapi.TransactionContextInterface, userId string) (bool, error) {
 	dataJSON, err := ctx.GetStub().GetState(userId)
 	if err != nil {
 		return false, fmt.Errorf("failed to read from world state: %v", err)
@@ -560,7 +544,7 @@ func (s *SmartContract) DeleteDataByUserId(ctx contractapi.TransactionContextInt
 	return true, err
 }
 
-func (s *SmartContract) QueryLedgerById(ctx contractapi.TransactionContextInterface, id string) ([]*Campaign, error) {
+func (s *CampaignSmartContract) QueryLedgerById(ctx contractapi.TransactionContextInterface, id string) ([]*Campaign, error) {
 	queryString := fmt.Sprintf(`{"selector":{"id":{"$lte": "%s"}}}`, id)
 
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)

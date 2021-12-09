@@ -4,8 +4,9 @@
 
 export CHANNEL_NAME="mychannel"
 export LOG_LEVEL=INFO
-export FABRIC_LOGGING_SPEC=DEBUG
-export CHAINCODE_NAME="campaign"
+export FABRIC_LOGGING_SPEC=INFO # log of the host machine
+export CAMPAIGN_CHAINCODE_NAME="campaign"
+export PROOF_CHAINCODE_NAME="proof"
 
 function initialize() {
     # generate all organizations
@@ -44,29 +45,29 @@ function monitor() {
 }
 
 function packageChaincode() {
-    $BASE_SCRIPTS_DIR/package-chaincode.sh "campaign" $1
-    $BASE_SCRIPTS_DIR/package-chaincode.sh "proof" $1
+    $BASE_SCRIPTS_DIR/package-chaincode.sh $CAMPAIGN_CHAINCODE_NAME $1
+    $BASE_SCRIPTS_DIR/package-chaincode.sh $PROOF_CHAINCODE_NAME $1
 }
 
 function installChaincode() {
 
     # args: $CHANNEL_NAME $CHAINCODE_NAME  <org name> <org id> <number of peer>
-    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME "campaign" "adv,bus" $1 $2
-    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME "proof" "adv,bus" $1 $2
+    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
+    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
     # $BASE_SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2
 
 }
 
 function approveChaincode {
     # args: $CHANNEL_NAME $CHAINCODE_NAME  <org name> <org id> <number of peer> <sequence>
-    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME "campaign" "adv,bus" $1 $2 $3
-    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME "proof" "adv,bus" $1 $2 $3
+    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
 }
 
 function commitChaincode() {
     # args: $CHANNEL_NAME $CHAINCODE_NAME  <number of org> <number of peer>
-    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME "campaign" "adv,bus" $1 $2 $3
-    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME "proof" "adv,bus" $1 $2 $3
+    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
 }
 
 function runExternalService() {
@@ -99,31 +100,23 @@ function invokeInitLedger() {
 }
 
 function invokeCreateCamp() {
-    $SCRIPTS_DIR/create-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
+    $SCRIPTS_DIR/create-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
 function getAllCamp() {
-    $SCRIPTS_DIR/get-all-camp.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
+    $SCRIPTS_DIR/get-all-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
 function invokeGetCustomerProof() {
-    $SCRIPTS_DIR/query-customer-proof.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
+    $SCRIPTS_DIR/query-customer-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
 function invokeCollectCustomerProof() {
-    $SCRIPTS_DIR/collect-proof.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2 $3 $4 $5
-}
-
-function invokeCollectData() {
-    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
-}
-
-function invokeQueryById() {
-    $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
+    $SCRIPTS_DIR/collect-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
 }
 
 function deleteCampById() {
-    $SCRIPTS_DIR/delete-camp-by-id.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
+    $SCRIPTS_DIR/delete-camp-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME  "adv,bus" $1 $2
 }
 
 function getCampById() {
@@ -133,6 +126,14 @@ function getCampById() {
 function getAllCampaignData() {
     $SCRIPTS_DIR/get-all-campaign-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 
+}
+
+function invokeCollectData() {
+    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
+}
+
+function invokeQueryById() {
+    $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 }
 
 function runLogService() {
@@ -226,7 +227,7 @@ elif [ $MODE = "channel" ]; then
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "chaincode" ]; then
-    # deployCC "campaign"
+    # deployCC $CAMPAIGN_CHAINCODE_NAME
 
     SUB_MODE=$2
 
@@ -272,9 +273,7 @@ elif [ $MODE = "camp" ]; then
     NO_ORG=$3
     NO_PEERS=$4
 
-    if [ $SUB_MODE = "init" ]; then
-        invokeInitLedger $NO_ORG $NO_PEERS
-    elif [ $SUB_MODE = "add" ]; then
+    if [ $SUB_MODE = "add" ]; then
         invokeCreateCamp $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "all" ]; then
         getAllCamp $NO_ORG $NO_PEERS
@@ -287,14 +286,14 @@ elif [ $MODE = "camp" ]; then
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
-elif [ $MODE = "user" ]; then
+elif [ $MODE = "proof" ]; then
     SUB_MODE=$2
     NO_ORG=$3
     NO_PEERS=$4
 
-    if [ $SUB_MODE = "proof" ]; then
+    if [ $SUB_MODE = "get" ]; then
         invokeGetCustomerProof $NO_ORG $NO_PEERS
-    elif [ $SUB_MODE = "collect" ]; then
+    elif [ $SUB_MODE = "add" ]; then
         proofId=$5
         comm=$6
         rsStr=$7
