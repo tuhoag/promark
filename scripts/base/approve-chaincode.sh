@@ -3,8 +3,8 @@
 . $BASE_SCRIPTS_DIR/utils.sh
 
 function approveForMyOrg() {
-    local chaincodeName=$1
-    local channelName=$2
+    local channelName=$1
+    local chaincodeName=$2
     IFS=',' read -r -a orgTypes <<< $3
     local orgNum=$4
     local peerNum=$5

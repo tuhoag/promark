@@ -23,9 +23,6 @@ function createChannel() {
 function joinChannel() {
      # args: $CHANNEL_NAME <org type> <number of org> <number of peer>
     $BASE_SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv,bus" $1 $2
-        # $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv" 1 2
-    # $BASE_SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" $1 $2
-    # $SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "bus" 0 2
 }
 
 function networkUp() {
@@ -47,30 +44,29 @@ function monitor() {
 }
 
 function packageChaincode() {
-    $BASE_SCRIPTS_DIR/package-chaincode.sh $CHAINCODE_NAME $1
+    $BASE_SCRIPTS_DIR/package-chaincode.sh "campaign" $1
+    $BASE_SCRIPTS_DIR/package-chaincode.sh "proof" $1
 }
 
 function installChaincode() {
 
-    # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer>
-    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
-
+    # args: $CHANNEL_NAME $CHAINCODE_NAME  <org name> <org id> <number of peer>
+    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME "campaign" "adv,bus" $1 $2
+    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME "proof" "adv,bus" $1 $2
     # $BASE_SCRIPTS_DIR/install-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2
 
 }
 
 function approveChaincode {
-    # args: $CHAINCODE_NAME $CHANNEL_NAME <org name> <org id> <number of peer> <sequence>
-    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2 $3
-
-    # $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "bus" $1 $2 $3
-
-    # $BASE_SCRIPTS_DIR/commit-checkreadiness.sh $CHAINCODE_NAME $CHANNEL_NAME $3
+    # args: $CHANNEL_NAME $CHAINCODE_NAME  <org name> <org id> <number of peer> <sequence>
+    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME "campaign" "adv,bus" $1 $2 $3
+    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME "proof" "adv,bus" $1 $2 $3
 }
 
 function commitChaincode() {
-    # args: $CHAINCODE_NAME $CHANNEL_NAME <number of org> <number of peer>
-    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2 $3
+    # args: $CHANNEL_NAME $CHAINCODE_NAME  <number of org> <number of peer>
+    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME "campaign" "adv,bus" $1 $2 $3
+    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME "proof" "adv,bus" $1 $2 $3
 }
 
 function runExternalService() {
@@ -130,7 +126,9 @@ function deleteCampById() {
     $SCRIPTS_DIR/delete-camp-by-id.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
 }
 
-
+function getCampById() {
+    $SCRIPTS_DIR/get-campaign-by-id.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
+}
 
 function getAllCampaignData() {
     $SCRIPTS_DIR/get-all-campaign-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
@@ -173,14 +171,14 @@ if [ $MODE = "restart" ]; then
     sleep 10
     joinChannel $NO_ORG $NO_PEERS
 
-    sleep 10
-    packageChaincode 1
-    sleep 10
-    installChaincode $NO_ORG $NO_PEERS
-    sleep 15
-    approveChaincode $NO_ORG $NO_PEERS 1
-    sleep 15
-    commitChaincode $NO_ORG $NO_PEERS 1
+    # sleep 10
+    # packageChaincode 1
+    # sleep 10
+    # installChaincode $NO_ORG $NO_PEERS
+    # sleep 15
+    # approveChaincode $NO_ORG $NO_PEERS 1
+    # sleep 15
+    # commitChaincode $NO_ORG $NO_PEERS 1
 
 elif [ $MODE = "build" ]; then
     SUB_MODE=$2
@@ -282,6 +280,8 @@ elif [ $MODE = "camp" ]; then
         getAllCamp $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "del" ]; then
         deleteCampById $NO_ORG $NO_PEERS
+    elif [ $SUB_MODE = "get" ]; then
+        getCampById $NO_ORG $NO_PEERS
     elif [ $SUB_MODE = "query" ]; then
         invokeQueryById $NO_ORG $NO_PEERS
     else

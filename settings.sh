@@ -11,7 +11,7 @@ export ORG_CONFIG_PATH=$CONFIG_PATH
 export CHANNEL_PATH=$PROJECT_DIR/channels
 export DOCKER_COMPOSE_PATH=$PROJECT_DIR/docker/docker-compose.yml
 export FABRIC_CFG_PATH=$CONFIG_PATH
-export CHAINCODE_SRC_PATH=$PROJECT_DIR/chaincode
+export CHAINCODE_SRC_PATH=$PROJECT_DIR/chaincodes
 
 export FABRIC_VERSION=2.2
 export PROJECT_NAME=promark
@@ -28,7 +28,7 @@ export ORDERER_CA=$ORGANIZATION_OUTPUTS/ordererOrganizations/$PROJECT_NAME.com/o
 export PATH=$FABRIC_BIN_PATH:$PATH
 
 export CHAINCODE_LANGUAGE=golang
-export CHAINCODE_PACKAGE_DIR=$CHAINCODE_SRC_PATH
+export CHAINCODE_PACKAGE_DIR=$CHAINCODE_SRC_PATH/packages
 
 # Adding for chaincodeCheckReadiness function
 export MAX_RETRY="2"

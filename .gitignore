@@ -20,3 +20,5 @@ node_modules
 /go
 log.txt
 *fuse_hidden*
+/chaincodes/packages
+/chaincodes/*/vendor

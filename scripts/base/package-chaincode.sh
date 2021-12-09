@@ -7,11 +7,11 @@ function packageChaincode() {
     local sequence=$2
     local chaincode_package_path="$CHAINCODE_PACKAGE_DIR/${chaincode_name}.tar.gz"
     local chaincode_label="${chaincode_name}_${sequence}"
-
+    local chaincode_package_src_path="${CHAINCODE_SRC_PATH}/${chaincode_name}"
     infoln "Packaging chaincode $chaincode_name"
 
-    infoln "Vendoring Go dependencies at $CHAINCODE_SRC_PATH"
-    pushd $CHAINCODE_SRC_PATH
+    infoln "Vendoring Go dependencies at $chaincode_package_src_path"
+    pushd $chaincode_package_src_path
     GO111MODULE=on go mod vendor
     popd
     successln "Finished vendoring Go dependencies"
@@ -21,7 +21,7 @@ function packageChaincode() {
     # fi
 
     set -x
-    peer lifecycle chaincode package $chaincode_package_path --path $CHAINCODE_PACKAGE_DIR --lang $CHAINCODE_LANGUAGE --label $chaincode_label >&log.txt
+    peer lifecycle chaincode package $chaincode_package_path --path $chaincode_package_src_path --lang $CHAINCODE_LANGUAGE --label $chaincode_label >&log.txt
     res=$?
     { set +x; } 2>/dev/null
 

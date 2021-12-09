@@ -11,8 +11,8 @@ function commitChaincode() {
     # local sequence=$6
 
 
-    local chaincodeName=$1
-    local channelName=$2
+    local channelName=$1
+    local chaincodeName=$2
     local orgTypes=$3
     local orgNum=$4
     local peerNum=$5
