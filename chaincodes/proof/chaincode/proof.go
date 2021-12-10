@@ -159,13 +159,12 @@ func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.Trans
 		// Ci = convertStringToPoint(string(commDec))
 		sendLog("R"+string(i)+" encoding:", subProof.R)
 		sendLog("Comm"+string(i)+" encoding:", subProof.Comm)
+		CiBytes, _ := b64.StdEncoding.DecodeString(subProof.Comm)
+		Ci = convertBytesToPoint(CiBytes)
 
 		if i == 0 {
 			C = Ci
 		} else {
-			CiBytes, _ := b64.StdEncoding.DecodeString(subProof.Comm)
-			Ci = convertBytesToPoint(CiBytes)
-
 			C.Add(&C, &Ci)
 
 			sendLog("Current Comm", b64.StdEncoding.EncodeToString(C.Bytes()))
@@ -270,6 +269,30 @@ func (s *ProofSmartContract) GetProofById(ctx contractapi.TransactionContextInte
 	}
 
 	return &proof, nil
+}
+
+func (s *ProofSmartContract) DeleteProofByID(ctx contractapi.TransactionContextInterface, proofId string) (bool, error) {
+	proofJSON, err := ctx.GetStub().GetState(proofId)
+	// backupJSON, err := ctx.GetStub().GetState(backupID)
+	if err != nil {
+		return false, fmt.Errorf("failed to read from world state: %v", err)
+	}
+	if proofJSON == nil {
+		return false, fmt.Errorf("the proof id %s does not exist", proofId)
+	}
+
+	var proof CollectedCustomerProof
+	err = json.Unmarshal(proofJSON, &proof)
+	if err != nil {
+		return false, err
+	}
+
+	err = ctx.GetStub().DelState(proofId)
+	if err != nil {
+		return false, fmt.Errorf("Failed to delete state:" + err.Error())
+	}
+
+	return true, err
 }
 
 func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionContextInterface, camId string, proofId string) (bool, error) {

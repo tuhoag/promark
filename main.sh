@@ -135,6 +135,10 @@ function invokeGetAllCustomerProofs() {
     $SCRIPTS_DIR/get-all-proofs.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
+function invokeDelProofById() {
+    $SCRIPTS_DIR/del-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
+}
+
 function invokeGetCustomerProofById() {
     $SCRIPTS_DIR/get-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
 }
@@ -304,8 +308,13 @@ elif [ $MODE = "proof" ]; then
         rsStr=$7
         invokeAddCustomerProof $NO_ORG $NO_PEERS $proofId $comm $rsStr
     elif [ $SUB_MODE = "all" ]; then
-        proofId=$5
         invokeGetAllCustomerProofs $NO_ORG $NO_PEERS
+    elif [ $SUB_MODE = "del" ]; then
+        proofId=$5
+        invokeDelProofById $NO_ORG $NO_PEERS $proofId
+    elif [ $SUB_MODE = "get" ]; then
+        proofId=$5
+        invokeGetCustomerProofById $NO_ORG $NO_PEERS $proofId
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
