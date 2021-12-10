@@ -15,7 +15,7 @@ function deleteById() {
 
     parsePeerConnectionParameters $orgTypes $orgNum $peerNum
 
-    fcnCall='{"function":"'${CC_DELETE_BY_ID_FCN}'","Args":["c:001"]}'
+    fcnCall='{"function":"'${CC_DELETE_BY_ID_FCN}'","Args":["c001"]}'
 
     infoln "Invoke fcn call:${fcnCall} on peers: $peers"
 

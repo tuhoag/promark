@@ -1,29 +1,31 @@
 package main
 
 import (
+	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/bwesterb/go-ristretto"
+	"github.com/gorilla/mux"
+	redis "gopkg.in/redis.v4"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"net/http"
 	"os"
-
-	"github.com/bwesterb/go-ristretto"
-	redis "gopkg.in/redis.v4"
 )
 
 var f *os.File
 
 type CampaignCryptoRequest struct {
-	ID           string
+	CamId        string
 	CustomerId   string
 	NumVerifiers int
 }
 
 type CampaignCryptoParams struct {
-	H  []byte   `json:"hvalue"`
-	R1 [][]byte `json:"r1"`
+	CamID string `json:camId`
+	H     string `json:"h"`
+	// R1 [][]byte `json:"r1"`
 	// R2 []byte `json:"r2"`
 }
 
@@ -35,15 +37,27 @@ func main() {
 		panic(err)
 	}
 
-	http.HandleFunc("/", homeHandler)
-	//http.HandleFunc("/post", postHandler)
-	http.HandleFunc("/camp", paramsGeneratorHandler)
-	http.HandleFunc("/usercamp", userParamsGeneratorHandler)
-	http.HandleFunc("/data", getAllDataHandler)
+	var port string
+	port = os.Getenv("API_PORT")
+
+	fmt.Printf("Starting to listen on port: %s\n", port)
+	myRouter := mux.NewRouter().StrictSlash(true)
+	myRouter.HandleFunc("/", homeHandler)
+	myRouter.HandleFunc("/camp", createCampaignCryptoParamsHandler).Methods("POST")
+	myRouter.HandleFunc("/camp/{id}", getCampaignCryptoParamsHandler)
+
+	// myRouter.HandleFunc("/camp", createVerifierCampaignCryptoParamsHandler).Methods("POST")
+	// myRouter.HandleFunc("/computeCommitment", computeCommitmentHandler)
+	// myRouter.HandleFunc("/comm", computeComm)
+	// myRouter.HandleFunc("/verify", verifyComm)
+	// log.Fatal(http.ListenAndServe(":"+port, myRouter))
+
+	// http.HandleFunc("/camp", createCampaignCryptoParamsHandler)
+	// http.HandleFunc("/usercamp", userParamsGeneratorHandler)
+	// http.HandleFunc("/data", getAllDataHandler)
 
 	// redisConnect()
-
-	http.ListenAndServe(":5000", nil)
+	log.Fatal(http.ListenAndServe(":"+port, myRouter))
 }
 
 func getAllDataHandler(w http.ResponseWriter, r *http.Request) {
@@ -82,20 +96,10 @@ func getAllDataHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-
-	if r.URL.Path != "/" {
-		http.Error(w, "404 not found.", http.StatusNotFound)
-		return
-	}
-
-	if r.Method != "GET" {
-		http.Error(w, "Method is not supported.", http.StatusNotFound)
-		return
-	}
+	port := os.Getenv("API_PORT")
 	// fmt.Println("in generateParams hString: ", hParam)
-	fmt.Fprintf(w, "Hello")
+	fmt.Fprintf(w, "crypto-service.promark.com:"+port)
 	f.WriteString("home")
-
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
@@ -110,8 +114,24 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "username = %s\n", name)
 }
 
-func paramsGeneratorHandler(rw http.ResponseWriter, req *http.Request) {
-	body, err := ioutil.ReadAll(req.Body)
+func getCampaignCryptoParamsHandler(w http.ResponseWriter, r *http.Request) {
+	n, _ := f.WriteString("getCampaignCryptoParamsHandler() calling" + string("\n"))
+	fmt.Println(n)
+
+	vars := mux.Vars(r)
+	camId := vars["id"]
+
+	cryptoParams, err := getCampaignCryptoParams(camId)
+
+	if err != nil {
+		fmt.Errorf("Cannot get cryptoparams %s", err)
+	}
+
+	json.NewEncoder(w).Encode(cryptoParams)
+}
+
+func createCampaignCryptoParamsHandler(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		println(err)
 	}
@@ -120,21 +140,22 @@ func paramsGeneratorHandler(rw http.ResponseWriter, req *http.Request) {
 	f.WriteString("request params: " + string(body) + string("\n"))
 
 	var request CampaignCryptoRequest
-	var cryptoParams CampaignCryptoParams
+	// var cryptoParams CampaignCryptoParams
 	err = json.Unmarshal(body, &request)
 	if err != nil {
 		println(err)
 	}
 
-	log.Println("campaign is:", request.ID, request.NumVerifiers)
+	log.Println("campaign is:", request.CamId)
 
 	// generate and set param
-	setParam(request.ID, request.NumVerifiers)
+	createCampaignCryptoParams(request.CamId)
+
 	//get param from db
-	cryptoParams = getParam(request.ID)
+	cryptoParams, err := getCampaignCryptoParams(request.CamId)
 
 	//temporary return
-	param, err := json.Marshal(cryptoParams)
+	param, err := json.Marshal(&cryptoParams)
 
 	// for log
 	f.WriteString(string(param))
@@ -145,7 +166,7 @@ func paramsGeneratorHandler(rw http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 
-	fmt.Fprintf(rw, string(param))
+	fmt.Fprintf(w, string(param))
 }
 
 func userParamsGeneratorHandler(rw http.ResponseWriter, req *http.Request) {
@@ -158,21 +179,21 @@ func userParamsGeneratorHandler(rw http.ResponseWriter, req *http.Request) {
 	f.WriteString("request params: " + string(body) + string("\n"))
 
 	var request CampaignCryptoRequest
-	var cryptoParams CampaignCryptoParams
+	// var cryptoParams CampaignCryptoParams
 	err = json.Unmarshal(body, &request)
 	if err != nil {
 		println(err)
 	}
 
-	log.Println("campaign is:", request.ID, request.NumVerifiers)
+	log.Println("campaign is:", request.CamId, request.NumVerifiers)
 
 	// generate and set param
-	setParam(request.ID, request.NumVerifiers)
+	createCampaignCryptoParams(request.CamId)
 	//get param from db
-	cryptoParams = getParam(request.ID)
+	cryptoParams, err := getCampaignCryptoParams(request.CamId)
 
 	//temporary return
-	param, err := json.Marshal(cryptoParams)
+	param, err := json.Marshal(&cryptoParams)
 
 	// for log
 	f.WriteString(string(param))
@@ -213,10 +234,10 @@ func redisConnect() {
 }
 
 // Campaign function part
-func setParam(id string, no int) {
+func createCampaignCryptoParams(camId string) (*CampaignCryptoParams, error) {
 	// var r1, r2 ristretto.Scalar
-	var r ristretto.Scalar
-	var rArr [][]byte
+	// var r ristretto.Scalar
+	// var rArr [][]byte
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
@@ -225,66 +246,76 @@ func setParam(id string, no int) {
 	})
 
 	//generate campaign param
-	_, err := client.Get(id).Result()
+	_, err := client.Get(camId).Result()
+	var cryptoParams CampaignCryptoParams
 
 	if err != nil {
 		fmt.Println(err)
 
 		H := generateH()
 		hBytes := H.Bytes()
+		hEnc := b64.StdEncoding.EncodeToString(hBytes)
 		// hString := convertPointToString(H)
-		fmt.Println("hString:.\n", hBytes)
+		fmt.Println("hString:.\n", hEnc)
 
 		//generate "n" number of R for for n verifiers
-		for i := 0; i < no; i++ {
-			r.Rand()
-			rBytes := r.Bytes()
-			fmt.Println("r:.\n", rBytes)
+		// for i := 0; i < no; i++ {
+		// 	r.Rand()
+		// 	rBytes := r.Bytes()
+		// 	fmt.Println("r:.\n", rBytes)
 
-			rArr = append(rArr, rBytes)
+		// 	rArr = append(rArr, rBytes)
 
-			// r1.Rand()
-			// // r1String := string(r1.Bytes())
-			// r1Bytes := r1.Bytes()
-			// fmt.Println("r1:.\n", r1Bytes)
+		// 	// r1.Rand()
+		// 	// // r1String := string(r1.Bytes())
+		// 	// r1Bytes := r1.Bytes()
+		// 	// fmt.Println("r1:.\n", r1Bytes)
 
-			// r2.Rand()
-			// // r2String := string(r2.Bytes())
-			// r2Bytes := r2.Bytes()
-			// fmt.Println("r1:.\n", r2Bytes)
-		}
+		// 	// r2.Rand()
+		// 	// // r2String := string(r2.Bytes())
+		// 	// r2Bytes := r2.Bytes()
+		// 	// fmt.Println("r1:.\n", r2Bytes)
+		// }
 
 		// jsonParam, err := json.Marshal(campaign_param{H: hBytes, R1: r1Bytes, R2: r2Bytes})
 		// if err != nil {
 		// 	fmt.Println(err)
 		// }
 
-		jsonParam, err := json.Marshal(CampaignCryptoParams{H: hBytes, R1: rArr})
+		cryptoParams = CampaignCryptoParams{
+			CamID: camId,
+			H:     hEnc,
+		}
+
+		jsonParam, err := json.Marshal(cryptoParams)
 		if err != nil {
-			fmt.Println(err)
+			return nil, err
 		}
 
 		//store to redis db
-		err = client.Set(id, jsonParam, 0).Err()
+		err = client.Set(camId, jsonParam, 0).Err()
 		if err != nil {
-			fmt.Println(err)
+			return nil, err
 		}
 
 	} else {
 		fmt.Println("The campaign already existed.\n")
 	}
+
+	return &cryptoParams, nil
 }
 
-func getParam(id string) CampaignCryptoParams {
+func getCampaignCryptoParams(camId string) (*CampaignCryptoParams, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
 		DB:       0,
 	})
 
-	val, err := client.Get(id).Result()
+	val, err := client.Get(camId).Result()
 	if err != nil {
 		fmt.Println(err)
+		return nil, err
 	}
 	fmt.Println(val)
 
@@ -292,13 +323,14 @@ func getParam(id string) CampaignCryptoParams {
 	err = json.Unmarshal([]byte(val), &campaign)
 	if err != nil {
 		println(err)
+		return nil, err
 	}
 
 	//test the value of H
-	H1 := convertBytesToPoint(campaign.H)
-	fmt.Println("H1 point:", H1)
+	// H1 := convertBytesToPoint(campaign.H)
+	// fmt.Println("H1 point:", H1)
 
-	return campaign
+	return &campaign, nil
 }
 
 func generateParams() string {

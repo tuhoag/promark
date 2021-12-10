@@ -6,8 +6,9 @@ WORKDIR /code1
 RUN apk update
 RUN apk upgrade
 RUN apk add --no-cache git
-RUN apk --update add redis 
+RUN apk --update add redis
 RUN go get github.com/bwesterb/go-ristretto
 RUN go get gopkg.in/redis.v4
+RUN go get github.com/gorilla/mux
 ENV REDIS_URL redis:6379
 

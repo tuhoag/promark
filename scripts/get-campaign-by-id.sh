@@ -13,7 +13,7 @@ function getData() {
 
     infoln "getData: $1 $2 $3 $4 $5"
 
-    fcnCall='{"function":"'${CC_GET_CAMPAIGN_BY_ID_FCN}'","Args":["c:001"]}'
+    fcnCall='{"function":"'${CC_GET_CAMPAIGN_BY_ID_FCN}'","Args":["c001"]}'
 
     # infoln "Invoking Init Chaincode with $@\n"
     parsePeerConnectionParameters $orgTypes $orgNum $peerNum

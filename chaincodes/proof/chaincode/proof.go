@@ -3,7 +3,6 @@ package chaincode
 import (
 	b64 "encoding/base64"
 	"encoding/json"
-	"strconv"
 
 	// "errors"
 	"fmt"
@@ -251,22 +250,70 @@ func (s *ProofSmartContract) GetProofById(ctx contractapi.TransactionContextInte
 }
 
 func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionContextInterface, camId string, proofId string) (bool, error) {
-	proofJSON, err := ctx.GetStub().GetState(proofId)
-	// backupJSON, err := ctx.GetStub().GetState(backupID)
-	if err != nil {
-		return false, fmt.Errorf("failed to read from world state: %v", err)
-	}
-	if proofJSON == nil {
-		return false, fmt.Errorf("the campaign raw id %s does not exist", proofId)
-	}
+	proof, err := s.GetProofById(ctx, proofId)
 
-	var proof CollectedCustomerProof
-	err = json.Unmarshal(proofJSON, &proof)
 	if err != nil {
 		return false, err
 	}
 
-	return false, nil
+	campaignChaincodeArgs := util.ToChaincodeArgs("GetCampaignById", camId)
+	response := ctx.GetStub().InvokeChaincode("campaign", campaignChaincodeArgs, "mychannel")
+
+	sendLog("response.Payload", string(response.Payload))
+	sendLog("response.Status", string(response.Status))
+	sendLog("response.message", string(response.Message))
+
+	if response.Message != "" {
+		return false, fmt.Errorf(response.Message)
+	}
+
+	var campaign Campaign
+
+	err = json.Unmarshal([]byte(response.Payload), &campaign)
+	if err != nil {
+		return false, err
+	}
+
+	numVerifiers := len(campaign.VerifierURLs)
+	cryptoParams := requestCampaignCryptoParams(camId, numVerifiers)
+	sendLog("cryptoParams.H", convertBytesToPoint(cryptoParams.H).String())
+
+	var Ci, C ristretto.Point
+	var totalCommEnc string
+
+	var randomValues []string
+
+	for i, verifierURL := range campaign.VerifierURLs {
+		// verifierURL := campaign.VerifierURLs[i]
+		comURL = verifierURL + "/comm"
+		sendLog("verifierURL", verifierURL)
+		sendLog("comURL", comURL)
+
+		// 	testVer(ver)
+		// 	sendLog("id", id)
+		// 	sendLog("Hvalue", string(cryptoParams.H))
+		// 	sendLog("R1value", string(cryptoParams.R1[i]))
+
+		comm := computeCommitment(camId, comURL, i, cryptoParams)
+		// commDec, _ := b64.StdEncoding.DecodeString(comm)
+		// Ci = convertStringToPoint(string(commDec))
+		sendLog("C"+string(i)+" encoding:", comm)
+		// sendLog("C"+string(i)+" encoding:", comm)
+
+		if i == 0 {
+			C = Ci
+		} else {
+			C.Add(&C, &Ci)
+		}
+		CBytes := C.Bytes()
+		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
+
+		randomValues = append(randomValues, b64.StdEncoding.EncodeToString(cryptoParams.R1[i]))
+	}
+
+	// compare calculated commitment with the one of proof
+
+	return true, nil
 }
 
 func sendLog(name, message string) {
@@ -475,6 +522,10 @@ func requestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoPara
 
 // 	return nil
 // }
+
+func computeCommitment2(campId string, verifierUrl string, i int, cryptoParams CampaignCryptoParams) string {
+
+}
 
 func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
 	//connect to verifier: campID,  H , r

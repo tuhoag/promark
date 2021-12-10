@@ -1,4 +1,4 @@
-FROM golang:1.6.1-alpine
+FROM golang:1.13.1-alpine
 ADD . /code
 WORKDIR /code
 #ENV APP_USER app
@@ -11,6 +11,7 @@ RUN git config --global http.sslverify false
 RUN apk --update add redis
 RUN go get github.com/bwesterb/go-ristretto
 RUN go get gopkg.in/redis.v4
+RUN go get github.com/gorilla/mux
 ENV REDIS_URL redis:6379
 EXPOSE $API_PORT
 

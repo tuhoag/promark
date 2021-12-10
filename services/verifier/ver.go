@@ -4,6 +4,7 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -14,6 +15,17 @@ import (
 	"github.com/bwesterb/go-ristretto"
 	redis "gopkg.in/redis.v4"
 )
+
+type VerifierCryptoParams struct {
+	CamId string `json:"camId"`
+	H     string `json:"h"`
+	S     string `json:"s"`
+}
+
+type NewVerifierCryptoParamsRequest struct {
+	CamId string `json:"camId"`
+	H     string `json:"h"`
+}
 
 type campaign_param struct {
 	id string `json:"id"`
@@ -83,20 +95,26 @@ func main() {
 		panic(err)
 	}
 
-	// initilization
-	id = "00"
-	sValue = getSecretNumber(id)
+	// // initilization
+	// id = "00"
+	// sValue = getSecretNumber(id)
 
-	// n, _ := f.WriteString("Secret value is:" + string(sValue.S) + string("\n"))
-	// fmt.Println(n)
+	// // n, _ := f.WriteString("Secret value is:" + string(sValue.S) + string("\n"))
+	// // fmt.Println(n)
+	fmt.Printf("Starting to listen on port: %s\n", port)
+	myRouter := mux.NewRouter().StrictSlash(true)
+	myRouter.HandleFunc("/", homeHandler)
+	myRouter.HandleFunc("/camp/{id}", getCampaignCryptoParamsHandler)
+	myRouter.HandleFunc("/camp", createVerifierCampaignCryptoParamsHandler).Methods("POST")
+	myRouter.HandleFunc("/computeCommitment", computeCommitmentHandler)
+	myRouter.HandleFunc("/comm", computeComm)
+	myRouter.HandleFunc("/verify", verifyComm)
+	log.Fatal(http.ListenAndServe(":"+port, myRouter))
 
-	http.HandleFunc("/", home)
-	http.HandleFunc("/comm", computeComm)
-	http.HandleFunc("/verify", verifyComm)
-	http.ListenAndServe(":"+port, nil)
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Print("Getting HOME")
 	if r.Method != "GET" {
 		http.Error(w, "Method is not supported.", http.StatusNotFound)
 		return
@@ -111,6 +129,126 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println(n)
 
 	fmt.Fprintf(w, "VerifierURL: "+verifierURL)
+}
+
+func createVerifierCampaignCryptoParamsHandler(w http.ResponseWriter, req *http.Request) {
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		println(err)
+	}
+	log.Println(string(body))
+
+	var paramsRequest NewVerifierCryptoParamsRequest
+	err = json.Unmarshal(body, &paramsRequest)
+
+	_, err = setVerifierCryptoParams(paramsRequest)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	vCryptoParams, err := getVerifierCryptoParams(paramsRequest.CamId)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	json.NewEncoder(w).Encode(vCryptoParams)
+}
+
+func getCampaignCryptoParamsHandler(w http.ResponseWriter, r *http.Request) {
+	// input: H value, camId
+	n, err := f.WriteString("getCampaignCryptoParamsHandler() calling" + string("\n"))
+	fmt.Println(n)
+
+	vars := mux.Vars(r)
+	camId := vars["id"]
+
+	// get from redis
+	vCryptoParams, err := getVerifierCryptoParams(camId)
+
+	if err != nil {
+		fmt.Errorf("Cannot get cryptoparams %s", err)
+	}
+
+	json.NewEncoder(w).Encode(vCryptoParams)
+}
+
+func getVerifierCryptoParams(camId string) (*VerifierCryptoParams, error) {
+	client := getRedisConnection()
+
+	var cryptoParams VerifierCryptoParams
+
+	val, err := client.Get(camId).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal([]byte(val), &cryptoParams)
+	if err != nil {
+		return nil, err
+	}
+
+	return &cryptoParams, nil
+}
+
+func setVerifierCryptoParams(paramsRequest NewVerifierCryptoParamsRequest) (bool, error) {
+	client := getRedisConnection()
+
+	var cryptoParams VerifierCryptoParams
+
+	val, err := client.Get(paramsRequest.CamId).Result()
+	err = json.Unmarshal([]byte(val), &cryptoParams)
+	var s ristretto.Scalar
+	if err != nil {
+		// params are not existed
+		fmt.Println(err)
+		s.Rand()
+		sBytes := s.Bytes()
+		sEnc := b64.StdEncoding.EncodeToString(sBytes)
+
+		cryptoParams = VerifierCryptoParams{
+			CamId: paramsRequest.CamId,
+			H:     paramsRequest.H,
+			S:     sEnc,
+		}
+
+		jsonParam, err := json.Marshal(cryptoParams)
+		if err != nil {
+			return false, err
+		}
+
+		err = client.Set(cryptoParams.CamId, jsonParam, 0).Err()
+		if err != nil {
+			return false, err
+		}
+
+	} else {
+		fmt.Printf("The Hvalue is existed for id %s", cryptoParams.CamId)
+		return false, nil
+	}
+
+	return true, nil
+}
+func computeCommitmentHandler(rw http.ResponseWriter, req *http.Request) {
+	// input: camId, R
+
+	// get cryptoParams in db
+
+	// if it is unexisted
+	// return error
+	// otherwise: calculate commitment
+
+}
+
+func getRedisConnection() *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "127.0.0.1:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	return client
 }
 
 func computeComm(rw http.ResponseWriter, req *http.Request) {

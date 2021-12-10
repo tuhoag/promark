@@ -36,9 +36,20 @@ var camParam CampaignCryptoParams
 
 // Struct of request data to ext service
 type CampaignCryptoRequest struct {
-	ID           string
+	CamId        string
 	CustomerId   string
 	NumVerifiers int
+}
+
+type NewVerifierCryptoParamsRequest struct {
+	CamId string `json:"camId"`
+	H     string `json:"h"`
+}
+
+type VerifierCryptoParams struct {
+	CamId string `json:"camId"`
+	H     string `json:"h"`
+	S     string `json:"s"`
 }
 
 type DebugLog struct {
@@ -50,6 +61,13 @@ type DebugLog struct {
 type CampaignCryptoParams struct {
 	H  []byte   `json:"hvalue"`
 	R1 [][]byte `json:"r1"`
+	// R2 []byte `json:"r2"`
+}
+
+type CampaignCryptoParams2 struct {
+	CamID string `json:camId`
+	H     string `json:"h"`
+	// R1 [][]byte `json:"r1"`
 	// R2 []byte `json:"r2"`
 }
 
@@ -166,12 +184,12 @@ func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContex
 
 	sendLog("numVerifiers", string(numVerifiers))
 
-	cryptoParams := requestCampaignCryptoParams(camId, numVerifiers)
-	sendLog("cryptoParams.H", convertBytesToPoint(cryptoParams.H).String())
+	cryptoParams, err := requestCampaignCryptoParams(camId)
+	if err != nil {
+		return err
+	}
 
-	// // Request to external service to get params
-	var Ci, C ristretto.Point
-	var commStr, totalCommEnc string
+	sendLog("cryptoParams.H", cryptoParams.H)
 
 	for i := 0; i < numVerifiers; i++ {
 		verifierURL := verifierURLs[i]
@@ -179,38 +197,16 @@ func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContex
 		sendLog("verifierURL", verifierURL)
 		sendLog("comURL", comURL)
 
-		// 	testVer(ver)
-		// 	sendLog("id", id)
-		// 	sendLog("Hvalue", string(cryptoParams.H))
-		// 	sendLog("R1value", string(cryptoParams.R1[i]))
+		RequestToCreateVerifierCampaignCryptoParamsHandler(camId, verifierURL, cryptoParams)
 
-		comm := computeCommitment(camId, comURL, i, cryptoParams)
-		// commDec, _ := b64.StdEncoding.DecodeString(comm)
-		// Ci = convertStringToPoint(string(commDec))
-		sendLog("C"+string(i)+" encoding:", comm)
-		// sendLog("C"+string(i)+" encoding:", comm)
-
-		commStr += comm + ";"
-
-		if i == 0 {
-			C = Ci
-		} else {
-			C.Add(&C, &Ci)
-		}
-		CBytes := C.Bytes()
-		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
 	}
 
-	sendLog("total Comm encoding:", totalCommEnc)
-	// // End of comm computation
-
 	campaign := Campaign{
-		ID:         camId,
-		Name:       name,
-		Advertiser: advertiser,
-		Business:   business,
-		CommC:      commStr,
-		// CommC2:     comm2,
+		ID:           camId,
+		Name:         name,
+		Advertiser:   advertiser,
+		Business:     business,
+		CommC:        "",
 		VerifierURLs: verifierURLs,
 	}
 
@@ -222,6 +218,53 @@ func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContex
 	err = ctx.GetStub().PutState(camId, campaignJSON)
 
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RequestToCreateVerifierCampaignCryptoParamsHandler(camId string, url string, cryptoParams *CampaignCryptoParams2) error {
+	// func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
+	//connect to verifier: campID,  H , r
+	client := &http.Client{}
+	requestArgs := NewVerifierCryptoParamsRequest{
+		CamId: camId,
+		H:     cryptoParams.H,
+	}
+
+	jsonArgs, err := json.Marshal(requestArgs)
+	request := string(jsonArgs)
+	reqData, err := http.NewRequest("POST", url, strings.NewReader(request))
+
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+		return err
+	}
+
+	respJSON, err := client.Do(reqData)
+	if err != nil {
+		fmt.Printf("http.Do() error: %v\n", err)
+		return err
+	}
+	defer respJSON.Body.Close()
+
+	data, err := ioutil.ReadAll(respJSON.Body)
+	if err != nil {
+		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+		return err
+	}
+
+	fmt.Println("return data all:", string(data))
+	var vCryptoParams VerifierCryptoParams
+	err = json.Unmarshal([]byte(data), &vCryptoParams)
+	if err != nil {
+		println(err)
+		return err
+	}
+
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
 		return err
 	}
 
@@ -576,7 +619,7 @@ func sendLog(name, message string) {
 	fmt.Println("return data all:", string(data))
 }
 
-func requestCustomerCampaignCryptoParams(id string, userId string, numVerifiers int) CampaignCryptoParams {
+func requestCustomerCampaignCryptoParams(camId string, userId string, numVerifiers int) CampaignCryptoParams {
 	var cryptoParams CampaignCryptoParams
 
 	c := &http.Client{}
@@ -585,7 +628,7 @@ func requestCustomerCampaignCryptoParams(id string, userId string, numVerifiers 
 	// CustomerId	   string
 	// NumOfVerifiers int
 	message := CampaignCryptoRequest{
-		ID:           id,
+		CamId:        camId,
 		CustomerId:   userId,
 		NumVerifiers: numVerifiers,
 	}
@@ -623,15 +666,15 @@ func requestCustomerCampaignCryptoParams(id string, userId string, numVerifiers 
 	return cryptoParams
 }
 
-func requestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoParams {
-	var cryptoParams CampaignCryptoParams
+func requestCampaignCryptoParams(camId string) (*CampaignCryptoParams2, error) {
+	var cryptoParams CampaignCryptoParams2
 
 	c := &http.Client{}
 
 	message := CampaignCryptoRequest{
-		ID:           id,
+		CamId:        camId,
 		CustomerId:   "",
-		NumVerifiers: numVerifiers,
+		NumVerifiers: 0,
 	}
 
 	jsonData, err := json.Marshal(message)
@@ -641,30 +684,30 @@ func requestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoPara
 	reqJSON, err := http.NewRequest("POST", cryptoParamsRequestURL, strings.NewReader(request))
 	if err != nil {
 		fmt.Printf("http.NewRequest() error: %v\n", err)
-		return cryptoParams
+		return nil, err
 	}
 
 	respJSON, err := c.Do(reqJSON)
 	if err != nil {
 		fmt.Printf("http.Do() error: %v\n", err)
-		return cryptoParams
+		return nil, err
 	}
 	defer respJSON.Body.Close()
 
 	data, err := ioutil.ReadAll(respJSON.Body)
 	if err != nil {
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-		return cryptoParams
+		return nil, err
 	}
 
 	fmt.Println("return data all:", string(data))
 
 	err = json.Unmarshal([]byte(data), &cryptoParams)
 	if err != nil {
-		println(err)
+		return nil, err
 	}
 
-	return cryptoParams
+	return &cryptoParams, nil
 }
 
 // func requestCamParams(id string, n int) {
