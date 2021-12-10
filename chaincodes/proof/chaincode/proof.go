@@ -39,9 +39,23 @@ var camParam CampaignCryptoParams
 
 // Struct of request data to ext service
 type CampaignCryptoRequest struct {
-	ID           string
+	CamId        string
 	CustomerId   string
 	NumVerifiers int
+}
+
+type CampaignCustomerVerifierProof struct {
+	CamId  string `json:"camId"`
+	UserId string `json:"userId`
+	R      string `json:"r"`
+	Comm   string `json:"comm"`
+}
+
+type CampaignCustomerProof struct {
+	CamId  string   `json:"camId"`
+	UserId string   `json:"userId`
+	Rs     []string `json:"rs"`
+	Comm   string   `json:"comm"`
 }
 
 type DebugLog struct {
@@ -91,7 +105,7 @@ type CollectedData struct {
 
 func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.TransactionContextInterface, camId string, userId string) (*ProofCustomerCampaign, error) {
 	sendLog("GenerateCustomerCampaignProof", "")
-	sendLog("Campaign:", camId)
+	sendLog("camId:", camId)
 	sendLog("userId", userId)
 
 	campaignChaincodeArgs := util.ToChaincodeArgs("GetCampaignById", camId)
@@ -119,15 +133,14 @@ func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.Trans
 	sendLog("numVerifiers", string(numVerifiers))
 
 	// get crypto params
-	cryptoParams := requestCustomerCampaignCryptoParams(camId, userId, numVerifiers)
+	// cryptoParams := requestCustomerCampaignCryptoParams(camId, userId, numVerifiers)
 
 	var Ci, C ristretto.Point
-	var totalCommEnc string
 
 	var randomValues []string
 	for i := 0; i < numVerifiers; i++ {
 		verifierURL := campaign.VerifierURLs[i]
-		comURL = verifierURL + "/comm"
+		comURL = verifierURL + "/camp/" + camId + "/proof/" + userId
 		sendLog("verifierURL", verifierURL)
 		sendLog("comURL", comURL)
 
@@ -136,28 +149,38 @@ func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.Trans
 		// 	sendLog("Hvalue", string(cryptoParams.H))
 		// 	sendLog("R1value", string(cryptoParams.R1[i]))
 
-		comm := computeCommitment(camId, comURL, i, cryptoParams)
+		subProof, err := computeCommitment2(camId, userId, comURL)
+
+		if err != nil {
+			return nil, err
+		}
+
 		// commDec, _ := b64.StdEncoding.DecodeString(comm)
 		// Ci = convertStringToPoint(string(commDec))
-		sendLog("C"+string(i)+" encoding:", comm)
-		// sendLog("C"+string(i)+" encoding:", comm)
+		sendLog("R"+string(i)+" encoding:", subProof.R)
+		sendLog("Comm"+string(i)+" encoding:", subProof.Comm)
 
 		if i == 0 {
 			C = Ci
 		} else {
-			C.Add(&C, &Ci)
-		}
-		CBytes := C.Bytes()
-		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
+			CiBytes, _ := b64.StdEncoding.DecodeString(subProof.Comm)
+			Ci = convertBytesToPoint(CiBytes)
 
-		randomValues = append(randomValues, b64.StdEncoding.EncodeToString(cryptoParams.R1[i]))
+			C.Add(&C, &Ci)
+
+			sendLog("Current Comm", b64.StdEncoding.EncodeToString(C.Bytes()))
+		}
+
+		randomValues = append(randomValues, subProof.R)
 	}
+	CommBytes := C.Bytes()
+	CommEnc := b64.StdEncoding.EncodeToString(CommBytes)
 
 	// get all verifiers URLs
 
 	// calculate commitment
 	proof := ProofCustomerCampaign{
-		Comm: totalCommEnc,
+		Comm: CommEnc,
 		Rs:   randomValues,
 	}
 
@@ -358,7 +381,7 @@ func requestCustomerCampaignCryptoParams(id string, userId string, numVerifiers 
 	// CustomerId	   stringGet
 	// NumOfVerifiers int
 	message := CampaignCryptoRequest{
-		ID:           id,
+		CamId:        id,
 		CustomerId:   userId,
 		NumVerifiers: numVerifiers,
 	}
@@ -402,7 +425,7 @@ func requestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoPara
 	c := &http.Client{}
 
 	message := CampaignCryptoRequest{
-		ID:           id,
+		CamId:        id,
 		CustomerId:   "",
 		NumVerifiers: numVerifiers,
 	}
@@ -523,9 +546,50 @@ func requestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoPara
 // 	return nil
 // }
 
-// func computeCommitment2(campId string, verifierUrl string, i int, cryptoParams CampaignCryptoParams) string {
+func computeCommitment2(campId string, userId, url string) (*CampaignCustomerVerifierProof, error) {
+	sendLog("request calculate proof verifier crypto at", url)
 
-// }
+	client := &http.Client{}
+	// requestArgs := NewVerifierCryptoParamsRequest{
+	// 	CamId: camId,
+	// 	H:     cryptoParams.H,
+	// }
+
+	// jsonArgs, err := json.Marshal(requestArgs)
+	// request := string(jsonArgs)
+	reqData, err := http.NewRequest("POST", url, strings.NewReader(""))
+	// sendLog("request", request)
+	// sendLog("err", err.Error())
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+		return nil, err
+	}
+
+	respJSON, err := client.Do(reqData)
+	if err != nil {
+		fmt.Printf("http.Do() error: %v\n", err)
+		return nil, err
+	}
+	defer respJSON.Body.Close()
+
+	data, err := ioutil.ReadAll(respJSON.Body)
+	sendLog("data", string(data))
+	if err != nil {
+		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+		return nil, err
+	}
+
+	fmt.Println("return data all:", string(data))
+	var subProof CampaignCustomerVerifierProof
+	err = json.Unmarshal([]byte(data), &subProof)
+
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+		return nil, err
+	}
+
+	return &subProof, nil
+}
 
 func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
 	//connect to verifier: campID,  H , r

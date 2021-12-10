@@ -4,13 +4,14 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"math/rand"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
 
 	"github.com/bwesterb/go-ristretto"
 	redis "gopkg.in/redis.v4"
@@ -25,6 +26,13 @@ type VerifierCryptoParams struct {
 type NewVerifierCryptoParamsRequest struct {
 	CamId string `json:"camId"`
 	H     string `json:"h"`
+}
+
+type CampaignCustomerVerifierProof struct {
+	CamId  string `json:"camId"`
+	UserId string `json:"userId`
+	R      string `json:"r"`
+	Comm   string `json:"comm"`
 }
 
 type campaign_param struct {
@@ -106,7 +114,7 @@ func main() {
 	myRouter.HandleFunc("/", homeHandler)
 	myRouter.HandleFunc("/camp/{id}", getCampaignCryptoParamsHandler)
 	myRouter.HandleFunc("/camp", createVerifierCampaignCryptoParamsHandler).Methods("POST")
-	myRouter.HandleFunc("/computeCommitment", computeCommitmentHandler)
+	myRouter.HandleFunc("/camp/{id}/proof/{userId}", CreateCustomerCampaignProofHandler).Methods("POST")
 	myRouter.HandleFunc("/comm", computeComm)
 	myRouter.HandleFunc("/verify", verifyComm)
 	log.Fatal(http.ListenAndServe(":"+port, myRouter))
@@ -175,7 +183,7 @@ func getCampaignCryptoParamsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getVerifierCryptoParams(camId string) (*VerifierCryptoParams, error) {
-	client := getRedisConnection()
+	client := GetRedisConnection()
 
 	var cryptoParams VerifierCryptoParams
 
@@ -193,7 +201,7 @@ func getVerifierCryptoParams(camId string) (*VerifierCryptoParams, error) {
 }
 
 func setVerifierCryptoParams(paramsRequest NewVerifierCryptoParamsRequest) (bool, error) {
-	client := getRedisConnection()
+	client := GetRedisConnection()
 
 	var cryptoParams VerifierCryptoParams
 
@@ -230,18 +238,92 @@ func setVerifierCryptoParams(paramsRequest NewVerifierCryptoParamsRequest) (bool
 
 	return true, nil
 }
-func computeCommitmentHandler(rw http.ResponseWriter, req *http.Request) {
-	// input: camId, R
+func CreateCustomerCampaignProofHandler(w http.ResponseWriter, r *http.Request) {
+	// input: camId
+	f.WriteString("CreateCustomerCampaignProofHandler() calling" + string("\n"))
+	vars := mux.Vars(r)
+	camId := vars["id"]
+	userId := vars["userId"]
 
 	// get cryptoParams in db
+	vCryptoParams, err := getVerifierCryptoParams(camId)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// if it is unexisted
 	// return error
-	// otherwise: calculate commitment
+	if vCryptoParams == nil {
+		http.Error(w, "vCryptoParams is not existed", http.StatusInternalServerError)
+		return
+	}
 
+	// otherwise:
+	subProof, err := SetCustomerCampaignProof(camId, userId, *vCryptoParams)
+
+	if err != nil && subProof == nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	json.NewEncoder(w).Encode(subProof)
 }
 
-func getRedisConnection() *redis.Client {
+func SetCustomerCampaignProof(camId string, userId string, vCryptoParams VerifierCryptoParams) (*CampaignCustomerVerifierProof, error) {
+	var subProof CampaignCustomerVerifierProof
+	proofId := camId + ":" + userId
+	client := GetRedisConnection()
+	val, err := client.Get(proofId).Result()
+	err = json.Unmarshal([]byte(val), &subProof)
+
+	if err != nil {
+		// params are not existed
+		fmt.Println(err)
+		// generate R
+		var rScalar ristretto.Scalar
+		rScalar.Rand()
+
+		// convert H
+		hDec, _ := b64.StdEncoding.DecodeString(vCryptoParams.H)
+		hPoint := convertBytesToPoint(hDec)
+
+		// convert s
+		sDec, _ := b64.StdEncoding.DecodeString(vCryptoParams.S)
+		sScalar := convertBytesToScalar(sDec)
+
+		// calculate commitment
+		comm := commitTo(&hPoint, &rScalar, &sScalar)
+
+		// return R, Com
+		rEnc := b64.StdEncoding.EncodeToString(rScalar.Bytes())
+		commEnc := b64.StdEncoding.EncodeToString(comm.Bytes())
+		subProof = CampaignCustomerVerifierProof{
+			CamId:  camId,
+			UserId: userId,
+			R:      rEnc,
+			Comm:   commEnc,
+		}
+
+		jsonParam, err := json.Marshal(subProof)
+		if err != nil {
+			return nil, err
+		}
+
+		err = client.Set(proofId, jsonParam, 0).Err()
+		if err != nil {
+			return nil, err
+		}
+
+	} else {
+		fmt.Printf("The Hvalue is existed for id %s", proofId)
+		return &subProof, fmt.Errorf("subProof with id %s is existed", proofId)
+	}
+
+	return &subProof, nil
+}
+
+func GetRedisConnection() *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "127.0.0.1:6379",
 		Password: "",
@@ -461,7 +543,7 @@ var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857
 // H - Random secondary point on the curve
 // r - Private key used as blinding factor
 // x - The value (number of tokens)
-func commitTo(H *ristretto.Point, r, x *ristretto.Scalar) ristretto.Point {
+func commitTo(H *ristretto.Point, r *ristretto.Scalar, x *ristretto.Scalar) ristretto.Point {
 	//ec.g.mul(r).add(H.mul(x));
 	var result, rPoint, transferPoint ristretto.Point
 	rPoint.ScalarMultBase(r)
