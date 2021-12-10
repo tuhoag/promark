@@ -250,7 +250,7 @@ func (s *ProofSmartContract) GetProofById(ctx contractapi.TransactionContextInte
 }
 
 func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionContextInterface, camId string, proofId string) (bool, error) {
-	proof, err := s.GetProofById(ctx, proofId)
+	_, err := s.GetProofById(ctx, proofId)
 
 	if err != nil {
 		return false, err
@@ -278,38 +278,38 @@ func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionCont
 	cryptoParams := requestCampaignCryptoParams(camId, numVerifiers)
 	sendLog("cryptoParams.H", convertBytesToPoint(cryptoParams.H).String())
 
-	var Ci, C ristretto.Point
-	var totalCommEnc string
+	// var Ci, C ristretto.Point
+	// var totalCommEnc string
 
-	var randomValues []string
+	// var randomValues []string
 
-	for i, verifierURL := range campaign.VerifierURLs {
-		// verifierURL := campaign.VerifierURLs[i]
-		comURL = verifierURL + "/comm"
-		sendLog("verifierURL", verifierURL)
-		sendLog("comURL", comURL)
+	// for i, verifierURL := range campaign.VerifierURLs {
+	// 	// verifierURL := campaign.VerifierURLs[i]
+	// 	comURL = verifierURL + "/comm"
+	// 	sendLog("verifierURL", verifierURL)
+	// 	sendLog("comURL", comURL)
 
-		// 	testVer(ver)
-		// 	sendLog("id", id)
-		// 	sendLog("Hvalue", string(cryptoParams.H))
-		// 	sendLog("R1value", string(cryptoParams.R1[i]))
+	// 	// 	testVer(ver)
+	// 	// 	sendLog("id", id)
+	// 	// 	sendLog("Hvalue", string(cryptoParams.H))
+	// 	// 	sendLog("R1value", string(cryptoParams.R1[i]))
 
-		comm := computeCommitment(camId, comURL, i, cryptoParams)
-		// commDec, _ := b64.StdEncoding.DecodeString(comm)
-		// Ci = convertStringToPoint(string(commDec))
-		sendLog("C"+string(i)+" encoding:", comm)
-		// sendLog("C"+string(i)+" encoding:", comm)
+	// 	comm := computeCommitment(camId, comURL, i, cryptoParams)
+	// 	// commDec, _ := b64.StdEncoding.DecodeString(comm)
+	// 	// Ci = convertStringToPoint(string(commDec))
+	// 	sendLog("C"+string(i)+" encoding:", comm)
+	// 	// sendLog("C"+string(i)+" encoding:", comm)
 
-		if i == 0 {
-			C = Ci
-		} else {
-			C.Add(&C, &Ci)
-		}
-		CBytes := C.Bytes()
-		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
+	// 	// if i == 0 {
+	// 	// 	C = Ci
+	// 	// } else {
+	// 	// 	C.Add(&C, &Ci)
+	// 	// }
+	// 	// CBytes := C.Bytes()
+	// 	// totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
 
-		randomValues = append(randomValues, b64.StdEncoding.EncodeToString(cryptoParams.R1[i]))
-	}
+	// 	// randomValues = append(randomValues, b64.StdEncoding.EncodeToString(cryptoParams.R1[i]))
+	// }
 
 	// compare calculated commitment with the one of proof
 
@@ -523,9 +523,9 @@ func requestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoPara
 // 	return nil
 // }
 
-func computeCommitment2(campId string, verifierUrl string, i int, cryptoParams CampaignCryptoParams) string {
+// func computeCommitment2(campId string, verifierUrl string, i int, cryptoParams CampaignCryptoParams) string {
 
-}
+// }
 
 func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
 	//connect to verifier: campID,  H , r

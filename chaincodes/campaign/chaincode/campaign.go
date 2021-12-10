@@ -10,6 +10,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+
 	// "strconv"
 	"strings"
 
@@ -30,7 +31,7 @@ var (
 
 var com1URL string
 var com2URL string
-var comURL string
+var requestCreateVerifierCryptoURL string
 
 var camParam CampaignCryptoParams
 
@@ -193,12 +194,19 @@ func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContex
 
 	for i := 0; i < numVerifiers; i++ {
 		verifierURL := verifierURLs[i]
-		comURL = verifierURL + "/comm"
+		requestCreateVerifierCryptoURL = verifierURL + "/camp"
 		sendLog("verifierURL", verifierURL)
-		sendLog("comURL", comURL)
+		sendLog("comURL", requestCreateVerifierCryptoURL)
 
-		RequestToCreateVerifierCampaignCryptoParamsHandler(camId, verifierURL, cryptoParams)
+		vCryptoParams, err := RequestToCreateVerifierCampaignCryptoParamsHandler(camId, requestCreateVerifierCryptoURL, cryptoParams)
 
+		if err != nil {
+			return err
+		}
+
+		sendLog("vCryptoParams.CamId", vCryptoParams.CamId)
+		sendLog("vCryptoParams.H", vCryptoParams.H)
+		sendLog("vCryptoParams.S", vCryptoParams.S)
 	}
 
 	campaign := Campaign{
@@ -224,9 +232,11 @@ func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContex
 	return nil
 }
 
-func RequestToCreateVerifierCampaignCryptoParamsHandler(camId string, url string, cryptoParams *CampaignCryptoParams2) error {
+func RequestToCreateVerifierCampaignCryptoParamsHandler(camId string, url string, cryptoParams *CampaignCryptoParams2) (*VerifierCryptoParams, error) {
 	// func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
 	//connect to verifier: campID,  H , r
+	sendLog("request init verifier crypto at", url)
+
 	client := &http.Client{}
 	requestArgs := NewVerifierCryptoParamsRequest{
 		CamId: camId,
@@ -236,39 +246,37 @@ func RequestToCreateVerifierCampaignCryptoParamsHandler(camId string, url string
 	jsonArgs, err := json.Marshal(requestArgs)
 	request := string(jsonArgs)
 	reqData, err := http.NewRequest("POST", url, strings.NewReader(request))
-
+	sendLog("request", request)
+	// sendLog("err", err.Error())
 	if err != nil {
 		fmt.Printf("http.NewRequest() error: %v\n", err)
-		return err
+		return nil, err
 	}
 
 	respJSON, err := client.Do(reqData)
 	if err != nil {
 		fmt.Printf("http.Do() error: %v\n", err)
-		return err
+		return nil, err
 	}
 	defer respJSON.Body.Close()
 
 	data, err := ioutil.ReadAll(respJSON.Body)
+	sendLog("data", string(data))
 	if err != nil {
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-		return err
+		return nil, err
 	}
 
 	fmt.Println("return data all:", string(data))
 	var vCryptoParams VerifierCryptoParams
 	err = json.Unmarshal([]byte(data), &vCryptoParams)
-	if err != nil {
-		println(err)
-		return err
-	}
 
 	if err != nil {
 		fmt.Printf("http.NewRequest() error: %v\n", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &vCryptoParams, nil
 }
 
 func (s *CampaignSmartContract) DeleteCampaignByID(ctx contractapi.TransactionContextInterface, camId string) (bool, error) {
