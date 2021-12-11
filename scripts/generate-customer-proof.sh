@@ -17,7 +17,7 @@ function generateProofCustomerCampaign() {
     verifyResult $res "Invoke transaction failed on channel '$channelName' due to uneven number of peer and org parameters "
 
     set -x
-    fcn_call0='{"function":"'${CC_GENERATE_CUSTOMER_CAMPAIGN_PROOF_FCN}'","Args":["c001","u001"]}'
+    fcn_call0='{"function":"'${CC_GENERATE_CUSTOMER_CAMPAIGN_PROOF_FCN}'","Args":["c002","u001"]}'
     { set +x; } 2>/dev/null
 
     set -x

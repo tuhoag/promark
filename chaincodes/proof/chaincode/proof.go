@@ -39,15 +39,30 @@ var camParam CampaignCryptoParams
 
 // Struct of request data to ext service
 type CampaignCryptoRequest struct {
-	CamId        string
-	CustomerId   string
-	NumVerifiers int
+	CamId        string `json:"camId"`
+	CustomerId   string `json:"userId"`
+	NumVerifiers int    `json:"numVerifiers"`
+}
+
+type VerificationRequest struct {
+	CamId string `json:"camId"`
+	R     string `json:"R"`
+}
+
+type VerificationResponse struct {
+	CamId string `json:"camId"`
+	H     string `json:"h"`
+	R     string `json:"r"`
+	S     string `json:"s"`
+	Comm  string `json:"comm"`
 }
 
 type CampaignCustomerVerifierProof struct {
 	CamId  string `json:"camId"`
 	UserId string `json:"userId`
+	H      string `json:"h"`
 	R      string `json:"r"`
+	S      string `json:"s"`
 	Comm   string `json:"comm"`
 }
 
@@ -80,8 +95,9 @@ type Campaign struct {
 }
 
 type ProofCustomerCampaign struct {
-	Comm string   `json:"Comm"`
-	Rs   []string `json:"Rs"`
+	Comm    string   `json:"Comm"`
+	Rs      []string `json:"Rs"`
+	SubComs []string `json:"SubComs`
 }
 
 type CollectedCustomerProof struct {
@@ -104,16 +120,16 @@ type CollectedData struct {
 }
 
 func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.TransactionContextInterface, camId string, userId string) (*ProofCustomerCampaign, error) {
-	sendLog("GenerateCustomerCampaignProof", "")
-	sendLog("camId:", camId)
-	sendLog("userId", userId)
+	SendLog("GenerateCustomerCampaignProof", "")
+	SendLog("camId:", camId)
+	SendLog("userId", userId)
 
 	campaignChaincodeArgs := util.ToChaincodeArgs("GetCampaignById", camId)
 	response := ctx.GetStub().InvokeChaincode("campaign", campaignChaincodeArgs, "mychannel")
 
-	sendLog("response.Payload", string(response.Payload))
-	sendLog("response.Status", string(response.Status))
-	sendLog("response.message", string(response.Message))
+	SendLog("response.Payload", string(response.Payload))
+	SendLog("response.Status", string(response.Status))
+	SendLog("response.message", string(response.Message))
 	// sendLog("response.error", string(response.Error))
 	// sendLog("response.message is nil", strconv.FormatBool(response.Message == ""))
 
@@ -130,19 +146,20 @@ func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.Trans
 
 	// generate a random values for each verifiers
 	numVerifiers := len(campaign.VerifierURLs)
-	sendLog("numVerifiers", string(numVerifiers))
+	SendLog("numVerifiers", string(numVerifiers))
 
 	// get crypto params
 	// cryptoParams := requestCustomerCampaignCryptoParams(camId, userId, numVerifiers)
 
 	var Ci, C ristretto.Point
 
-	var randomValues []string
+	var subComs, randomValues []string
+
 	for i := 0; i < numVerifiers; i++ {
 		verifierURL := campaign.VerifierURLs[i]
 		comURL = verifierURL + "/camp/" + camId + "/proof/" + userId
-		sendLog("verifierURL", verifierURL)
-		sendLog("comURL", comURL)
+		SendLog("verifierURL", verifierURL)
+		SendLog("comURL", comURL)
 
 		// 	testVer(ver)
 		// 	sendLog("id", id)
@@ -157,8 +174,10 @@ func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.Trans
 
 		// commDec, _ := b64.StdEncoding.DecodeString(comm)
 		// Ci = convertStringToPoint(string(commDec))
-		sendLog("R"+string(i)+" encoding:", subProof.R)
-		sendLog("Comm"+string(i)+" encoding:", subProof.Comm)
+		SendLog("H"+string(i)+" encoding:", subProof.H)
+		SendLog("S"+string(i)+" encoding:", subProof.S)
+		SendLog("R"+string(i)+" encoding:", subProof.R)
+		SendLog("Comm"+string(i)+" encoding:", subProof.Comm)
 		CiBytes, _ := b64.StdEncoding.DecodeString(subProof.Comm)
 		Ci = convertBytesToPoint(CiBytes)
 
@@ -167,10 +186,11 @@ func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.Trans
 		} else {
 			C.Add(&C, &Ci)
 
-			sendLog("Current Comm", b64.StdEncoding.EncodeToString(C.Bytes()))
+			SendLog("Current Comm", b64.StdEncoding.EncodeToString(C.Bytes()))
 		}
 
 		randomValues = append(randomValues, subProof.R)
+		subComs = append(subComs, subProof.Comm)
 	}
 	CommBytes := C.Bytes()
 	CommEnc := b64.StdEncoding.EncodeToString(CommBytes)
@@ -179,8 +199,9 @@ func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.Trans
 
 	// calculate commitment
 	proof := ProofCustomerCampaign{
-		Comm: CommEnc,
-		Rs:   randomValues,
+		Comm:    CommEnc,
+		Rs:      randomValues,
+		SubComs: subComs,
 	}
 
 	return &proof, nil
@@ -203,7 +224,7 @@ func (s *ProofSmartContract) GetAllProofs(ctx contractapi.TransactionContextInte
 			return nil, err
 		}
 
-		sendLog("queryResponse.Value", string(queryResponse.Value))
+		SendLog("queryResponse.Value", string(queryResponse.Value))
 		var proof CollectedCustomerProof
 		err = json.Unmarshal(queryResponse.Value, &proof)
 		if err != nil {
@@ -216,10 +237,10 @@ func (s *ProofSmartContract) GetAllProofs(ctx contractapi.TransactionContextInte
 }
 
 func (s *ProofSmartContract) AddCustomerProofCampaign(ctx contractapi.TransactionContextInterface, proofId string, comm string, rsStr string) error {
-	sendLog("CollectCustomerProofCampaign", "")
-	sendLog("proofId", proofId)
-	sendLog("comm", comm)
-	sendLog("rsStr", rsStr)
+	SendLog("AddCustomerProofCampaign", "")
+	SendLog("proofId", proofId)
+	SendLog("comm", comm)
+	SendLog("rsStr", rsStr)
 
 	proofJSON, err := ctx.GetStub().GetState(proofId)
 	if err != nil {
@@ -296,18 +317,23 @@ func (s *ProofSmartContract) DeleteProofByID(ctx contractapi.TransactionContextI
 }
 
 func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionContextInterface, camId string, proofId string) (bool, error) {
+	SendLog("VerifyCampaignProof", "")
+	SendLog("camId", camId)
+	SendLog("proofId", proofId)
+
 	_, err := s.GetProofById(ctx, proofId)
 
 	if err != nil {
 		return false, err
 	}
 
+	// get campaign
 	campaignChaincodeArgs := util.ToChaincodeArgs("GetCampaignById", camId)
 	response := ctx.GetStub().InvokeChaincode("campaign", campaignChaincodeArgs, "mychannel")
 
-	sendLog("response.Payload", string(response.Payload))
-	sendLog("response.Status", string(response.Status))
-	sendLog("response.message", string(response.Message))
+	SendLog("response.Payload", string(response.Payload))
+	SendLog("response.Status", string(response.Status))
+	SendLog("response.message", string(response.Message))
 
 	if response.Message != "" {
 		return false, fmt.Errorf(response.Message)
@@ -320,49 +346,66 @@ func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionCont
 		return false, err
 	}
 
-	numVerifiers := len(campaign.VerifierURLs)
-	cryptoParams := requestCampaignCryptoParams(camId, numVerifiers)
-	sendLog("cryptoParams.H", convertBytesToPoint(cryptoParams.H).String())
+	SendLog("campaign.ID", campaign.ID)
+	SendLog("campaign.Name", campaign.Name)
+	SendLog("campaign.VerifierURLs", string(len(campaign.VerifierURLs)))
 
-	// var Ci, C ristretto.Point
-	// var totalCommEnc string
+	// get proof
+	proof, err := s.GetProofById(ctx, proofId)
 
-	// var randomValues []string
+	if err != nil {
+		return false, err
+	}
 
-	// for i, verifierURL := range campaign.VerifierURLs {
-	// 	// verifierURL := campaign.VerifierURLs[i]
-	// 	comURL = verifierURL + "/comm"
-	// 	sendLog("verifierURL", verifierURL)
-	// 	sendLog("comURL", comURL)
+	// SendLog("proof.H", proof.H)
+	SendLog("proof.Comm", proof.Comm)
 
-	// 	// 	testVer(ver)
-	// 	// 	sendLog("id", id)
-	// 	// 	sendLog("Hvalue", string(cryptoParams.H))
-	// 	// 	sendLog("R1value", string(cryptoParams.R1[i]))
+	for i, R := range proof.Rs {
+		SendLog("proof.R["+string(i)+"]", R)
+	}
 
-	// 	comm := computeCommitment(camId, comURL, i, cryptoParams)
-	// 	// commDec, _ := b64.StdEncoding.DecodeString(comm)
-	// 	// Ci = convertStringToPoint(string(commDec))
-	// 	sendLog("C"+string(i)+" encoding:", comm)
-	// 	// sendLog("C"+string(i)+" encoding:", comm)
+	// callinng verifiers to calculate proof.Comm again based on proof.Rs
+	var C ristretto.Point
+	for i, verifierURL := range campaign.VerifierURLs {
+		// call verifier to compute sub commitment
+		comURL := verifierURL + "/camp/" + camId + "/verify"
+		ciEnc, err := computeCommitment3(camId, proof.Rs[i], comURL)
 
-	// 	// if i == 0 {
-	// 	// 	C = Ci
-	// 	// } else {
-	// 	// 	C.Add(&C, &Ci)
-	// 	// }
-	// 	// CBytes := C.Bytes()
-	// 	// totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
+		if err != nil {
+			return false, err
+		}
 
-	// 	// randomValues = append(randomValues, b64.StdEncoding.EncodeToString(cryptoParams.R1[i]))
-	// }
+		ciBytes, err := b64.StdEncoding.DecodeString(*ciEnc)
 
-	// compare calculated commitment with the one of proof
+		if err != nil {
+			return false, err
+		}
 
-	return true, nil
+		ci := convertBytesToPoint(ciBytes)
+
+		if i == 0 {
+			C = ci
+		} else {
+			C.Add(&C, &ci)
+		}
+	}
+
+	CommBytes, err := b64.StdEncoding.DecodeString(proof.Comm)
+	if err != nil {
+		return false, err
+	}
+
+	SendLog("proof.Com", proof.Comm)
+	SendLog("calculated Com", b64.StdEncoding.EncodeToString(C.Bytes()))
+	comm := convertBytesToPoint(CommBytes)
+	if C.Equals(&comm) {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }
 
-func sendLog(name, message string) {
+func SendLog(name, message string) {
 	logmessage := DebugLog{name, message}
 	jsonLog, err := json.Marshal(logmessage)
 	if err != nil {
@@ -395,7 +438,7 @@ func sendLog(name, message string) {
 	fmt.Println("return data all:", string(data))
 }
 
-func requestCustomerCampaignCryptoParams(id string, userId string, numVerifiers int) CampaignCryptoParams {
+func RequestCustomerCampaignCryptoParams(id string, userId string, numVerifiers int) CampaignCryptoParams {
 	var cryptoParams CampaignCryptoParams
 
 	c := &http.Client{}
@@ -442,7 +485,7 @@ func requestCustomerCampaignCryptoParams(id string, userId string, numVerifiers 
 	return cryptoParams
 }
 
-func requestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoParams {
+func RequestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoParams {
 	var cryptoParams CampaignCryptoParams
 
 	c := &http.Client{}
@@ -486,91 +529,57 @@ func requestCampaignCryptoParams(id string, numVerifiers int) CampaignCryptoPara
 	return cryptoParams
 }
 
-// // Create a new campaign
-// func (s *SmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) error {
-// 	sendLog("campaignId", camId)
-// 	sendLog("campaignName", name)
-// 	sendLog("advertiser", advertiser)
-// 	sendLog("business", business)
+func computeCommitment3(campId string, rEnc string, url string) (*string, error) {
+	SendLog("computeCommitment3 at", url)
+	client := &http.Client{}
 
-// 	existing, err := ctx.GetStub().GetState(camId)
-// 	if err != nil {
-// 		return errors.New("Unable to read the world state")
-// 	}
+	message := VerificationRequest{
+		CamId: campId,
+		R:     rEnc,
+	}
 
-// 	if existing != nil {
-// 		return fmt.Errorf("Cannot create asset since its raw id %s is existed", camId)
-// 	}
+	jsonData, err := json.Marshal(message)
+	request := string(jsonData)
 
-// 	verifierURLs := strings.Split(verifierURLStr, ";")
-// 	numVerifiers := len(verifierURLs)
+	SendLog("request", request)
+	reqData, err := http.NewRequest("POST", url, strings.NewReader(request))
 
-// 	sendLog("numVerifiers", string(numVerifiers))
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+		return nil, err
+	}
 
-// 	cryptoParams := requestCampaignCryptoParams(camId, numVerifiers)
-// 	sendLog("cryptoParams.H", convertBytesToPoint(cryptoParams.H).String())
+	respJSON, err := client.Do(reqData)
+	// SendLog("respJSON", *respJSON)
+	if err != nil {
+		fmt.Printf("http.Do() error: %v\n", err)
+		return nil, err
+	}
+	defer respJSON.Body.Close()
 
-// 	// // Request to external service to get params
-// 	var Ci, C ristretto.Point
-// 	var commStr, totalCommEnc string
+	data, err := ioutil.ReadAll(respJSON.Body)
+	SendLog("data", string(data))
+	if err != nil {
+		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+		return nil, err
+	}
 
-// 	for i := 0; i < numVerifiers; i++ {
-// 		verifierURL := verifierURLs[i]
-// 		comURL = verifierURL + "/comm"
-// 		sendLog("verifierURL", verifierURL)
-// 		sendLog("comURL", comURL)
+	var verificationResponse VerificationResponse
+	err = json.Unmarshal([]byte(data), &verificationResponse)
+	if err != nil {
+		println(err)
+	}
 
-// 		// 	testVer(ver)
-// 		// 	sendLog("id", id)
-// 		// 	sendLog("Hvalue", string(cryptoParams.H))
-// 		// 	sendLog("R1value", string(cryptoParams.R1[i]))
+	SendLog("verificationResponse.H:", verificationResponse.H)
+	SendLog("verificationResponse.s:", verificationResponse.S)
+	SendLog("verificationResponse.r:", verificationResponse.R)
+	SendLog("verificationResponse.Comm:", verificationResponse.Comm)
 
-// 		comm := computeCommitment(camId, comURL, i, cryptoParams)
-// 		// commDec, _ := b64.StdEncoding.DecodeString(comm)
-// 		// Ci = convertStringToPoint(string(commDec))
-// 		sendLog("C"+string(i)+" encoding:", comm)
-// 		// sendLog("C"+string(i)+" encoding:", comm)
-
-// 		commStr += comm + ";"
-
-// 		if i == 0 {
-// 			C = Ci
-// 		} else {
-// 			C.Add(&C, &Ci)
-// 		}
-// 		CBytes := C.Bytes()
-// 		totalCommEnc = b64.StdEncoding.EncodeToString(CBytes)
-// 	}
-
-// 	sendLog("total Comm encoding:", totalCommEnc)
-// 	// // End of comm computation
-
-// 	campaign := Campaign{
-// 		ID:         camId,
-// 		Name:       name,
-// 		Advertiser: advertiser,
-// 		Business:   business,
-// 		CommC:      commStr,
-// 		// CommC2:     comm2,
-// 		VerifierURLs: verifierURLs,
-// 	}
-
-// 	campaignJSON, err := json.Marshal(campaign)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	err = ctx.GetStub().PutState(camId, campaignJSON)
-
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
+	return &verificationResponse.Comm, nil
+}
 
 func computeCommitment2(campId string, userId, url string) (*CampaignCustomerVerifierProof, error) {
-	sendLog("request calculate proof verifier crypto at", url)
+	SendLog("request calculate proof verifier crypto at", url)
 
 	client := &http.Client{}
 	// requestArgs := NewVerifierCryptoParamsRequest{
@@ -596,7 +605,7 @@ func computeCommitment2(campId string, userId, url string) (*CampaignCustomerVer
 	defer respJSON.Body.Close()
 
 	data, err := ioutil.ReadAll(respJSON.Body)
-	sendLog("data", string(data))
+	SendLog("data", string(data))
 	if err != nil {
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
 		return nil, err
@@ -616,7 +625,7 @@ func computeCommitment2(campId string, userId, url string) (*CampaignCustomerVer
 
 func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
 	//connect to verifier: campID,  H , r
-	sendLog("Start of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
+	SendLog("Start of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
 	// var param CommRequest
 	var rBytes []byte
 	var rEnc, hEnc string
@@ -625,7 +634,7 @@ func computeCommitment(campID string, url string, i int, cryptoParams CampaignCr
 
 	hBytes := cryptoParams.H
 	hEnc = b64.StdEncoding.EncodeToString(hBytes)
-	sendLog("Encode H: ", hEnc)
+	SendLog("Encode H: ", hEnc)
 
 	// if url == com1URL {
 	// 	rBytes = camParam.R1
@@ -636,17 +645,17 @@ func computeCommitment(campID string, url string, i int, cryptoParams CampaignCr
 	// 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
 	// }
 
-	sendLog("num r values: ", string(len(cryptoParams.R1)))
+	SendLog("num r values: ", string(len(cryptoParams.R1)))
 	rBytes = cryptoParams.R1[i]
 	// sendLog("R["+string(i)+"]: ", rBytes)
 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
-	sendLog("Encode R["+string(i)+"]: ", rEnc)
+	SendLog("Encode R["+string(i)+"]: ", rEnc)
 
 	// jsonData, _ := json.Marshal(param)
 	message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", campID, hEnc, rEnc)
 	// request := string(jsonData)
 
-	sendLog("commCompute.message", message)
+	SendLog("commCompute.message", message)
 
 	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(message))
 	if err != nil {
@@ -664,8 +673,8 @@ func computeCommitment(campID string, url string, i int, cryptoParams CampaignCr
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
 	}
 
-	sendLog("commValue:", string(data))
-	sendLog("end of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
+	SendLog("commValue:", string(data))
+	SendLog("end of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
 
 	return string(data)
 }

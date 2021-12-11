@@ -5,19 +5,21 @@
 CC_VERIFY_CAMPAIGN_PROOF_FCN="VerifyCampaignProof"
 
 
-function generateProofCustomerCampaign() {
+function verifyProof() {
     local channelName=$1
     local chaincodeName=$2
     local orgTypes=$3
     local orgNum=$4
     local peerNum=$5
+    local camId=$6
+    local proofId=$7
 
     parsePeerConnectionParameters $orgTypes $orgNum $peerNum
     res=$?
     verifyResult $res "Invoke transaction failed on channel '$channelName' due to uneven number of peer and org parameters "
 
     set -x
-    fcn_call0='{"function":"'${CC_VERIFY_CAMPAIGN_PROOF_FCN}'","Args":["c:001","p:001"]}'
+    fcn_call0='{"function":"'${CC_VERIFY_CAMPAIGN_PROOF_FCN}'","Args":["'${camId}'","'${proofId}'"]}'
     { set +x; } 2>/dev/null
 
     set -x
@@ -29,4 +31,4 @@ function generateProofCustomerCampaign() {
     cat log.txt
 }
 
-generateProofCustomerCampaign $1 $2 $3 $4 $5
+verifyProof $1 $2 $3 $4 $5 $6 $7

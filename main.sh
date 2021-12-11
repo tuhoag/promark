@@ -143,6 +143,10 @@ function invokeGetCustomerProofById() {
     $SCRIPTS_DIR/get-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
 }
 
+function invokeVerifyProof() {
+    $SCRIPTS_DIR/verify-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
+}
+
 function getAllCampaignData() {
     $SCRIPTS_DIR/get-all-campaign-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
 
@@ -194,7 +198,7 @@ if [ $MODE = "restart" ]; then
 
     sleep 1
     deployChaincode $CAMPAIGN_CHAINCODE_NAME $NO_ORG $NO_PEERS 1
-    sleep 5
+    sleep 10
     deployChaincode $PROOF_CHAINCODE_NAME $NO_ORG $NO_PEERS 1
 
 elif [ $MODE = "build" ]; then
@@ -315,6 +319,10 @@ elif [ $MODE = "proof" ]; then
     elif [ $SUB_MODE = "get" ]; then
         proofId=$5
         invokeGetCustomerProofById $NO_ORG $NO_PEERS $proofId
+    elif [ $SUB_MODE = "verify" ]; then
+        camId=$5
+        proofId=$6
+        invokeVerifyProof $NO_ORG $NO_PEERS $camId $proofId
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
