@@ -18,6 +18,8 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
+var LOG_MODE = "TEST"
+
 type CampaignSmartContract struct {
 	contractapi.Contract
 }
@@ -594,6 +596,10 @@ func testVer(url string) {
 }
 
 func sendLog(name, message string) {
+	if LOG_MODE == "test" {
+		return
+	}
+
 	logmessage := DebugLog{name, message}
 
 	jsonLog, err := json.Marshal(logmessage)

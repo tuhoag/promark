@@ -20,6 +20,8 @@ import (
 	"github.com/hyperledger/fabric/common/util"
 )
 
+var LOG_MODE = "test"
+
 type ProofSmartContract struct {
 	contractapi.Contract
 }
@@ -406,6 +408,10 @@ func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionCont
 }
 
 func SendLog(name, message string) {
+	if LOG_MODE == "test" {
+		return
+	}
+
 	logmessage := DebugLog{name, message}
 	jsonLog, err := json.Marshal(logmessage)
 	if err != nil {
