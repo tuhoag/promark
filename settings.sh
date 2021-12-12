@@ -17,11 +17,11 @@ export FABRIC_VERSION=2.2
 export PROJECT_NAME=promark
 
 export NETWORK_NAME=${PROJECT_NAME}_test
-export LOGSPOUT_PORT=8000
+export LOGSPOUT_PORT=3004
 export ADV_BASE_PORT=1000
 export BUS_BASE_PORT=2000
 
-export ORDERER_ADDRESS=0.0.0.0:3000
+export ORDERER_ADDRESS=0.0.0.0:7050
 export ORDERER_HOSTNAME=orderer.$PROJECT_NAME.com
 export ORDERER_CA=$ORGANIZATION_OUTPUTS/ordererOrganizations/$PROJECT_NAME.com/orderers/$ORDERER_HOSTNAME/msp/tlscacerts/tlsca.$PROJECT_NAME.com-cert.pem
 
