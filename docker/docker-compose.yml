@@ -121,7 +121,7 @@ services:
         networks:
         - test
         ports:
-        - 3000:7050
+        - 7050:7050
         # - 53732:9443
         volumes:
         - ../channels/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
