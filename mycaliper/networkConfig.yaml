@@ -59,7 +59,7 @@ orderers:
             ssl-target-name-override: orderer.promark.com
         tlsCACerts:
             path: ./../organizations/ordererOrganizations/promark.com/tlsca/tlsca.promark.com-cert.pem
-        url: grpcs://0.0.0.0:7050
+        url: grpcs://0.0.0.0:3000
 clients:
     peer0.adv0.promark.com:
         client:
@@ -192,7 +192,7 @@ peers:
             ssl-target-name-override: peer0.adv0.promark.com
         tlsCACerts:
             path: ./../organizations/peerOrganizations/adv0.promark.com/tlsca/tlsca.adv0.promark.com-cert.pem
-        url: grpcs://0.0.0.0:1050
+        url: grpcs://0.0.0.0:1000
     # peer0.adv1.promark.com:
     #     grpcOptions:
     #         ssl-target-name-override: peer0.adv1.promark.com
@@ -204,7 +204,7 @@ peers:
             ssl-target-name-override: peer0.bus0.promark.com
         tlsCACerts:
             path: ./../organizations/peerOrganizations/bus0.promark.com/tlsca/tlsca.bus0.promark.com-cert.pem
-        url: grpcs://0.0.0.0:2050
+        url: grpcs://0.0.0.0:2000
     # peer0.bus1.promark.com:
     #     grpcOptions:
     #         ssl-target-name-override: peer0.bus1.promark.com

@@ -126,15 +126,15 @@
             <ul>
                 <h3>&nbspBasic information</h3>
                 <li>DLT: &nbsp<span style="font-weight: 500;">fabric</span></li>
-                <li>Name: &nbsp<span style="font-weight: 500;">evaluate-getallassets</span></li>
-                <li>Description: &nbsp<span style="font-weight: 500;"></span></li>
+                <li>Name: &nbsp<span style="font-weight: 500;">campaign-contract-benchmark</span></li>
+                <li>Description: &nbsp<span style="font-weight: 500;">test benchmark</span></li>
                 <li>Benchmark Rounds: &nbsp<span style="font-weight: 500;">1</span></li>
                 <li><a href="#benchmarkInfo">Details</a></li>
             </ul>
             <ul>
                 <h3>&nbspBenchmark results</h3>
                 <li><a href="#benchmarksummary">Summary</a></li>
-                    <li><a href="#Test GetAllAssets">Test GetAllAssets</a></li>
+                    <li><a href="#CreateCampaign">CreateCampaign</a></li>
             </ul>
             <ul>
                 <h3>&nbspSystem under test</h3>
@@ -152,51 +152,53 @@
                     </tr>
 
                     <tr>
-                         <td>Test GetAllAssets</td> <td>5000</td> <td>0</td> <td>126.5</td> <td>12.01</td> <td>0.12</td> <td>6.39</td> <td>107.1</td>
+                         <td>CreateCampaign</td> <td>373</td> <td>1625</td> <td>15.9</td> <td>23.97</td> <td>0.75</td> <td>18.18</td> <td>13.5</td>
                     </tr>
                 </table>
             </div>
-            <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;" id="Test GetAllAssets">
-                <h2>Benchmark round: Test GetAllAssets</h2>
-                <p></p>
+            <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;" id="CreateCampaign">
+                <h2>Benchmark round: CreateCampaign</h2>
+                <p>CreateCampaign benchmark</p>
                 <pre style="overflow: visible;white-space: pre-wrap;max-height:100%;">rateControl:
   type: fixed-rate
   opts:
-    tps: 1000
+    tps: 100
 </pre>
-                        <h3>Performance metrics for Test GetAllAssets</h3>
+                        <h3>Performance metrics for CreateCampaign</h3>
                             <table style="min-width: 100%;">
                                 <tr>
                                      <th>Name</th> <th>Succ</th> <th>Fail</th> <th>Send Rate (TPS)</th> <th>Max Latency (s)</th> <th>Min Latency (s)</th> <th>Avg Latency (s)</th> <th>Throughput (TPS)</th>
                                 </tr>
                                 <tr>
-                                     <td>Test GetAllAssets</td> <td>5000</td> <td>0</td> <td>126.5</td> <td>12.01</td> <td>0.12</td> <td>6.39</td> <td>107.1</td>
+                                     <td>CreateCampaign</td> <td>373</td> <td>1625</td> <td>15.9</td> <td>23.97</td> <td>0.75</td> <td>18.18</td> <td>13.5</td>
                                 </tr>
                             </table>
-                        <h3>Resource utilization for Test GetAllAssets</h3>
+                        <h3>Resource utilization for CreateCampaign</h3>
             </div>
 
             <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;">
                 <h2>Test Environment</h2>
                 <h3>benchmark config</h3>
-                <pre id="benchmarkInfo" style="overflow: visible;white-space: pre-wrap;max-height:100%;">name: evaluate-getallassets
-description: null
+                <pre id="benchmarkInfo" style="overflow: visible;white-space: pre-wrap;max-height:100%;">name: campaign-contract-benchmark
+description: test benchmark
 workers:
   type: local
-  number: 1
+  number: 3
 rounds:
-  - label: Test GetAllAssets
-    contractId: campaign
-    txNumber: 5000
+  - label: CreateCampaign
+    description: CreateCampaign benchmark
+    txNumber: 2000
     rateControl:
       type: fixed-rate
       opts:
-        tps: 1000
+        tps: 100
     workload:
-      module: benchmarks&#x2F;workloads&#x2F;GetAllAssets.js
+      module: .&#x2F;workloads&#x2F;CreateCampaign.js
       arguments:
         contractId: campaign
-        contractVersion: 1
+        numOrgsPerType: 1
+        numPeersPerOrgs: 1
+        numVerifiersPerType: 1
 </pre>
                 <h3>SUT</h3>
                 <pre id="sutdetails">not provided</pre>
