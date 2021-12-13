@@ -1,6 +1,7 @@
 #!/bin/bash
 
 . $PWD/settings.sh
+. $BASE_SCRIPTS_DIR/utils.sh
 
 export CHANNEL_NAME="mychannel"
 export LOG_LEVEL=INFO
@@ -84,7 +85,7 @@ function deployChaincode() {
 }
 
 function runExternalService() {
-    $SCRIPTS_DIR/external-service.sh $LOG_LEVEL 0
+    $SCRIPTS_DIR/external-service.sh $LOG_LEVEL 0 $1 $2
 }
 
 function runVerifier1Service() {
@@ -96,8 +97,12 @@ function runVerifier2Service() {
 }
 
 function buildExternalService() {
+    local orgNum=$1
+    local peerNum=$2
 
-    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache 2>&1
+    local docker_compose_path="${DOCKER_COMPOSE_DIR_PATH}/docker-compose-${orgNum}-${peerNum}.yml"
+
+    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} build --no-cache 2>&1
 
     # FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache verifier1.promark.com 2>&1
 
@@ -161,11 +166,23 @@ function invokeCollectData() {
 # }
 
 function runLogService() {
-    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} run --service-ports logs.promark.com /bin/sh 2>&1
+    local orgNum=$1
+    local peerNum=$2
+
+    local docker_compose_path="${DOCKER_COMPOSE_DIR_PATH}/docker-compose-${orgNum}-${peerNum}.yml"
+
+    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} run --service-ports logs.promark.com /bin/sh 2>&1
 }
 
 function buildAllImages() {
-    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build 2>&1
+    local orgNum=$1
+    local peerNum=$2
+
+    local docker_compose_path="${DOCKER_COMPOSE_DIR_PATH}/docker-compose-${orgNum}-${peerNum}.yml"
+
+    infoln $docker_compose_path
+
+    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} build 2>&1
 }
 
 function clearNetwork {
@@ -203,9 +220,11 @@ if [ $MODE = "restart" ]; then
 
 elif [ $MODE = "build" ]; then
     SUB_MODE=$2
+    NO_ORGS=$3
+    NO_PEERS=$4
 
     if [ $SUB_MODE = "all" ]; then
-        buildAllImages
+        buildAllImages $NO_ORGS $NO_PEERS
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
@@ -347,9 +366,11 @@ elif [ $MODE = "data" ]; then
     fi
 elif [ $MODE = "service" ]; then
     SUB_MODE=$2
+    NO_ORGS=$3
+    NO_PEERS=$4
 
     if [ $SUB_MODE = "ext" ]; then
-        runExternalService
+        runExternalService $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "ver1" ]; then
         runVerifier1Service
     elif [ $SUB_MODE = "ver2" ]; then
@@ -357,7 +378,7 @@ elif [ $MODE = "service" ]; then
     elif [ $SUB_MODE = "log" ]; then
         runLogService
     elif [ $SUB_MODE = "build" ]; then
-        buildExternalService
+        buildExternalService $NO_ORGS $NO_PEERS
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi

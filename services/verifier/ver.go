@@ -115,7 +115,7 @@ func main() {
 	// var verifierID string
 	var port string
 	verifierID = os.Getenv("CORE_PEER_ID")
-	port = os.Getenv("VER_PORT")
+	port = os.Getenv("API_PORT")
 	logName := verifierID + ".log"
 
 	fmt.Println("Verifier ID: " + verifierID)

@@ -2,7 +2,7 @@
 
 . $BASE_SCRIPTS_DIR/utils.sh
 
-CC_CREATE_FCN="CreateCampaign"
+CC_CREATE_FCN="CreateCampaignSocket"
 
 function createCamp() {
     local channelName=$1
@@ -20,7 +20,7 @@ function createCamp() {
     verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
 
     set -x
-    fcn_call0='{"function":"'${CC_CREATE_FCN}'","Args":["c002","campaign100","Adv0","Bus0","http://peer0.adv0.promark.com:5000;http://peer0.bus0.promark.com:5000"]}'
+    fcn_call0='{"function":"'${CC_CREATE_FCN}'","Args":["c001","campaign001","Adv0","Bus0","peer0.adv0.promark.com:5000;peer0.bus0.promark.com:5000"]}'
 
     # fcn_call1='{"function":"'${CC_CREATE_FCN}'","Args":["id11","campaign11","Adv1","Bus1","http://peer0.adv1.promark.com:8510","http://peer0.bus1.promark.com:9010"]}'
 
