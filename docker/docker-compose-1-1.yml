@@ -11,7 +11,7 @@ services:
         networks:
         - test
         ports:
-        - 1001:5984
+        - 5001:5984
     # couchdb0.adv1.promark.com:
     #     container_name: couchdb0.adv1.promark.com
     #     environment:
@@ -31,7 +31,7 @@ services:
         networks:
         - test
         ports:
-        - 2001:5984
+        - 6001:5984
     # couchdb0.bus1.promark.com:
     #     container_name: couchdb0.bus1.promark.com
     #     environment:
@@ -153,8 +153,8 @@ services:
         networks:
         - test
         ports:
-        - 1000:7051
-        - 1002:5000
+        - 5000:7051
+        - 5002:5000
         # - 55000:9443
         volumes:
         - /var/run/docker.sock:/host/var/run/docker.sock
@@ -219,8 +219,8 @@ services:
         networks:
         - test
         ports:
-        - 2000:7051
-        - 2002:5000
+        - 6000:7051
+        - 6002:5000
         # - 60000:9443
         volumes:
         - /var/run/docker.sock:/host/var/run/docker.sock
