@@ -5,15 +5,15 @@ test:
       type: local
       number: 1
     rounds:
-      - label: GenerateProof
-        description: GenerateProof benchmark
-        txNumber: 6000
+      - label: AddProof
+        description: AddProof benchmark
+        txNumber: 10000
         rateControl:
           type: fixed-rate
           opts:
-            tps: 300
+            tps: 600
         workload:
-          module: ./workloads/GenerateProof.js
+          module: ./workloads/AddProof.js
           arguments:
             contractId: proof
             numCampaigns: 1

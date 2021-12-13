@@ -5,7 +5,7 @@ const utils = require('./utils');
 /**
  * Workload module for the benchmark round.
  */
-class GenerateProofWorkload extends WorkloadModuleBase {
+class AddProofWorkload extends WorkloadModuleBase {
 
     /**
      * Initializes the workload module instance.
@@ -48,6 +48,8 @@ class GenerateProofWorkload extends WorkloadModuleBase {
         //     this.campaignIds.push(camId)
         //     await this.sutAdapter.sendRequests(transArgs);
         // }
+
+
     }
 
     /**
@@ -55,17 +57,17 @@ class GenerateProofWorkload extends WorkloadModuleBase {
      * @return {Promise<TxStatus[]>}
      */
     async submitTransaction() {
-        // camId string, userId string
+        // proofId string, comm string, rsStr string
         // const {numCampaigns, numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments;
 
         // const camIdx = Math.floor(Math.random()*10000) % numCampaigns;
-        const userId = Math.floor(Math.random()*10000);
-        // const camId = this.campaignIds[camIdx]
+        // const userId = Math.floor(Math.random()*10000);
+        const proofId = Math.floor(Math.random()*10000);
 
         const transArgs = {
             contractId: this.roundArguments.contractId,
-            contractFunction: "GenerateCustomerCampaignProof",
-            contractArguments: ["c002", userId],
+            contractFunction: "AddCustomerProofCampaign",
+            contractArguments: [proofId, "mMSjJGAk/NfSvkJ6xxlGtQGfynYZuC4DQOPOg6NRHkg=", "SueLYtANTNb+JKAoEp5D2gUERB5BjD5wT0ePLGdtyww=;ooi7Y5LdJd8mlY4r7o1C+82OHi5OQMcC1Lclp9SKiAE="],
             readOnly: true
         };
 
@@ -78,7 +80,7 @@ class GenerateProofWorkload extends WorkloadModuleBase {
  * @return {WorkloadModuleInterface}
  */
 function createWorkloadModule() {
-    return new GenerateProofWorkload();
+    return new AddProofWorkload();
 }
 
 module.exports.createWorkloadModule = createWorkloadModule;

@@ -7,7 +7,7 @@ test:
     rounds:
       - label: CreateCampaign
         description: CreateCampaign benchmark
-        txNumber: 5000
+        txNumber: 6000
         rateControl:
           type: fixed-rate
           opts:

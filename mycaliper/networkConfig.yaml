@@ -9,6 +9,9 @@ channels:
           - id: campaign
             language: golang
             version: '1.0'
+          - id: proof
+            language: golang
+            version: '1.0'
         created: true
         orderers:
         - orderer.promark.com
@@ -192,7 +195,7 @@ peers:
             ssl-target-name-override: peer0.adv0.promark.com
         tlsCACerts:
             path: ./../organizations/peerOrganizations/adv0.promark.com/tlsca/tlsca.adv0.promark.com-cert.pem
-        url: grpcs://0.0.0.0:1000
+        url: grpcs://0.0.0.0:5000
     # peer0.adv1.promark.com:
     #     grpcOptions:
     #         ssl-target-name-override: peer0.adv1.promark.com
@@ -204,7 +207,7 @@ peers:
             ssl-target-name-override: peer0.bus0.promark.com
         tlsCACerts:
             path: ./../organizations/peerOrganizations/bus0.promark.com/tlsca/tlsca.bus0.promark.com-cert.pem
-        url: grpcs://0.0.0.0:2000
+        url: grpcs://0.0.0.0:6000
     # peer0.bus1.promark.com:
     #     grpcOptions:
     #         ssl-target-name-override: peer0.bus1.promark.com
