@@ -5,7 +5,7 @@ const utils = require('./utils');
 /**
  * Workload module for the benchmark round.
  */
-class CreateCampaignWorkload extends WorkloadModuleBase {
+class GenerateProofWorkload extends WorkloadModuleBase {
 
     /**
      * Initializes the workload module instance.
@@ -32,6 +32,22 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
         const args = this.roundArguments;
         this.contractId = args.contractId;
         this.contractVersion = args.contractVersion;
+        // const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments;
+
+        // this.campaignIds = []
+
+        // for (let i = 0; i < args.numCampaigns; i++) {
+        //     const {camId, name, advertiser, business, verifierURLsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType)
+        //     const transArgs = {
+        //         contractId: "campaign",
+        //         contractFunction: 'CreateCampaign',
+        //         contractArguments: [camId, name, advertiser, business, verifierURLsStr],
+        //         readOnly: true
+        //     };
+
+        //     this.campaignIds.push(camId)
+        //     await this.sutAdapter.sendRequests(transArgs);
+        // }
     }
 
     /**
@@ -39,14 +55,17 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
      * @return {Promise<TxStatus[]>}
      */
     async submitTransaction() {
-        // camId string, name string, advertiser string, business string, verifierURLStr string
-        const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments
-        const {camId, name, advertiser, business, verifierURLsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType)
+        // camId string, userId string
+        const {numCampaigns, numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments;
+
+        const camIdx = Math.floor(Math.random()*10000) % numCampaigns;
+        const userId = Math.floor(Math.random()*10000);
+        // const camId = this.campaignIds[camIdx]
 
         const transArgs = {
-            contractId: "campaign",
-            contractFunction: 'CreateCampaign',
-            contractArguments: [camId, name, advertiser, business, verifierURLsStr],
+            contractId: "proof",
+            contractFunction: "GenerateCustomerCampaignProof",
+            contractArguments: [camIdx, userId],
             readOnly: true
         };
 
@@ -59,7 +78,7 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
  * @return {WorkloadModuleInterface}
  */
 function createWorkloadModule() {
-    return new CreateCampaignWorkload();
+    return new GenerateProofWorkload();
 }
 
 module.exports.createWorkloadModule = createWorkloadModule;

@@ -74,14 +74,18 @@ function selectPeer() {
 }
 
 function getChannelTxPath() {
-    channelName=$1
-    channelTxPath=$CHANNEL_PATH/${channelName}.tx
+    local orgNum=$1
+    local peerNum=$2
+    local channelName=$3
+    channelTxPath=$CHANNEL_PATH/${channelName}-${orgNum}-${peerNum}.tx
     # return $channel_tx_path
 }
 
 function getBlockPath() {
-    channelName=$1
-    blockPath="${CHANNEL_PATH}/${channelName}.block"
+    local orgNum=$1
+    local peerNum=$2
+    local channelName=$3
+    blockPath="${CHANNEL_PATH}/${channelName}-genesis-${orgNum}-${peerNum}.block"
     # return $blockPath
 }
 

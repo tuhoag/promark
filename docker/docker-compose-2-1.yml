@@ -12,16 +12,16 @@ services:
         - test
         ports:
         - 1001:5984
-    # couchdb0.adv1.promark.com:
-    #     container_name: couchdb0.adv1.promark.com
-    #     environment:
-    #     - COUCHDB_USER=admin
-    #     - COUCHDB_PASSWORD=adminpw
-    #     image: couchdb:3.1.1
-    #     networks:
-    #     - test
-    #     ports:
-    #     - 5994:5984
+    couchdb0.adv1.promark.com:
+        container_name: couchdb0.adv1.promark.com
+        environment:
+        - COUCHDB_USER=admin
+        - COUCHDB_PASSWORD=adminpw
+        image: couchdb:3.1.1
+        networks:
+        - test
+        ports:
+        - 1011:5984
     couchdb0.bus0.promark.com:
         container_name: couchdb0.bus0.promark.com
         environment:
@@ -32,16 +32,16 @@ services:
         - test
         ports:
         - 2001:5984
-    # couchdb0.bus1.promark.com:
-    #     container_name: couchdb0.bus1.promark.com
-    #     environment:
-    #     - COUCHDB_USER=admin
-    #     - COUCHDB_PASSWORD=adminpw
-    #     image: couchdb:3.1.1
-    #     networks:
-    #     - test
-    #     ports:
-    #     - 6494:5984
+    couchdb0.bus1.promark.com:
+        container_name: couchdb0.bus1.promark.com
+        environment:
+        - COUCHDB_USER=admin
+        - COUCHDB_PASSWORD=adminpw
+        image: couchdb:3.1.1
+        networks:
+        - test
+        ports:
+        - 2011:5984
     # couchdb1.adv0.promark.com:
     #     container_name: couchdb1.adv0.promark.com
     #     environment:
@@ -124,7 +124,7 @@ services:
         - 7050:7050
         # - 53732:9443
         volumes:
-        - ../channels/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ../channels/mychannel-genesis-2-1.block:/var/hyperledger/orderer/orderer.genesis.block
         - ../organizations/ordererOrganizations/${PROJECT_NAME}.com/orderers/orderer.${PROJECT_NAME}.com/msp:/var/hyperledger/orderer/msp
         - ../organizations/ordererOrganizations/${PROJECT_NAME}.com/orderers/orderer.${PROJECT_NAME}.com/tls/:/var/hyperledger/orderer/tls
     peer0.adv0.promark.com:
@@ -160,39 +160,38 @@ services:
         - /var/run/docker.sock:/host/var/run/docker.sock
         - ../organizations/peerOrganizations/adv0.${PROJECT_NAME}.com/peers/peer0.adv0.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
         - ../organizations/peerOrganizations/adv0.${PROJECT_NAME}.com/peers/peer0.adv0.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
-    # peer0.adv1.promark.com:
-    #     container_name: peer0.adv1.promark.com
-    #     depends_on:
-    #     - orderer.${COMPOSE_PROJECT_NAME}.com
-    #     - couchdb0.adv1.promark.com
-    #     environment:
-    #     - CORE_PEER_ID=peer0.adv1.${PROJECT_NAME}.com
-    #     - CORE_PEER_ADDRESS=peer0.adv1.${PROJECT_NAME}.com:7051
-    #     - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-    #     - CORE_PEER_CHAINCODEADDRESS=peer0.adv1.${PROJECT_NAME}.com:7052
-    #     - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-    #     - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.adv1.${PROJECT_NAME}.com:7051
-    #     - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.adv1.${PROJECT_NAME}.com:7051
-    #     - CORE_PEER_LOCALMSPID=adv1MSP
-    #     - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-    #     - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.adv1.promark.com:5984
-    #     - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
-    #     - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
-    #     - VER_PORT=8510
-    #     - VER_NAME=peer0.adv1.promark.com.log
-    #     extends:
-    #         file: docker-compose-base.yml
-    #         service: peer-verifier-base
-    #     networks:
-    #     - test
-    #     ports:
-    #     - 1060:7051
-    #     - 8510:8510
-    #     - 55010:9443
-    #     volumes:
-    #     - /var/run/docker.sock:/host/var/run/docker.sock
-    #     - ../organizations/peerOrganizations/adv1.${PROJECT_NAME}.com/peers/peer0.adv1.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
-    #     - ../organizations/peerOrganizations/adv1.${PROJECT_NAME}.com/peers/peer0.adv1.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
+    peer0.adv1.promark.com:
+        container_name: peer0.adv1.promark.com
+        depends_on:
+        - orderer.${COMPOSE_PROJECT_NAME}.com
+        - couchdb0.adv1.promark.com
+        environment:
+        - CORE_PEER_ID=peer0.adv1.${PROJECT_NAME}.com
+        - CORE_PEER_ADDRESS=peer0.adv1.${PROJECT_NAME}.com:7051
+        - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+        - CORE_PEER_CHAINCODEADDRESS=peer0.adv1.${PROJECT_NAME}.com:7052
+        - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+        - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.adv1.${PROJECT_NAME}.com:7051
+        - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.adv1.${PROJECT_NAME}.com:7051
+        - CORE_PEER_LOCALMSPID=adv1MSP
+        - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+        - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.adv1.promark.com:5984
+        - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+        - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+        - VER_PORT=8510
+        - VER_NAME=peer0.adv1.promark.com.log
+        extends:
+            file: docker-compose-base.yml
+            service: peer-verifier-base
+        networks:
+        - test
+        ports:
+        - 1010:7051
+        - 1012:5000
+        volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/adv1.${PROJECT_NAME}.com/peers/peer0.adv1.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/adv1.${PROJECT_NAME}.com/peers/peer0.adv1.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
     peer0.bus0.promark.com:
         container_name: peer0.bus0.promark.com
         depends_on:
@@ -226,39 +225,39 @@ services:
         - /var/run/docker.sock:/host/var/run/docker.sock
         - ../organizations/peerOrganizations/bus0.${PROJECT_NAME}.com/peers/peer0.bus0.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
         - ../organizations/peerOrganizations/bus0.${PROJECT_NAME}.com/peers/peer0.bus0.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
-    # peer0.bus1.promark.com:
-    #     container_name: peer0.bus1.promark.com
-    #     depends_on:
-    #     - orderer.${COMPOSE_PROJECT_NAME}.com
-    #     - couchdb0.bus1.promark.com
-    #     environment:
-    #     - CORE_PEER_ID=peer0.bus1.${PROJECT_NAME}.com
-    #     - CORE_PEER_ADDRESS=peer0.bus1.${PROJECT_NAME}.com:7051
-    #     - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-    #     - CORE_PEER_CHAINCODEADDRESS=peer0.bus1.${PROJECT_NAME}.com:7052
-    #     - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-    #     - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.bus1.${PROJECT_NAME}.com:7051
-    #     - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.bus1.${PROJECT_NAME}.com:7051
-    #     - CORE_PEER_LOCALMSPID=bus1MSP
-    #     - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-    #     - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.bus1.promark.com:5984
-    #     - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
-    #     - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
-    #     - VER_PORT=9010
-    #     - VER_NAME=peer0.bus1.promark.com.log
-    #     extends:
-    #         file: docker-compose-base.yml
-    #         service: peer-verifier-base
-    #     networks:
-    #     - test
-    #     ports:
-    #     - 2060:7051
-    #     - 9010:9010
-    #     - 60010:9443
-    #     volumes:
-    #     - /var/run/docker.sock:/host/var/run/docker.sock
-    #     - ../organizations/peerOrganizations/bus1.${PROJECT_NAME}.com/peers/peer0.bus1.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
-    #     - ../organizations/peerOrganizations/bus1.${PROJECT_NAME}.com/peers/peer0.bus1.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
+    peer0.bus1.promark.com:
+        container_name: peer0.bus1.promark.com
+        depends_on:
+        - orderer.${COMPOSE_PROJECT_NAME}.com
+        - couchdb0.bus1.promark.com
+        environment:
+        - CORE_PEER_ID=peer0.bus1.${PROJECT_NAME}.com
+        - CORE_PEER_ADDRESS=peer0.bus1.${PROJECT_NAME}.com:7051
+        - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+        - CORE_PEER_CHAINCODEADDRESS=peer0.bus1.${PROJECT_NAME}.com:7052
+        - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+        - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.bus1.${PROJECT_NAME}.com:7051
+        - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.bus1.${PROJECT_NAME}.com:7051
+        - CORE_PEER_LOCALMSPID=bus1MSP
+        - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+        - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.bus1.promark.com:5984
+        - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+        - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+        - VER_PORT=9010
+        - VER_NAME=peer0.bus1.promark.com.log
+        extends:
+            file: docker-compose-base.yml
+            service: peer-verifier-base
+        networks:
+        - test
+        ports:
+        - 2010:7051
+        - 2012:5000
+        # - 60010:9443
+        volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/bus1.${PROJECT_NAME}.com/peers/peer0.bus1.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/bus1.${PROJECT_NAME}.com/peers/peer0.bus1.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
     # peer1.adv0.promark.com:
     #     container_name: peer1.adv0.promark.com
     #     depends_on:

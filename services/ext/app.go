@@ -60,12 +60,30 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+port, myRouter))
 }
 
-func getAllDataHandler(w http.ResponseWriter, r *http.Request) {
+func GetRedisConnection() *redis.Client {
+	// pool := redis.ConnectionPool(host="127.0.0.1", port=6379, db=0)
+	// client := redis.StrictRedis(connection_pool=pool)
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     "127.0.0.1:6379",
 		Password: "",
 		DB:       0,
+		PoolSize: 10000,
 	})
+
+	pong, err := client.Ping().Result()
+	if err != nil {
+		fmt.Errorf("ERROR: %s", err)
+		f.WriteString("ERROR: " + err.Error())
+
+		return nil
+	}
+	fmt.Println("pong:" + string(pong))
+	f.WriteString("pong:" + string(pong) + "\n")
+	return client
+}
+
+func getAllDataHandler(w http.ResponseWriter, r *http.Request) {
+	client := GetRedisConnection()
 
 	// keys, err := redis.Strings(cn.Do("KEYS", "*"))
 	var cursor uint64
@@ -239,11 +257,7 @@ func createCampaignCryptoParams(camId string) (*CampaignCryptoParams, error) {
 	// var r ristretto.Scalar
 	// var rArr [][]byte
 
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
-	})
+	client := GetRedisConnection()
 
 	//generate campaign param
 	_, err := client.Get(camId).Result()
@@ -306,11 +320,7 @@ func createCampaignCryptoParams(camId string) (*CampaignCryptoParams, error) {
 }
 
 func getCampaignCryptoParams(camId string) (*CampaignCryptoParams, error) {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
-	})
+	client := GetRedisConnection()
 
 	val, err := client.Get(camId).Result()
 	if err != nil {

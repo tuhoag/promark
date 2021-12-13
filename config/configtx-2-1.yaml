@@ -105,9 +105,9 @@ Organizations:
         Rule: "OR('bus1MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
-    # AnchorPeers:
-    # - Host: peer0.bus1.promark.com
-    #   Port: 2060
+  #   # AnchorPeers:
+  #   # - Host: peer0.bus1.promark.com
+  #   #   Port: 2060
 
 Capabilities:
   Channel: &ChannelCapabilities
@@ -189,37 +189,7 @@ Channel: &ChannelDefaults
     <<: *ChannelCapabilities
 
 Profiles:
-  11OrdererGenesis:
-    <<: *ChannelDefaults
-    Orderer:
-      <<: *OrdererDefaults
-      Organizations:
-        - *OrdererOrg
-      Capabilities:
-        <<: *OrdererCapabilities
-    Consortiums:
-      SampleConsortium:
-        Organizations:
-          - *Adv0
-          - *Bus0
-          # - *Adv1
-          # - *Bus1
-
-  11Channel:
-    Consortium: SampleConsortium
-    <<: *ChannelDefaults
-    Application:
-      <<: *ApplicationDefaults
-      Organizations:
-        - *Adv0
-        - *Bus0
-        # - *Adv1
-        # - *Bus1
-
-      Capabilities:
-        <<: *ApplicationCapabilities
-
-  21OrdererGenesis:
+  TwoOrgsOrdererGenesis:
     <<: *ChannelDefaults
     Orderer:
       <<: *OrdererDefaults
@@ -235,7 +205,7 @@ Profiles:
           - *Adv1
           - *Bus1
 
-  21Channel:
+  TwoOrgsChannel:
     Consortium: SampleConsortium
     <<: *ChannelDefaults
     Application:

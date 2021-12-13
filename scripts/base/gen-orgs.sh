@@ -3,7 +3,10 @@
 . $BASE_SCRIPTS_DIR/utils.sh
 
 function generateOrgs() {
-    configPath=$ORG_CONFIG_PATH/crypto-config.yaml
+    local orgNum=$1
+    local peerNum=$2
+
+    configPath="${ORG_CONFIG_PATH}/crypto-config-${orgNum}-${peerNum}.yaml"
     outputPath=$ORGANIZATION_OUTPUTS
 
     infoln "Config path: $configPath"
@@ -28,5 +31,5 @@ if [ "$?" -ne 0 ]; then
     fatalln "cryptogen tool not found."
 fi
 
-generateOrgs
+generateOrgs $1 $2
 

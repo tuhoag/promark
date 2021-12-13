@@ -10,15 +10,15 @@ export PROOF_CHAINCODE_NAME="proof"
 
 function initialize() {
     # generate all organizations
-    $BASE_SCRIPTS_DIR/gen-orgs.sh
+    $BASE_SCRIPTS_DIR/gen-orgs.sh $1 $2
 
     # generate genesis-block
-    $BASE_SCRIPTS_DIR/gen-genesis-block.sh
+    $BASE_SCRIPTS_DIR/gen-genesis-block.sh $1 $2 $CHANNEL_NAME
 }
 
 function createChannel() {
-    $BASE_SCRIPTS_DIR/gen-channel-tx.sh $CHANNEL_NAME
-    $BASE_SCRIPTS_DIR/gen-channel.sh $CHANNEL_NAME "adv" 0
+    $BASE_SCRIPTS_DIR/gen-channel-tx.sh $1 $2 $CHANNEL_NAME
+    $BASE_SCRIPTS_DIR/gen-channel.sh $1 $2 $CHANNEL_NAME "adv" 0
 }
 
 function joinChannel() {
@@ -27,17 +27,17 @@ function joinChannel() {
 }
 
 function networkUp() {
-    $BASE_SCRIPTS_DIR/start.sh $LOG_LEVEL
+    $BASE_SCRIPTS_DIR/start.sh $1 $2 $LOG_LEVEL
 }
 
 function networkDown() {
     # docker rm -f logspout
 
-    $BASE_SCRIPTS_DIR/stop.sh $LOG_LEVEL
+    $BASE_SCRIPTS_DIR/stop.sh $1 $2 $LOG_LEVEL
 }
 
 function clear() {
-    $BASE_SCRIPTS_DIR/clear.sh
+    $BASE_SCRIPTS_DIR/clear.sh $1 $2 $LOG_LEVEL
 }
 
 function monitor() {
@@ -67,20 +67,20 @@ function commitChaincode() {
 }
 
 function deployChaincode() {
-    # args: $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
+    # args: $CHAINCODE_NAME $NO_ORGS $NO_PEERS $SEQUENCE
     local CHAINCODE_NAME=$1
-    local NO_ORG=$2
+    local NO_ORGS=$2
     local NO_PEERS=$3
     local SEQUENCE=$4
 
     sleep 1
     packageChaincode $CHAINCODE_NAME $SEQUENCE
     sleep 1
-    installChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
+    installChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS $SEQUENCE
     sleep 1
-    approveChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
+    approveChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS $SEQUENCE
     sleep 1
-    commitChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
+    commitChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS $SEQUENCE
 }
 
 function runExternalService() {
@@ -182,24 +182,24 @@ MODE=$1
 # addGoPath
 
 if [ $MODE = "restart" ]; then
-    NO_ORG=$2
+    NO_ORGS=$2
     NO_PEERS=$3
     # SEQUENCE=$4
 
-    networkDown
-    clear
-    initialize
-    networkUp
+    networkDown $NO_ORGS $NO_PEERS
+    clear $NO_ORGS $NO_PEERS
+    initialize $NO_ORGS $NO_PEERS
+    networkUp $NO_ORGS $NO_PEERS
 
     sleep 1
-    createChannel
-    sleep 1
-    joinChannel $NO_ORG $NO_PEERS
+    createChannel $NO_ORGS $NO_PEERS
+    sleep 2
+    joinChannel $NO_ORGS $NO_PEERS
 
     sleep 1
-    deployChaincode $CAMPAIGN_CHAINCODE_NAME $NO_ORG $NO_PEERS 1
-    sleep 10
-    deployChaincode $PROOF_CHAINCODE_NAME $NO_ORG $NO_PEERS 1
+    deployChaincode $CAMPAIGN_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
+    sleep 15
+    deployChaincode $PROOF_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
 
 elif [ $MODE = "build" ]; then
     SUB_MODE=$2
@@ -215,34 +215,42 @@ elif [ $MODE = "clean" ]; then
 elif [ $MODE = "path" ]; then
     addGoPath
 elif [ $MODE = "init" ]; then
-    clear
+    NO_ORGS=$2
+    NO_PEERS=$3
+    clear $NO_ORGS $NO_PEERS
     sleep 10
     # rm chaincode/main.tar.gz
-    initialize
+    initialize $NO_ORGS $NO_PEERS
     sleep 10
-    networkUp
+    networkUp $NO_ORGS $NO_PEERS
 elif [ $MODE = "clear" ]; then
-    clear
+    NO_ORGS=$2
+    NO_PEERS=$3
+    clear $NO_ORGS $NO_PEERS
 elif [ $MODE = "up" ]; then
-    networkUp
+    NO_ORGS=$2
+    NO_PEERS=$3
+    networkUp $NO_ORGS $NO_PEERS
 elif [ $MODE = "down" ]; then
-    networkDown
+    NO_ORGS=$2
+    NO_PEERS=$3
+    networkDown $NO_ORGS $NO_PEERS
 elif [ $MODE = "monitor" ]; then
     monitor
 elif [ $MODE = "channel" ]; then
 
     SUB_MODE=$2
-    NO_ORG=$3
+    NO_ORGS=$3
     NO_PEERS=$4
 
     if [ $SUB_MODE = "create" ]; then
-        createChannel
+        createChannel $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "join" ]; then
-        joinChannel $NO_ORG $NO_PEERS
+        joinChannel $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "all" ]; then
-        createChannel
+        createChannel $NO_ORGS $NO_PEERS
         sleep 10
-        joinChannel $NO_ORG $NO_PEERS
+        joinChannel $NO_ORGS $NO_PEERS
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
@@ -255,87 +263,87 @@ elif [ $MODE = "chaincode" ]; then
 
         packageChaincode $CHAINCODE_NAME $SEQUENCE
     elif [ $SUB_MODE = "install" ]; then
-        NO_ORG=$4
+        NO_ORGS=$4
         NO_PEERS=$5
         SEQUENCE=$6
 
-        installChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS
+        installChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "approve" ]; then
-        NO_ORG=$4
+        NO_ORGS=$4
         NO_PEERS=$5
         SEQUENCE=$6
 
-        approveChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
+        approveChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS $SEQUENCE
     elif [ $SUB_MODE = "commit" ]; then
-        NO_ORG=$4
+        NO_ORGS=$4
         NO_PEERS=$5
         SEQUENCE=$6
 
-        commitChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
+        commitChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS $SEQUENCE
     elif [ $SUB_MODE = "deploy" ]; then
-        NO_ORG=$4
+        NO_ORGS=$4
         NO_PEERS=$5
         SEQUENCE=$6
 
-        deployChaincode $CHAINCODE_NAME $NO_ORG $NO_PEERS $SEQUENCE
+        deployChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS $SEQUENCE
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "camp" ]; then
     SUB_MODE=$2
-    NO_ORG=$3
+    NO_ORGS=$3
     NO_PEERS=$4
 
     if [ $SUB_MODE = "add" ]; then
-        invokeCreateCamp $NO_ORG $NO_PEERS
+        invokeCreateCamp $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "all" ]; then
-        getAllCamp $NO_ORG $NO_PEERS
+        getAllCamp $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "del" ]; then
-        deleteCampById $NO_ORG $NO_PEERS
+        deleteCampById $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "get" ]; then
-        getCampById $NO_ORG $NO_PEERS
+        getCampById $NO_ORGS $NO_PEERS
     # elif [ $SUB_MODE = "query" ]; then
-    #     invokeQueryById $NO_ORG $NO_PEERS
+    #     invokeQueryById $NO_ORGS $NO_PEERS
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "proof" ]; then
     SUB_MODE=$2
-    NO_ORG=$3
+    NO_ORGS=$3
     NO_PEERS=$4
 
     if [ $SUB_MODE = "gen" ]; then
-        invokeGenerateCustomerProof $NO_ORG $NO_PEERS
+        invokeGenerateCustomerProof $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "add" ]; then
         proofId=$5
         comm=$6
         rsStr=$7
-        invokeAddCustomerProof $NO_ORG $NO_PEERS $proofId $comm $rsStr
+        invokeAddCustomerProof $NO_ORGS $NO_PEERS $proofId $comm $rsStr
     elif [ $SUB_MODE = "all" ]; then
-        invokeGetAllCustomerProofs $NO_ORG $NO_PEERS
+        invokeGetAllCustomerProofs $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "del" ]; then
         proofId=$5
-        invokeDelProofById $NO_ORG $NO_PEERS $proofId
+        invokeDelProofById $NO_ORGS $NO_PEERS $proofId
     elif [ $SUB_MODE = "get" ]; then
         proofId=$5
-        invokeGetCustomerProofById $NO_ORG $NO_PEERS $proofId
+        invokeGetCustomerProofById $NO_ORGS $NO_PEERS $proofId
     elif [ $SUB_MODE = "verify" ]; then
         camId=$5
         proofId=$6
-        invokeVerifyProof $NO_ORG $NO_PEERS $camId $proofId
+        invokeVerifyProof $NO_ORGS $NO_PEERS $camId $proofId
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 
 elif [ $MODE = "data" ]; then
     SUB_MODE=$2
-    NO_ORG=$3
+    NO_ORGS=$3
     NO_PEERS=$4
 
     if [ $SUB_MODE = "add" ]; then
-        invokeCollectData $NO_ORG $NO_PEERS
+        invokeCollectData $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "get" ]; then
-        getAllCampaignData $NO_ORG $NO_PEERS
+        getAllCampaignData $NO_ORGS $NO_PEERS
     fi
 elif [ $MODE = "service" ]; then
     SUB_MODE=$2

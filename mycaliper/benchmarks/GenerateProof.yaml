@@ -5,17 +5,18 @@ test:
       type: local
       number: 1
     rounds:
-      - label: CreateCampaign
-        description: CreateCampaign benchmark
+      - label: GenerateProof
+        description: GenerateProof benchmark
         txNumber: 5000
         rateControl:
           type: fixed-rate
           opts:
-            tps: 600
+            tps: 300
         workload:
-          module: ./workloads/CreateCampaign.js
+          module: ./workloads/GenerateProof.js
           arguments:
-            contractId: campaign
+            contractId: proof
+            numCampaigns: 1
             numOrgsPerType: 1
             numPeersPerOrgs: 1
             numVerifiersPerType: 1

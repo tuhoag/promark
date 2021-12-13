@@ -6,13 +6,16 @@ function createChannelTx() {
 #   if [ ! -d "channels" ]; then
 #     mkdir channels
 #   fi
-
-    channelName=$1
-	getChannelTxPath $channelName
+	local orgNum=$1
+    local peerNum=$2
+    local channelName=$3
+	getChannelTxPath $orgNum $peerNum $channelName
 	# channel_tx_path=$?
-
+	local newConfigPath="${CONFIG_PATH}/configtx-${orgNum}-${peerNum}.yaml"
+	infoln $newConfigPath
+	FABRIC_CFG_PATH=$newConfigPath
 	set -x
-	configtxgen -profile TwoOrgsChannel -outputCreateChannelTx $channelTxPath -channelID $channelName -configPath $CONFIG_PATH
+	configtxgen -profile "${orgNum}${peerNum}Channel" -outputCreateChannelTx $channelTxPath -channelID $channelName -configPath $CONFIG_PATH
 	res=$?
 	{ set +x; } 2>/dev/null
 
@@ -23,4 +26,4 @@ function createChannelTx() {
 
 # channelName=$1
 
-createChannelTx $1
+createChannelTx $1 $2 $3

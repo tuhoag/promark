@@ -4,15 +4,17 @@
 
 
 function createChannel() {
-    local channelName=$1
-    local orgType=$2
-    local orgId=$3
+    local orgNum=$1
+    local peerNum=$2
+    local channelName=$3
+    local orgType=$4
+    local orgId=$5
 
     selectPeer $orgType $orgId 0
 
     println "Generating channel tx..."
-    getChannelTxPath $channelName
-    getBlockPath $channelName
+    getChannelTxPath $orgNum $peerNum $channelName
+    getBlockPath $orgNum $peerNum $channelName
 
     println "Creating channel..."
     set -x
@@ -24,4 +26,4 @@ function createChannel() {
 	# verifyResult $res "Channel creation failed"
 }
 
-createChannel $1 $2 $3
+createChannel $1 $2 $3 $4 $5

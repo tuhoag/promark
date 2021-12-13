@@ -475,10 +475,13 @@ func SetCustomerCampaignProof(camId string, userId string, vCryptoParams Verifie
 }
 
 func GetRedisConnection() *redis.Client {
+	// pool := redis.ConnectionPool(host="127.0.0.1", port=6379, db=0)
+	// client := redis.StrictRedis(connection_pool=pool)
 	client := redis.NewClient(&redis.Options{
 		Addr:     "127.0.0.1:6379",
 		Password: "",
 		DB:       0,
+		PoolSize: 10000,
 	})
 
 	pong, err := client.Ping().Result()

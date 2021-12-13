@@ -23,7 +23,8 @@ function joinChannel() {
 
                 infoln "Joining Channel $channelName from Org $orgName's peer$peerId"
 
-                getBlockPath $channelName
+                # getChannelTxPath $orgNum $peerNum $channelName
+                getBlockPath $orgNum $peerNum $channelName
 
                 set -x
                 peer channel join -b $blockPath

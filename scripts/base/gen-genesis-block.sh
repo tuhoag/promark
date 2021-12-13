@@ -3,6 +3,10 @@
 . $BASE_SCRIPTS_DIR/utils.sh
 
 function generateGenesisBlock() {
+    local orgNum=$1
+    local peerNum=$2
+    local channelName=$3
+
     which configtxgen
     if [ "$?" -ne 0 ]; then
         fatalln "configtxgen tool not found."
@@ -15,9 +19,9 @@ function generateGenesisBlock() {
     infoln "Generating Orderer Genesis block"
 
     #   cp ./config/configtx.yaml $OUTPUTS/configtx.yaml
-
+    getBlockPath $orgNum $peerNum $channelName
     set -x
-    configtxgen -profile TwoOrgsOrdererGenesis -channelID system-channel -outputBlock $CHANNEL_PATH/genesis.block -configPath $CONFIG_PATH
+    configtxgen -profile "${orgNum}${peerNum}OrdererGenesis" -channelID system-channel -outputBlock $blockPath -configPath $CONFIG_PATH
     res=$?
     { set +x; } 2>/dev/null
     if [ $res -ne 0 ]; then
@@ -25,4 +29,4 @@ function generateGenesisBlock() {
     fi
 }
 
-generateGenesisBlock
+generateGenesisBlock $1 $2 $3

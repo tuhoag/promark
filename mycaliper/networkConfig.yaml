@@ -59,7 +59,7 @@ orderers:
             ssl-target-name-override: orderer.promark.com
         tlsCACerts:
             path: ./../organizations/ordererOrganizations/promark.com/tlsca/tlsca.promark.com-cert.pem
-        url: grpcs://0.0.0.0:3000
+        url: grpcs://0.0.0.0:7050
 clients:
     peer0.adv0.promark.com:
         client:
