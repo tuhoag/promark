@@ -143,12 +143,12 @@ func (s *CampaignSmartContract) GetAllCampaigns(ctx contractapi.TransactionConte
 // 	return allData, nil
 // }
 func (s *CampaignSmartContract) CreateCampaign2(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) error {
-	putils.SendLog("campaignId", camId)
+	putils.SendLog("campaignId", camId, LOG_MODE)
 	putils.SendLog("campaignName", name)
-	putils.SendLog("advertiser", advertiser)
-	putils.SendLog("business", business)
+	putils.SendLog("advertiser", advertiser, LOG_MODE)
+	putils.SendLog("business", business, LOG_MODE)
 
-	putils.SendLog("camId", camId)
+	putils.SendLog("camId", camId, LOG_MODE)
 
 	existing, err := ctx.GetStub().GetState(camId)
 	if err != nil {
@@ -341,12 +341,12 @@ func ParseResponse(responseStr string) (*putils.PromarkResponse, error) {
 
 // Create a new campaign
 func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) error {
-	putils.SendLog("campaignId", camId)
-	putils.SendLog("campaignName", name)
-	putils.SendLog("advertiser", advertiser)
-	putils.SendLog("business", business)
+	putils.SendLog("campaignId", camId, LOG_MODE)
+	putils.SendLog("campaignName", name, LOG_MODE)
+	putils.SendLog("advertiser", advertiser, LOG_MODE)
+	putils.SendLog("business", business, LOG_MODE)
 
-	putils.SendLog("camId", camId)
+	putils.SendLog("camId", camId, LOG_MODE)
 
 	existing, err := ctx.GetStub().GetState(camId)
 	if err != nil {
@@ -360,20 +360,20 @@ func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContex
 	verifierURLs := strings.Split(verifierURLStr, ";")
 	numVerifiers := len(verifierURLs)
 
-	putils.SendLog("numVerifiers", string(numVerifiers))
+	putils.SendLog("numVerifiers", string(numVerifiers), LOG_MODE)
 
 	cryptoParams, err := requestCampaignCryptoParams(camId)
 	if err != nil {
 		return err
 	}
 
-	putils.SendLog("cryptoParams.H", cryptoParams.H)
+	putils.SendLog("cryptoParams.H", cryptoParams.H, LOG_MODE)
 
 	for i := 0; i < numVerifiers; i++ {
 		verifierURL := verifierURLs[i]
 		requestCreateVerifierCryptoURL = verifierURL + "/camp"
-		putils.SendLog("verifierURL", verifierURL)
-		putils.SendLog("comURL", requestCreateVerifierCryptoURL)
+		putils.SendLog("verifierURL", verifierURL, LOG_MODE)
+		putils.SendLog("comURL", requestCreateVerifierCryptoURL, LOG_MODE)
 
 		vCryptoParams, err := RequestToCreateVerifierCampaignCryptoParamsHandler(camId, requestCreateVerifierCryptoURL, cryptoParams)
 
@@ -381,9 +381,9 @@ func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContex
 			return err
 		}
 
-		putils.SendLog("vCryptoParams.CamId", vCryptoParams.CamId)
-		putils.SendLog("vCryptoParams.H", vCryptoParams.H)
-		putils.SendLog("vCryptoParams.S", vCryptoParams.S)
+		putils.SendLog("vCryptoParams.CamId", vCryptoParams.CamId, LOG_MODE)
+		putils.SendLog("vCryptoParams.H", vCryptoParams.H, LOG_MODE)
+		putils.SendLog("vCryptoParams.S", vCryptoParams.S, LOG_MODE)
 	}
 
 	campaign := putils.Campaign{
@@ -412,7 +412,7 @@ func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContex
 func RequestToCreateVerifierCampaignCryptoParamsHandler(camId string, url string, cryptoParams *putils.CampaignCryptoParams2) (*putils.VerifierCryptoParams, error) {
 	// func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
 	//connect to verifier: campID,  H , r
-	putils.SendLog("request init verifier crypto at", url)
+	putils.SendLog("request init verifier crypto at", url, LOG_MODE)
 
 	client := &http.Client{}
 	requestArgs := NewVerifierCryptoParamsRequest{
@@ -423,7 +423,7 @@ func RequestToCreateVerifierCampaignCryptoParamsHandler(camId string, url string
 	jsonArgs, err := json.Marshal(requestArgs)
 	request := string(jsonArgs)
 	reqData, err := http.NewRequest("POST", url, strings.NewReader(request))
-	putils.SendLog("request", request)
+	putils.SendLog("request", request, LOG_MODE)
 	// putils.SendLog("err", err.Error())
 	if err != nil {
 		fmt.Printf("http.NewRequest() error: %v\n", err)
@@ -438,7 +438,7 @@ func RequestToCreateVerifierCampaignCryptoParamsHandler(camId string, url string
 	defer respJSON.Body.Close()
 
 	data, err := ioutil.ReadAll(respJSON.Body)
-	putils.SendLog("data", string(data))
+	putils.SendLog("data", string(data), LOG_MODE)
 	if err != nil {
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
 		return nil, err
@@ -766,7 +766,7 @@ func testVer(url string) {
 		log.Fatal(err)
 	}
 
-	putils.SendLog("testVer1", string(responseData))
+	putils.SendLog("testVer1", string(responseData), LOG_MODE)
 	fmt.Println(string(responseData))
 }
 
@@ -903,7 +903,7 @@ func requestCampaignCryptoParams(camId string) (*putils.CampaignCryptoParams2, e
 
 func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
 	//connect to verifier: campID,  H , r
-	putils.SendLog("Start of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
+	putils.SendLog("Start of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"", LOG_MODE)
 	// var param CommRequest
 	var rBytes []byte
 	var rEnc, hEnc string
@@ -912,7 +912,7 @@ func computeCommitment(campID string, url string, i int, cryptoParams CampaignCr
 
 	hBytes := cryptoParams.H
 	hEnc = b64.StdEncoding.EncodeToString(hBytes)
-	putils.SendLog("Encode H: ", hEnc)
+	putils.SendLog("Encode H: ", hEnc, LOG_MODE)
 
 	// if url == com1URL {
 	// 	rBytes = camParam.R1
@@ -923,17 +923,17 @@ func computeCommitment(campID string, url string, i int, cryptoParams CampaignCr
 	// 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
 	// }
 
-	putils.SendLog("num r values: ", string(len(cryptoParams.R1)))
+	putils.SendLog("num r values: ", string(len(cryptoParams.R1)), LOG_MODE)
 	rBytes = cryptoParams.R1[i]
 	// putils.SendLog("R["+string(i)+"]: ", rBytes)
 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
-	putils.SendLog("Encode R["+string(i)+"]: ", rEnc)
+	putils.SendLog("Encode R["+string(i)+"]: ", rEnc, LOG_MODE)
 
 	// jsonData, _ := json.Marshal(param)
 	message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", campID, hEnc, rEnc)
 	// request := string(jsonData)
 
-	putils.SendLog("commCompute.message", message)
+	putils.SendLog("commCompute.message", message, LOG_MODE)
 
 	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(message))
 	if err != nil {
@@ -951,8 +951,8 @@ func computeCommitment(campID string, url string, i int, cryptoParams CampaignCr
 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
 	}
 
-	putils.SendLog("commValue:", string(data))
-	putils.SendLog("end of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
+	putils.SendLog("commValue:", string(data), LOG_MODE)
+	putils.SendLog("end of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"", LOG_MODE)
 
 	return string(data)
 }

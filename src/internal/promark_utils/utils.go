@@ -33,8 +33,6 @@ type DebugLog struct {
 type CampaignCryptoParams2 struct {
 	CamID string `json:camId`
 	H     string `json:"h"`
-	// R1 [][]byte `json:"r1"`
-	// R2 []byte `json:"r2"`
 }
 
 type Campaign struct {
@@ -82,8 +80,4 @@ func SendLog(name, message string, logMode string) {
 	}
 
 	fmt.Println("return data all:", string(data))
-}
-
-func main() {
-
 }
