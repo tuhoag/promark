@@ -1,14 +1,14 @@
-package main
+package campaign
 
 import (
 	"log"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	"github.com/tuhoag/promark/src/chaincodes/campaign/chaincode"
+	// "github.com/tuhoag/promark/src/chaincodes/campaign/chaincode"
 )
 
 func main() {
-	campaignChaincode, err := contractapi.NewChaincode(&chaincode.CampaignSmartContract{})
+	campaignChaincode, err := contractapi.NewChaincode(&campaign.CampaignSmartContract{})
 	if err != nil {
 		log.Panicf("Error creating campaign chaincode: %v", err)
 	}

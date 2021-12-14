@@ -1,4 +1,4 @@
-module github.com/tuhoag/promark/src/chaincodes/campaign
+module campaign
 
 go 1.13
 

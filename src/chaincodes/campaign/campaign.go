@@ -1,4 +1,4 @@
-package chaincode
+package campaign
 
 import (
 	"bufio"
