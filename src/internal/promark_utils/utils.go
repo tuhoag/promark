@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 	"github.com/bwesterb/go-ristretto"
-	putils "github.com/tuhoag/promark/src/internal/promark_utils"
 )
 
 type PromarkRequest struct {
