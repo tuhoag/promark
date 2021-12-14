@@ -84,3 +84,7 @@ func SendLog(name, message string, logMode string) {
 
 	fmt.Println("return data all:", string(data))
 }
+
+func main() {
+
+}
