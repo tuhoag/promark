@@ -23,3 +23,7 @@ log.txt
 /chaincodes/packages
 /chaincodes/*/vendor
 *.log
+/src/*/vendor
+/src/*/*/vendor
+/src/chaincodes/packages
+go.sum
