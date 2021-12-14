@@ -1,4 +1,4 @@
-package campaign
+package main
 
 import (
 	"bufio"
@@ -18,7 +18,7 @@ import (
 
 	"github.com/bwesterb/go-ristretto"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	putils "github.com/tuhoag/promark/src/internal/promark_utils"
+	putils "internal/promark_utils"
 )
 
 var LOG_MODE = "DEBUG"
@@ -144,7 +144,7 @@ func (s *CampaignSmartContract) GetAllCampaigns(ctx contractapi.TransactionConte
 // }
 func (s *CampaignSmartContract) CreateCampaign2(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) error {
 	putils.SendLog("campaignId", camId, LOG_MODE)
-	putils.SendLog("campaignName", name)
+	putils.SendLog("campaignName", name, LOG_MODE)
 	putils.SendLog("advertiser", advertiser, LOG_MODE)
 	putils.SendLog("business", business, LOG_MODE)
 

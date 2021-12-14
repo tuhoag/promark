@@ -3,10 +3,11 @@ package promark_utils
 import (
 	"encoding/json"
 	"fmt"
-	"net"
+	// "net"
 	"net/http"
 	"strings"
-	"github.com/bwesterb/go-ristretto"
+	"io/ioutil"
+	// "github.com/bwesterb/go-ristretto"
 )
 
 type PromarkRequest struct {
@@ -43,6 +44,8 @@ type Campaign struct {
 	CommC        string   `json:"CommC"`
 	VerifierURLs []string `json:"VerifierURLs"`
 }
+
+var logURL                     = "http://logs.promark.com:5003/log"
 
 func SendLog(name, message string, logMode string) {
 	if logMode == "test" {

@@ -1,4 +1,4 @@
-package campaign
+package main
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	campaignChaincode, err := contractapi.NewChaincode(&campaign.CampaignSmartContract{})
+	campaignChaincode, err := contractapi.NewChaincode(&CampaignSmartContract{})
 	if err != nil {
 		log.Panicf("Error creating campaign chaincode: %v", err)
 	}
