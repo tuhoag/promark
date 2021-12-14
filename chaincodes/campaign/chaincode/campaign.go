@@ -18,7 +18,7 @@ import (
 
 	"github.com/bwesterb/go-ristretto"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	putils "github.com/tuhoag/promark/utils/promark_utils"
+	putils "github.com/tuhoag/promark/src/internal/utils"
 )
 
 var LOG_MODE = "DEBUG"
