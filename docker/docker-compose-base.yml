@@ -55,7 +55,7 @@ services:
             - ../config/core.yaml:/etc/hyperledger/fabric/core.yaml
             - ../organizations:/organizations
 
-    
+
     peer-verifier-base:
         # image: hyperledger/fabric-peer:$IMAGE_TAG
         build:
@@ -87,4 +87,4 @@ services:
             - /var/run/docker.sock:/host/var/run/docker.sock
             - ../config/core.yaml:/etc/hyperledger/fabric/core.yaml
             - ../organizations:/organizations
-            - ../services/verifier:/src
+            - ../src/verifier:/src

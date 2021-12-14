@@ -98,7 +98,7 @@ services:
         ports:
         - 3002:5000
         volumes:
-        - ../services/ext:/code
+        - ../src/ext:/code
     logs.promark.com:
         build:
             context: .
@@ -112,7 +112,7 @@ services:
         ports:
         - 3001:5003
         volumes:
-        - ../services/log:/log
+        - ../src/log:/log
     orderer.promark.com:
         container_name: orderer.promark.com
         environment:

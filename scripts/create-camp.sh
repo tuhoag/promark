@@ -2,7 +2,7 @@
 
 . $BASE_SCRIPTS_DIR/utils.sh
 
-CC_CREATE_FCN="CreateCampaignSocket"
+CC_CREATE_FCN="CreateCampaign2"
 
 function createCamp() {
     local channelName=$1
