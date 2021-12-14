@@ -18,6 +18,7 @@ import (
 
 	"github.com/bwesterb/go-ristretto"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	putils "promark/utils/go_utils"
 )
 
 var LOG_MODE = "DEBUG"
@@ -40,15 +41,7 @@ var requestCreateVerifierCryptoURL string
 
 var camParam CampaignCryptoParams
 
-type PromarkRequest struct {
-	Command string `json:"command"`
-	Data    string `json:"data"`
-}
 
-type PromarkResponse struct {
-	Error string `json:"error"`
-	Data  string `json:"data"`
-}
 
 // Struct of request data to ext service
 type CampaignCryptoRequest struct {
@@ -324,7 +317,7 @@ func SendData(conn net.Conn, message string) {
 }
 
 func SendRequest(conn net.Conn, command string, data string) error {
-	request := PromarkRequest{
+	request := putils.PromarkRequest{
 		Command: command,
 		Data:    data,
 	}
@@ -342,7 +335,7 @@ func SendRequest(conn net.Conn, command string, data string) error {
 }
 
 func SendResponse(conn net.Conn, errorStr string, data string) error {
-	response := PromarkResponse{
+	response := putils.PromarkResponse{
 		Error: errorStr,
 		Data:  data,
 	}
@@ -357,8 +350,8 @@ func SendResponse(conn net.Conn, errorStr string, data string) error {
 	return nil
 }
 
-func ParseResponse(responseStr string) (*PromarkResponse, error) {
-	var response PromarkResponse
+func ParseResponse(responseStr string) (*putils.PromarkResponse, error) {
+	var response putils.PromarkResponse
 	err := json.Unmarshal([]byte(responseStr), &response)
 
 	return &response, err

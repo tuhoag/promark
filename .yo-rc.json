@@ -1,7 +1,0 @@
-{
-  "@hyperledger/generator-caliper": {
-    "promptValues": {
-      "subgenerator": "benchmark"
-    }
-  }
-}
