@@ -2,38 +2,15 @@ package main
 
 import (
 	"bufio"
-	b64 "encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"log"
 	"net"
 	"os"
 
-	"github.com/bwesterb/go-ristretto"
-	redis "gopkg.in/redis.v4"
-	// "strings"
-	// "log"
+	// "github.com/bwesterb/go-ristretto"
+	// redis "gopkg.in/redis.v4"
+	putils "internal/promark_utils"
 )
-
-type PromarkRequest struct {
-	Command string `json:"command"`
-	Data    string `json:"data"`
-}
-
-type PromarkResponse struct {
-	Error string `json:"error"`
-	Data  string `json:"data"`
-}
-
-type CampaignCryptoRequest struct {
-	CamId string
-}
-
-type CampaignCryptoParams struct {
-	CamID string `json:"camId"`
-	H     string `json:"h"`
-}
 
 func main() {
 	port := os.Getenv("API_PORT")
@@ -71,7 +48,7 @@ func handleConnection(conn net.Conn) {
 	}
 
 	fmt.Println("buffer:" + buffer)
-	var request PromarkRequest
+	var request putils.PromarkRequest
 	err = json.Unmarshal([]byte(buffer), &request)
 
 	if err != nil {
@@ -89,49 +66,11 @@ func handleConnection(conn net.Conn) {
 		// fmt.Println("ok:", string(buffer))
 		getCampaignCryptoParamsHandler(conn, request.Data)
 	} else {
-		SendResponse(conn, "nocommand", "")
+		putils.SendResponse(conn, "nocommand", "")
 		conn.Close()
 	}
 
 	conn.Close()
-}
-
-func SendData(conn net.Conn, message string) {
-	fmt.Fprintf(conn, message+"\n")
-}
-
-func SendRequest(conn net.Conn, command string, data string) error {
-	request := PromarkRequest{
-		Command: command,
-		Data:    data,
-	}
-	requestJSON, err := json.Marshal(&request)
-
-	if err != nil {
-		fmt.Println("ERROR: " + err.Error())
-		return errors.New("ERROR:" + err.Error())
-	}
-
-	log.Println("Send create command")
-	SendData(conn, string(requestJSON))
-
-	return nil
-}
-
-func SendResponse(conn net.Conn, errorStr string, data string) error {
-	response := PromarkResponse{
-		Error: errorStr,
-		Data:  data,
-	}
-	responseJSON, err := json.Marshal(&response)
-
-	if err != nil {
-		fmt.Println("ERROR: " + err.Error())
-	}
-
-	SendData(conn, string(responseJSON))
-
-	return nil
 }
 
 func CreateCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
@@ -152,7 +91,7 @@ func CreateCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
 	}
 
 	fmt.Println("result: " + string(param))
-	SendResponse(conn, "", string(param))
+	putils.SendResponse(conn, "", string(param))
 }
 
 func getCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
@@ -160,26 +99,21 @@ func getCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
 }
 
 // Campaign function part
-func createCampaignCryptoParams(camId string) (*CampaignCryptoParams, error) {
-	// var r1, r2 ristretto.Scalar
-	// var r ristretto.Scalar
-	// var rArr [][]byte
-
-	client := GetRedisConnection()
+func createCampaignCryptoParams(camId string) (*putils.CampaignCryptoParams, error) {
+	client := putils.GetRedisConnection()
 
 	//generate campaign param
 	_, err := client.Get(camId).Result()
-	var cryptoParams CampaignCryptoParams
+	var cryptoParams putils.CampaignCryptoParams
 
 	if err != nil {
 		fmt.Println(err)
 
-		H := generateH()
-		hBytes := H.Bytes()
-		hEnc := b64.StdEncoding.EncodeToString(hBytes)
+		H := putils.generateH()
+		hEnc := putils.ConvertPointToString(H)
 		fmt.Println("hString:.\n", hEnc)
 
-		cryptoParams = CampaignCryptoParams{
+		cryptoParams = putils.CampaignCryptoParams{
 			CamID: camId,
 			H:     hEnc,
 		}
@@ -202,8 +136,8 @@ func createCampaignCryptoParams(camId string) (*CampaignCryptoParams, error) {
 	return &cryptoParams, nil
 }
 
-func GetCampaignCryptoParams(camId string) (*CampaignCryptoParams, error) {
-	client := GetRedisConnection()
+func GetCampaignCryptoParams(camId string) (*putils.CampaignCryptoParams, error) {
+	client := putils.GetRedisConnection()
 
 	val, err := client.Get(camId).Result()
 	if err != nil {
@@ -212,7 +146,7 @@ func GetCampaignCryptoParams(camId string) (*CampaignCryptoParams, error) {
 	}
 	fmt.Println(val)
 
-	var campaign CampaignCryptoParams
+	var campaign putils.CampaignCryptoParams
 	err = json.Unmarshal([]byte(val), &campaign)
 	if err != nil {
 		println(err)
@@ -224,35 +158,4 @@ func GetCampaignCryptoParams(camId string) (*CampaignCryptoParams, error) {
 	// fmt.Println("H1 point:", H1)
 
 	return &campaign, nil
-}
-
-func GetRedisConnection() *redis.Client {
-	// pool := redis.ConnectionPool(host="127.0.0.1", port=6379, db=0)
-	// client := redis.StrictRedis(connection_pool=pool)
-	client := redis.NewClient(&redis.Options{
-		Addr:     "127.0.0.1:6379",
-		Password: "",
-		DB:       0,
-		PoolSize: 10000,
-	})
-
-	pong, err := client.Ping().Result()
-	if err != nil {
-		fmt.Errorf("ERROR: %s", err)
-		// f.WriteString("ERROR: " + err.Error())
-
-		return nil
-	}
-	fmt.Println("pong:" + string(pong))
-	// f.WriteString("pong:" + string(pong) + "\n")
-	return client
-}
-
-func generateH() ristretto.Point {
-	var random ristretto.Scalar
-	var H ristretto.Point
-	random.Rand()
-	H.ScalarMultBase(&random)
-
-	return H
 }

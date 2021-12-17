@@ -62,7 +62,7 @@ services:
             context: .
             dockerfile: peer.dockerfile
         working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
-        command: /src/run.sh
+        command: /src/verifier/run.sh
         environment:
             # Generic peer variables
             - FABRIC_LOGGING_SPEC=${FABRIC_LOG}
@@ -87,4 +87,5 @@ services:
             - /var/run/docker.sock:/host/var/run/docker.sock
             - ../config/core.yaml:/etc/hyperledger/fabric/core.yaml
             - ../organizations:/organizations
-            - ../src/verifier:/src
+            - ../src/verifier:/src/verifier
+            - ../src/internal:/src/internal

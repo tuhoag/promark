@@ -89,7 +89,7 @@ function runExternalService() {
 }
 
 function runVerifier1Service() {
-    $SCRIPTS_DIR/external-service.sh $LOG_LEVEL 1
+    $SCRIPTS_DIR/external-service.sh $LOG_LEVEL 1 $1 $2
 }
 
 function runVerifier2Service() {
@@ -372,11 +372,11 @@ elif [ $MODE = "service" ]; then
     if [ $SUB_MODE = "ext" ]; then
         runExternalService $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "ver1" ]; then
-        runVerifier1Service
+        runVerifier1Service $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "ver2" ]; then
-        runVerifier2Service
+        runVerifier2Service $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "log" ]; then
-        runLogService
+        runLogService $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "build" ]; then
         buildExternalService $NO_ORGS $NO_PEERS
     else

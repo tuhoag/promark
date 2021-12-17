@@ -1,7 +1,7 @@
 #!/bin/sh
 
 redis-server --daemonize yes
-cd /src/
+cd /src/verifier
 go mod tidy
 go run verifierService.go &
 cd /opt/gopath/src/github.com/hyperledger/fabric/peer/

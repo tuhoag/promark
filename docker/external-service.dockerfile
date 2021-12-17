@@ -1,6 +1,7 @@
 FROM golang:1.13.1-alpine
-ADD . /code
-WORKDIR /code
+RUN mkdir /src
+RUN mkdir /src/ext
+WORKDIR /src/ext
 #ENV APP_USER app
 #ENV APP_HOME /code
 RUN apk update

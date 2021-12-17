@@ -5,55 +5,23 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	putils "internal/promark_utils"
 	"log"
 	"net"
-	"strings"
-	// "encoding/json"
+	// "strings"
+	"sync"
 )
-
-type PromarkRequest struct {
-	Command string `json:"command"`
-	Data    string `json:"data"`
-}
-
-type PromarkResponse struct {
-	Error string `json:"error"`
-	Data  string `json:"data"`
-}
-
-type Campaign struct {
-	ID           string   `json:"ID"`
-	Name         string   `json:"Name"`
-	Advertiser   string   `json:"Advertiser"`
-	Business     string   `json:"Business"`
-	CommC        string   `json:"CommC"`
-	VerifierURLs []string `json:"VerifierURLs"`
-}
-
-type VerifierCryptoParams struct {
-	CamId string `json:"camId"`
-	H     string `json:"h"`
-	S     string `json:"s"`
-}
-
-type CampaignCryptoParams2 struct {
-	CamID string `json:camId`
-	H     string `json:"h"`
-	// R1 [][]byte `json:"r1"`
-	// R2 []byte `json:"r2"`
-}
 
 const (
 	connHost               = "external.promark.com"
 	connPort               = "5000"
 	connType               = "tcp"
-	cryptoServiceSocketURL = "external.promark.com:5001"
+	cryptoServiceSocketURL = "external.promark.com:5000"
 )
 
 func main() {
 	log.Println("Start running")
-	CreateCampaign("c001", "Campaign001", "adv0", "bus0", "0.0.0.0:5002")
-
+	CreateCampaignSocket("c001", "Campaign001", "adv0", "bus0", []string{"peer0.adv0.promark.com:5000", "peer0.bus0.promark.com:5000"})
 }
 
 func SendData(conn net.Conn, message string) {
@@ -61,7 +29,7 @@ func SendData(conn net.Conn, message string) {
 }
 
 func SendRequest(conn net.Conn, command string, data string) error {
-	request := PromarkRequest{
+	request := putils.PromarkRequest{
 		Command: command,
 		Data:    data,
 	}
@@ -79,7 +47,7 @@ func SendRequest(conn net.Conn, command string, data string) error {
 }
 
 func SendResponse(conn net.Conn, errorStr string, data string) error {
-	response := PromarkResponse{
+	response := putils.PromarkResponse{
 		Error: errorStr,
 		Data:  data,
 	}
@@ -94,62 +62,55 @@ func SendResponse(conn net.Conn, errorStr string, data string) error {
 	return nil
 }
 
-func ParseResponse(responseStr string) (*PromarkResponse, error) {
-	var response PromarkResponse
+func ParseResponse(responseStr string) (*putils.PromarkResponse, error) {
+	var response putils.PromarkResponse
 	err := json.Unmarshal([]byte(responseStr), &response)
 
 	return &response, err
 }
 
-func CreateCampaign(camId string, name string, advertiser string, business string, verifierURLStr string) error {
-	// sendLog("campaignId", camId)
-	// sendLog("campaignName", name)
-	// sendLog("advertiser", advertiser)
-	// sendLog("business", business)
-
-	// sendLog("camId", camId)
-
-	// existing, err := ctx.GetStub().GetState(camId)
-	// if err != nil {
-	// 	return errors.New("Unable to read the world state")
-	// }
-
-	// if existing != nil {
-	// 	return fmt.Errorf("Cannot create asset since its raw id %s is existed", camId)
-	// }
-
-	verifierURLs := strings.Split(verifierURLStr, ";")
-	numVerifiers := len(verifierURLs)
-
+func CreateCampaignSocket(camId string, name string, advertiser string, business string, verifierURLs []string) (*putils.Campaign, error) {
+	fmt.Println("Call RequestCampaignCryptoParamsSocket")
 	cryptoParams, err := RequestCampaignCryptoParamsSocket(camId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// sendLog("cryptoParams.H", cryptoParams.H)
+	// putils.SendLog("cryptoParams.H", cryptoParams.H)
+	fmt.Println("cryptoParams.H:" + cryptoParams.H)
+	numVerifiers := len(verifierURLs)
+	vChannel := make(chan putils.VerifierCryptoChannelResult)
+	// defer close(vChannel)
 
+	wg := sync.WaitGroup{}
+	wg.Add(numVerifiers)
 	for i := 0; i < numVerifiers; i++ {
 		verifierURL := verifierURLs[i]
 		requestCreateVerifierCryptoURL := verifierURL
-		// sendLog("verifierURL", verifierURL)
-		// sendLog("comURL", requestCreateVerifierCryptoURL)
+		// putils.SendLog("verifierURL", verifierURL)
+		// putils.SendLog("comURL", requestCreateVerifierCryptoURL)
 
-		vCryptoParams, err := RequestToCreateVerifierCampaignCryptoParamsSocket(camId, requestCreateVerifierCryptoURL, cryptoParams)
-
-		if err != nil {
-			return err
-		}
-		fmt.Println(vCryptoParams)
-		fmt.Println("vCryptoParams.CamId" + vCryptoParams.CamId)
-		fmt.Println("vCryptoParams.H" + vCryptoParams.H)
-		fmt.Println("vCryptoParams.S" + vCryptoParams.S)
-
-		// sendLog("vCryptoParams.CamId", vCryptoParams.CamId)
-		// sendLog("vCryptoParams.H", vCryptoParams.H)
-		// sendLog("vCryptoParams.S", vCryptoParams.S)
+		fmt.Println("Call RequestToCreateVerifierCampaignCryptoParamsSocket: " + verifierURL)
+		go ConcurrentRequestToCreateVerifierCampaignCryptoParamsSocket(camId, requestCreateVerifierCryptoURL, cryptoParams, vChannel, &wg)
 	}
 
-	campaign := Campaign{
+	wg.Wait()
+
+	fmt.Println("Printing results")
+	for i := 0; i < numVerifiers; i++ {
+		result := <-vChannel
+		fmt.Println(result.URL)
+		fmt.Println(result.Error)
+		fmt.Println(result.verifierCryptoParams)
+
+		if result.Error != nil {
+			return nil, result.Error
+		}
+	}
+
+	close(vChannel)
+
+	campaign := putils.Campaign{
 		ID:           camId,
 		Name:         name,
 		Advertiser:   advertiser,
@@ -158,23 +119,11 @@ func CreateCampaign(camId string, name string, advertiser string, business strin
 		VerifierURLs: verifierURLs,
 	}
 
-	campaignJSON, err := json.Marshal(campaign)
-	if err != nil {
-		return err
-	}
-
-	// err = ctx.GetStub().PutState(camId, campaignJSON)
-
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("CampaignJSON:" + string(campaignJSON))
-
-	return nil
+	fmt.Println("Closing")
+	return &campaign, nil
 }
 
-func RequestCampaignCryptoParamsSocket(camId string) (*CampaignCryptoParams2, error) {
+func RequestCampaignCryptoParamsSocket(camId string) (*putils.CampaignCryptoParams2, error) {
 	conn, err := net.Dial("tcp", cryptoServiceSocketURL)
 	if err != nil {
 		// sendLog("Error connecting:", err.Error())
@@ -200,13 +149,29 @@ func RequestCampaignCryptoParamsSocket(camId string) (*CampaignCryptoParams2, er
 	if err != nil {
 		return nil, errors.New("Error:" + err.Error())
 	}
-	var cryptoParams CampaignCryptoParams2
+	var cryptoParams putils.CampaignCryptoParams2
 	err = json.Unmarshal([]byte(response.Data), &cryptoParams)
 
 	return &cryptoParams, nil
 }
 
-func RequestToCreateVerifierCampaignCryptoParamsSocket(camId string, url string, cryptoParams *CampaignCryptoParams2) (*VerifierCryptoParams, error) {
+func ConcurrentRequestToCreateVerifierCampaignCryptoParamsSocket(camId string, requestCreateVerifierCryptoURL string, cryptoParams *putils.CampaignCryptoParams2, results chan putils.VerifierCryptoChannelResult, wg *sync.WaitGroup) {
+	vCryptoParams, err := RequestToCreateVerifierCampaignCryptoParamsSocket(camId, requestCreateVerifierCryptoURL, cryptoParams)
+
+	wg.Done()
+	fmt.Println("Done with " + requestCreateVerifierCryptoURL)
+	fmt.Println("vCryptoParams.CamId:" + vCryptoParams.CamId)
+	fmt.Println("vCryptoParams.H:" + vCryptoParams.H)
+	fmt.Println("vCryptoParams.S:" + vCryptoParams.S)
+
+	results <- putils.VerifierCryptoChannelResult{
+		URL:                  requestCreateVerifierCryptoURL,
+		verifierCryptoParams: vCryptoParams,
+		Error:                err,
+	}
+}
+
+func RequestToCreateVerifierCampaignCryptoParamsSocket(camId string, url string, cryptoParams *putils.CampaignCryptoParams2) (*putils.VerifierCryptoParams, error) {
 	conn, err := net.Dial("tcp", url)
 	if err != nil {
 		// sendLog("Error connecting:", err.Error())
@@ -215,7 +180,14 @@ func RequestToCreateVerifierCampaignCryptoParamsSocket(camId string, url string,
 		return nil, errors.New("ERROR:" + err.Error())
 	}
 
-	SendRequest(conn, "create", camId)
+	requestArgs := putils.VerifierCryptoParamsRequest{
+		CamId: camId,
+		H:     cryptoParams.H,
+	}
+
+	jsonArgs, err := json.Marshal(requestArgs)
+
+	SendRequest(conn, "create", string(jsonArgs))
 	// wait for response
 	// wait for response
 	responseStr, err := bufio.NewReader(conn).ReadString('\n')
@@ -225,7 +197,7 @@ func RequestToCreateVerifierCampaignCryptoParamsSocket(camId string, url string,
 		log.Println("Error after creating:", err.Error())
 		return nil, errors.New("Error  after creating:" + err.Error())
 	}
-	fmt.Println("Reiceived: " + responseStr)
+	fmt.Println("Reiceived From: " + url + "-Response:" + responseStr)
 
 	response, err := ParseResponse(responseStr)
 
@@ -233,13 +205,14 @@ func RequestToCreateVerifierCampaignCryptoParamsSocket(camId string, url string,
 		return nil, errors.New("Error:" + err.Error())
 	}
 
-	var vCryptoParams VerifierCryptoParams
-	err = json.Unmarshal([]byte(response.Data), &cryptoParams)
+	var vCryptoParams putils.VerifierCryptoParams
+	err = json.Unmarshal([]byte(response.Data), &vCryptoParams)
 
 	if err != nil {
 		fmt.Printf("http.NewRequest() error: %v\n", err)
 		return nil, err
 	}
 
+	fmt.Println("Returned-vCryptoParams.CamId:" + vCryptoParams.CamId)
 	return &vCryptoParams, nil
 }

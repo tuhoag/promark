@@ -1,5 +1,6 @@
 FROM hyperledger/fabric-peer:2.2
-
+RUN mkdir /src
+RUN mkdir /src/verifier
 RUN apk update
 RUN apk upgrade
 RUN apk add --no-cache git

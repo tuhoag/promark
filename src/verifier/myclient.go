@@ -1,29 +1,23 @@
 package main
 
 import (
-    "fmt"
-	"net"
-	"log"
 	"bufio"
+	"fmt"
+	"log"
+	"net"
 	// "encoding/json"
 )
 
-type CampaignCryptoParams struct {
-	CamID string `json:camId`
-	H     string `json:"h"`
-}
-
 const (
-    connHost = "external.promark.com"
-    connPort = "5000"
-    connType = "tcp"
+	connHost               = "external.promark.com"
+	connPort               = "5000"
+	connType               = "tcp"
 	cryptoServiceSocketURL = "external.promark.com:5000"
 )
 
-
 func main() {
 	log.Println("Start running")
-    // sendLog("Sending to", cryptoServiceSocketURL)
+	// sendLog("Sending to", cryptoServiceSocketURL)
 	conn, err := net.Dial("tcp", cryptoServiceSocketURL)
 	if err != nil {
 		// sendLog("Error connecting:", err.Error())
