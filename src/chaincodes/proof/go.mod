@@ -11,4 +11,8 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sykesm/zap-logfmt v0.0.4 // indirect
 	go.uber.org/zap v1.19.1 // indirect
+	gopkg.in/bsm/ratelimit.v1 v1.0.0-20160220154919-db14e161995a // indirect
+	internal/promark_utils v0.0.0
 )
+
+replace internal/promark_utils => ../../internal/promark_utils

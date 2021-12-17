@@ -60,6 +60,47 @@ type CampaignCryptoRequest struct {
 	NumVerifiers int    `json:"numVerifiers"`
 }
 
+type VerificationRequest struct {
+	CamId string `json:"camId"`
+	R     string `json:"R"`
+}
+
+type VerificationResponse struct {
+	CamId string `json:"camId"`
+	H     string `json:"h"`
+	R     string `json:"r"`
+	S     string `json:"s"`
+	Comm  string `json:"comm"`
+}
+
+type CampaignCustomerVerifierProof struct {
+	CamId  string `json:"camId"`
+	UserId string `json:"userId`
+	H      string `json:"h"`
+	R      string `json:"r"`
+	S      string `json:"s"`
+	Comm   string `json:"comm"`
+}
+
+type CampaignCustomerProof struct {
+	CamId  string   `json:"camId"`
+	UserId string   `json:"userId`
+	Rs     []string `json:"rs"`
+	Comm   string   `json:"comm"`
+}
+
+type ProofCustomerCampaign struct {
+	Comm    string   `json:"Comm"`
+	Rs      []string `json:"Rs"`
+	SubComs []string `json:"SubComs`
+}
+
+type CollectedCustomerProof struct {
+	ID   string   `json:"ID"`
+	Comm string   `json:"Comm"`
+	Rs   []string `json:"Rs"`
+}
+
 type VerifierCryptoChannelResult struct {
 	URL                  string
 	VerifierCryptoParams VerifierCryptoParams
@@ -176,20 +217,13 @@ func GetRedisConnection() *redis.Client {
 // The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
 var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857116359379907606001950938285454250989", 10)
 
-func convertStringToPoint(s string) ristretto.Point {
-	var H ristretto.Point
-	var hBytes [32]byte
-
-	tmp := []byte(s)
-	copy(hBytes[:32], tmp[:])
-
-	H.SetBytes(&hBytes)
-	fmt.Println("in convertPointtoBytes hString: ", H)
-
-	return H
+func ConvertStringToPoint(s string) ristretto.Point {
+	bytes, _ := b64.StdEncoding.DecodeString(s)
+	point = convertBytesToPoint(bytes)
+	return point
 }
 
-func convertBytesToPoint(b []byte) ristretto.Point {
+func ConvertBytesToPoint(b []byte) ristretto.Point {
 	var H ristretto.Point
 	var hBytes [32]byte
 
@@ -201,7 +235,7 @@ func convertBytesToPoint(b []byte) ristretto.Point {
 	return H
 }
 
-func convertBytesToScalar(b []byte) ristretto.Scalar {
+func ConvertBytesToScalar(b []byte) ristretto.Scalar {
 	var r ristretto.Scalar
 	var rBytes [32]byte
 
@@ -213,7 +247,7 @@ func convertBytesToScalar(b []byte) ristretto.Scalar {
 	return r
 }
 
-func convertScalarToString(s ristretto.Scalar) string {
+func ConvertScalarToString(s ristretto.Scalar) string {
 	sBytes := s.Bytes()
 	sString := string(sBytes)
 

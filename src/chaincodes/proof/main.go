@@ -4,11 +4,11 @@ import (
 	"log"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	"github.com/tuhoag/promark/chaincodes/proof/chaincode"
+	// "github.com/tuhoag/promark/chaincodes/proof/chaincode"
 )
 
 func main() {
-	proofChaincode, err := contractapi.NewChaincode(&chaincode.ProofSmartContract{})
+	proofChaincode, err := contractapi.NewChaincode(&ProofSmartContract{})
 	if err != nil {
 		log.Panicf("Error creating proof chaincode: %v", err)
 	}
