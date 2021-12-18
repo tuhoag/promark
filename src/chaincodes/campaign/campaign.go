@@ -6,14 +6,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	// "github.com/bwesterb/go-ristretto"
-	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 	putils "internal/promark_utils"
 	"io/ioutil"
 	"log"
+
+	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+
 	// "math/big"
 	"net"
 	"net/http"
+
 	// "os"
 	"strings"
 	"sync"
@@ -144,7 +148,7 @@ func CreateCampaignSocket(camId string, name string, advertiser string, business
 	close(vChannel)
 
 	campaign := putils.Campaign{
-		ID:           camId,
+		Id:           camId,
 		Name:         name,
 		Advertiser:   advertiser,
 		Business:     business,
@@ -251,8 +255,8 @@ func RequestToCreateVerifierCampaignCryptoParamsSocket(camId string, url string,
 }
 
 func RequestToCreateVerifierCampaignCryptoParamsHandler(camId string, url string, cryptoParams *putils.CampaignCryptoParams) (*putils.VerifierCryptoParams, error) {
-	// func computeCommitment(campID string, url string, i int, cryptoParams CampaignCryptoParams) string {
-	//connect to verifier: campID,  H , r
+	// func computeCommitment(campId string, url string, i int, cryptoParams CampaignCryptoParams) string {
+	//connect to verifier: campId,  H , r
 	putils.SendLog("request init verifier crypto at", url, LOG_MODE)
 
 	client := &http.Client{}
@@ -297,9 +301,9 @@ func RequestToCreateVerifierCampaignCryptoParamsHandler(camId string, url string
 	return &vCryptoParams, nil
 }
 
-func (s *CampaignSmartContract) DeleteCampaignByID(ctx contractapi.TransactionContextInterface, camId string) (bool, error) {
+func (s *CampaignSmartContract) DeleteCampaignById(ctx contractapi.TransactionContextInterface, camId string) (bool, error) {
 	campaignJSON, err := ctx.GetStub().GetState(camId)
-	// backupJSON, err := ctx.GetStub().GetState(backupID)
+	// backupJSON, err := ctx.GetStub().GetState(backupId)
 	if err != nil {
 		return false, fmt.Errorf("failed to read from world state: %v", err)
 	}
@@ -323,7 +327,7 @@ func (s *CampaignSmartContract) DeleteCampaignByID(ctx contractapi.TransactionCo
 
 func (s *CampaignSmartContract) GetCampaignById(ctx contractapi.TransactionContextInterface, camId string) (*putils.Campaign, error) {
 	campaignJSON, err := ctx.GetStub().GetState(camId)
-	// backupJSON, err := ctx.GetStub().GetState(backupID)
+	// backupJSON, err := ctx.GetStub().GetState(backupId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from world state: %v", err)
 	}

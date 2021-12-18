@@ -4,48 +4,21 @@ import (
 	"bufio"
 	b64 "encoding/base64"
 	"encoding/json"
+	"errors"
+
 	// "errors"
 	"fmt"
 	// "log"
 	"net"
 	"os"
 
-	"github.com/bwesterb/go-ristretto"
-	// redis "gopkg.in/redis.v4"
 	putils "internal/promark_utils"
+
+	"github.com/bwesterb/go-ristretto"
+	redis "gopkg.in/redis.v4"
 	// "strings"
 	// "log"
 )
-
-// type PromarkRequest struct {
-// 	Command string `json:"command"`
-// 	Data    string `json:"data"`
-// }
-
-// type PromarkResponse struct {
-// 	Error string `json:"error"`
-// 	Data  string `json:"data"`
-// }
-
-// type CampaignCryptoRequest struct {
-// 	CamId string
-// }
-
-// type NewVerifierCryptoParamsRequest struct {
-// 	CamId string `json:"camId"`
-// 	H     string `json:"h"`
-// }
-
-// type VerifierCryptoParams struct {
-// 	CamId string `json:"camId"`
-// 	H     string `json:"h"`
-// 	S     string `json:"s"`
-// }
-
-// type CampaignCryptoParams struct {
-// 	CamID string `json:"camId"`
-// 	H     string `json:"h"`
-// }
 
 func main() {
 	port := os.Getenv("API_PORT")
@@ -100,7 +73,11 @@ func handleConnection(conn net.Conn) {
 		CreateVerifierCampaignCryptoParamsHandler(conn, request.Data)
 	} else if request.Command == "get" {
 		// fmt.Println("ok:", string(buffer))
-		getCampaignCryptoParamsHandler(conn, request.Data)
+		GetCampaignCryptoParamsHandler(conn, request.Data)
+	} else if request.Command == "commit" {
+		CalculateCommitmentHandler(conn, request.Data)
+	} else if request.Command == "verify" {
+		VerifyCommitmentHandler(conn, request.Data)
 	} else {
 		putils.SendResponse(conn, "nocommand", "")
 		conn.Close()
@@ -183,9 +160,12 @@ func GetVerifierCryptoParams(camId string) (*putils.VerifierCryptoParams, error)
 	var cryptoParams putils.VerifierCryptoParams
 
 	val, err := client.Get(camId).Result()
-	if err != nil {
+
+	if err == redis.Nil {
+		fmt.Println("camId " + camId + " does not exist")
+		return nil, errors.New("camId " + camId + " does not exist")
+	} else if err != nil {
 		fmt.Println("ERROR: " + err.Error())
-		// f.WriteString("ERROR: " + err.Error())
 		return nil, err
 	}
 
@@ -199,6 +179,156 @@ func GetVerifierCryptoParams(camId string) (*putils.VerifierCryptoParams, error)
 	return &cryptoParams, nil
 }
 
-func getCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
+func GetCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
 
+}
+
+func CalculateCommitmentHandler(conn net.Conn, requestData string) {
+	// calculate commitment
+	var paramsRequest putils.ProofGenerationRequest
+	err := json.Unmarshal([]byte(requestData), &paramsRequest)
+
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	vCryptoParams, err := GetVerifierCryptoParams(paramsRequest.CamId)
+
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	if vCryptoParams == nil {
+		putils.SendResponse(conn, "vCryptoParams is not existed", "")
+		return
+	}
+
+	fmt.Println("Got - vCryptoParams.CamId:" + vCryptoParams.CamId)
+	fmt.Println("Got - vCryptoParams.H:" + vCryptoParams.H)
+	fmt.Println("Got - vCryptoParams.S:" + vCryptoParams.S)
+
+	subProof, err := SetCustomerCampaignProof(paramsRequest.CamId, paramsRequest.CustomerId, *vCryptoParams)
+
+	if err != nil && subProof == nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	param, err := json.Marshal(&subProof)
+	putils.SendResponse(conn, "", string(param))
+}
+
+func SetCustomerCampaignProof(camId string, userId string, vCryptoParams putils.VerifierCryptoParams) (*putils.CampaignCustomerVerifierProof, error) {
+	var subProof putils.CampaignCustomerVerifierProof
+	proofId := camId + ":" + userId
+	client := putils.GetRedisConnection()
+	val, err := client.Get(proofId).Result()
+	err = json.Unmarshal([]byte(val), &subProof)
+
+	if err != nil {
+		// params are not existed
+		fmt.Println(err)
+		// generate R
+		var rScalar ristretto.Scalar
+		rScalar.Rand()
+
+		// convert H
+		hPoint := putils.ConvertStringToPoint(vCryptoParams.H)
+
+		// convert s
+		sScalar := putils.ConvertStringToScalar(vCryptoParams.S)
+
+		// calculate commitment
+		comm := putils.CommitTo(&hPoint, &rScalar, &sScalar)
+
+		// return R, Com
+		rEnc := putils.ConvertScalarToString(rScalar)
+		commEnc := putils.ConvertPointToString(comm)
+
+		subProof = putils.CampaignCustomerVerifierProof{
+			CamId:  camId,
+			UserId: userId,
+			H:      vCryptoParams.H,
+			R:      rEnc,
+			S:      vCryptoParams.S,
+			Comm:   commEnc,
+		}
+
+		jsonParam, err := json.Marshal(subProof)
+		if err != nil {
+			return nil, err
+		}
+
+		err = client.Set(proofId, jsonParam, 0).Err()
+		if err != nil {
+			return nil, err
+		}
+
+	} else {
+		fmt.Printf("The CampaignCustomerVerifierProof is existed for id %s", proofId)
+		return &subProof, fmt.Errorf("subProof with id %s is existed", proofId)
+	}
+
+	return &subProof, nil
+}
+
+func VerifyCommitmentHandler(conn net.Conn, requestData string) {
+	// receive camId, r
+	var paramsRequest putils.VerificationRequest
+	err := json.Unmarshal([]byte(requestData), &paramsRequest)
+
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	fmt.Printf("Got - VerificationRequest.CamId: %s\n", paramsRequest.CamId)
+	fmt.Printf("Got - VerificationRequest.R: %s\n", paramsRequest.R)
+
+	vCryptoParams, err := GetVerifierCryptoParams(paramsRequest.CamId)
+
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	if vCryptoParams == nil {
+		putils.SendResponse(conn, "vCryptoParams is not existed", "")
+		return
+	}
+
+	fmt.Println("vCryptoParams.CamId:" + vCryptoParams.CamId)
+	fmt.Println("vCryptoParams.H:" + vCryptoParams.H)
+	fmt.Println("vCryptoParams.S:" + vCryptoParams.S)
+
+	// convert H
+	hPoint := putils.ConvertStringToPoint(vCryptoParams.H)
+	// hDec, _ := b64.StdEncoding.DecodeString(vCryptoParams.H)
+	// hPoint := convertBytesToPoint(hDec)
+
+	// convert s
+	sScalar := putils.ConvertStringToScalar(vCryptoParams.S)
+	// sDec, _ := b64.StdEncoding.DecodeString(vCryptoParams.S)
+	// sScalar := convertBytesToScalar(sDec)
+
+	// convert r
+	rScalar := putils.ConvertStringToScalar(paramsRequest.R)
+	// rDec, _ := b64.StdEncoding.DecodeString(request.R)
+	// rScalar := convertBytesToScalar(rDec)
+
+	// calculate commitment
+
+	comm := putils.CommitTo(&hPoint, &rScalar, &sScalar)
+	commEnc := putils.ConvertPointToString(comm)
+	// commEnc := b64.StdEncoding.EncodeToString(comm.Bytes())
+
+	response := putils.VerificationResponse{
+		CamId: paramsRequest.CamId,
+		S:     vCryptoParams.S,
+		R:     paramsRequest.R,
+		Comm:  commEnc,
+		H:     vCryptoParams.H,
+	}
+
+	fmt.Println("response.Comm:" + response.Comm)
+
+	responseJSON, err := json.Marshal(&response)
+	putils.SendResponse(conn, "", string(responseJSON))
 }

@@ -332,3 +332,71 @@ func convertBytesToPoint(b []byte) ristretto.Point {
 
 	return H
 }
+
+func GenerateCustomerCampaignProofSocket(campaign *putils.Campaign, userId string) (*putils.ProofCustomerCampaign, error) {
+	// generate a random values for each verifiers
+	numVerifiers := len(campaign.VerifierURLs)
+	// putils.SendLog("numVerifiers", string(numVerifiers), LOG_MODE)
+
+	// get crypto params
+	// cryptoParams := requestCustomerCampaignCryptoParams(camId, userId, numVerifiers)
+
+	var Ci, C ristretto.Point
+
+	var subComs, randomValues []string
+
+	for i := 0; i < numVerifiers; i++ {
+		verifierURL := campaign.VerifierURLs[i]
+		comURL := verifierURL + "/camp/" + campaign.ID + "/proof/" + userId
+		// putils.SendLog("verifierURL", verifierURL, LOG_MODE)
+		// putils.SendLog("comURL", comURL, LOG_MODE)
+
+		// 	testVer(ver)
+		// 	putils.SendLog("id", id)
+		// 	putils.SendLog("Hvalue", string(cryptoParams.H))
+		// 	putils.SendLog("R1value", string(cryptoParams.R1[i]))
+
+		subProof, err := RequestCommitment(campaign.ID, userId)
+
+		if err != nil {
+			return nil, err
+		}
+
+		// commDec, _ := b64.StdEncoding.DecodeString(comm)
+		// Ci = convertStringToPoint(string(commDec))
+		// putils.SendLog("H"+string(i)+" encoding:", subProof.H, LOG_MODE)
+		// putils.SendLog("S"+string(i)+" encoding:", subProof.S, LOG_MODE)
+		// putils.SendLog("R"+string(i)+" encoding:", subProof.R, LOG_MODE)
+		// putils.SendLog("Comm"+string(i)+" encoding:", subProof.Comm, LOG_MODE)
+		Ci = putils.convertStringToPoint(subProof.Comm)
+		// CiBytes, _ := b64.StdEncoding.DecodeString(subProof.Comm)
+		// Ci = convertBytesToPoint(CiBytes)
+
+		if i == 0 {
+			C = Ci
+		} else {
+			C.Add(&C, &Ci)
+
+			putils.SendLog("Current Comm", b64.StdEncoding.EncodeToString(C.Bytes()))
+		}
+
+		randomValues = append(randomValues, subProof.R)
+		subComs = append(subComs, subProof.Comm)
+	}
+	CommEnc := putils.ConvertPointToString(C)
+	// CommBytes := C.Bytes()
+	// CommEnc := b64.StdEncoding.EncodeToString(CommBytes)
+
+	// get all verifiers URLs
+
+	// calculate commitment
+	proof := putils.ProofCustomerCampaign{
+		Comm:    CommEnc,
+		Rs:      randomValues,
+		SubComs: subComs,
+	}
+}
+
+func RequestCommitment(camId string, userId string) (*putils.CampaignCustomerVerifierProof, error) {
+
+}

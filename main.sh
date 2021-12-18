@@ -199,24 +199,33 @@ MODE=$1
 # addGoPath
 
 if [ $MODE = "restart" ]; then
-    NO_ORGS=$2
-    NO_PEERS=$3
-    # SEQUENCE=$4
+    SUB_MODE=$2
+    NO_ORGS=$3
+    NO_PEERS=$4
 
-    networkDown $NO_ORGS $NO_PEERS
-    clear $NO_ORGS $NO_PEERS
-    initialize $NO_ORGS $NO_PEERS
-    networkUp $NO_ORGS $NO_PEERS
+    if [ $SUB_MODE = "network" ]; then
+        networkDown $NO_ORGS $NO_PEERS
+        clear $NO_ORGS $NO_PEERS
+        initialize $NO_ORGS $NO_PEERS
+        networkUp $NO_ORGS $NO_PEERS
+    elif [ $SUB_MODE = "all" ]; then
+        networkDown $NO_ORGS $NO_PEERS
+        clear $NO_ORGS $NO_PEERS
+        initialize $NO_ORGS $NO_PEERS
+        networkUp $NO_ORGS $NO_PEERS
 
-    sleep 1
-    createChannel $NO_ORGS $NO_PEERS
-    sleep 2
-    joinChannel $NO_ORGS $NO_PEERS
+        sleep 1
+        createChannel $NO_ORGS $NO_PEERS
+        sleep 2
+        joinChannel $NO_ORGS $NO_PEERS
 
-    sleep 1
-    deployChaincode $CAMPAIGN_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
-    sleep 15
-    deployChaincode $PROOF_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
+        sleep 1
+        deployChaincode $CAMPAIGN_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
+        sleep 15
+        deployChaincode $PROOF_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
+    else
+        errorln "Unsupported $MODE $SUB_MODE command."
+    fi
 
 elif [ $MODE = "build" ]; then
     SUB_MODE=$2

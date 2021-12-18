@@ -109,7 +109,7 @@ func createCampaignCryptoParams(camId string) (*putils.CampaignCryptoParams, err
 	if err != nil {
 		fmt.Println(err)
 
-		H := putils.generateH()
+		H := putils.GenerateH()
 		hEnc := putils.ConvertPointToString(H)
 		fmt.Println("hString:.\n", hEnc)
 

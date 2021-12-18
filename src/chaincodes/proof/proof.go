@@ -1,24 +1,26 @@
 package main
 
 import (
-	b64 "encoding/base64"
+	"bufio"
 	"encoding/json"
+	"errors"
+	"log"
+	"net"
+	"sync"
 
 	// "errors"
 	"fmt"
-	"io/ioutil"
 
 	// "log"
-	"math/big"
-	"net/http"
 
 	// "strconv"
 	"strings"
 
+	putils "internal/promark_utils"
+
 	"github.com/bwesterb/go-ristretto"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 	"github.com/hyperledger/fabric/common/util"
-	putils "internal/promark_utils"
 )
 
 var LOG_MODE = "test"
@@ -59,41 +61,48 @@ func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.Trans
 		return nil, err
 	}
 
+	proof, err := GenerateCustomerCampaignProofSocket(&campaign, userId)
+
+	return proof, nil
+}
+
+func GenerateCustomerCampaignProofSocket(campaign *putils.Campaign, userId string) (*putils.ProofCustomerCampaign, error) {
 	// generate a random values for each verifiers
 	numVerifiers := len(campaign.VerifierURLs)
-	putils.SendLog("numVerifiers", string(numVerifiers), LOG_MODE)
+	// putils.SendLog("numVerifiers", string(numVerifiers), LOG_MODE)
 
 	// get crypto params
 	// cryptoParams := requestCustomerCampaignCryptoParams(camId, userId, numVerifiers)
 
 	var Ci, C ristretto.Point
+	vProofChannel := make(chan putils.VerifierProofChannelResult)
 
-	var subComs, randomValues []string
+	wg := sync.WaitGroup{}
+	wg.Add(numVerifiers)
 
 	for i := 0; i < numVerifiers; i++ {
 		verifierURL := campaign.VerifierURLs[i]
-		comURL := verifierURL + "/camp/" + camId + "/proof/" + userId
-		putils.SendLog("verifierURL", verifierURL, LOG_MODE)
-		putils.SendLog("comURL", comURL, LOG_MODE)
+		// putils.SendLog("verifierURL", verifierURL)
+		// putils.SendLog("comURL", requestCreateVerifierCryptoURL)
 
-		// 	testVer(ver)
-		// 	putils.SendLog("id", id)
-		// 	putils.SendLog("Hvalue", string(cryptoParams.H))
-		// 	putils.SendLog("R1value", string(cryptoParams.R1[i]))
+		fmt.Println("Call RequestToCreateVerifierCampaignCryptoParamsSocket: " + verifierURL)
+		go ConcurrentRequestCommitment(campaign.Id, userId, verifierURL, vProofChannel, &wg)
+	}
 
-		subProof, err := computeCommitment2(camId, userId, comURL)
+	fmt.Println("Printing results")
+	var subComs, randomValues []string
 
-		if err != nil {
-			return nil, err
+	for i := 0; i < numVerifiers; i++ {
+		result := <-vProofChannel
+		fmt.Println(result.URL)
+		fmt.Println(result.Error)
+		fmt.Println(result.Proof)
+
+		if result.Error != nil {
+			return nil, result.Error
 		}
 
-		// commDec, _ := b64.StdEncoding.DecodeString(comm)
-		// Ci = convertStringToPoint(string(commDec))
-		putils.SendLog("H"+string(i)+" encoding:", subProof.H, LOG_MODE)
-		putils.SendLog("S"+string(i)+" encoding:", subProof.S, LOG_MODE)
-		putils.SendLog("R"+string(i)+" encoding:", subProof.R, LOG_MODE)
-		putils.SendLog("Comm"+string(i)+" encoding:", subProof.Comm, LOG_MODE)
-		Ci = putils.convertStringToPoint(subProof.Comm)
+		Ci = putils.ConvertStringToPoint(result.Proof.Comm)
 		// CiBytes, _ := b64.StdEncoding.DecodeString(subProof.Comm)
 		// Ci = convertBytesToPoint(CiBytes)
 
@@ -102,26 +111,92 @@ func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.Trans
 		} else {
 			C.Add(&C, &Ci)
 
-			putils.SendLog("Current Comm", b64.StdEncoding.EncodeToString(C.Bytes()))
+			// putils.SendLog("Current Comm", putils.ConvertPointToString(C), DEBUG_LOG)
 		}
 
-		randomValues = append(randomValues, subProof.R)
-		subComs = append(subComs, subProof.Comm)
+		randomValues = append(randomValues, result.Proof.R)
+		subComs = append(subComs, result.Proof.Comm)
 	}
+
+	close(vProofChannel)
+
 	CommEnc := putils.ConvertPointToString(C)
-	// CommBytes := C.Bytes()
-	// CommEnc := b64.StdEncoding.EncodeToString(CommBytes)
 
-	// get all verifiers URLs
-
-	// calculate commitment
 	proof := putils.ProofCustomerCampaign{
 		Comm:    CommEnc,
 		Rs:      randomValues,
 		SubComs: subComs,
 	}
 
+	fmt.Println("proof.Comm: " + proof.Comm)
+	fmt.Printf("proof.Rs: %s\n", proof.Rs)
+	fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
+
 	return &proof, nil
+}
+
+func ConcurrentRequestCommitment(camId string, customerId string, url string, results chan putils.VerifierProofChannelResult, wg *sync.WaitGroup) {
+	verifierProof, err := RequestCommitment(camId, customerId, url)
+
+	wg.Done()
+
+	fmt.Println("Done with " + url)
+	fmt.Println("vCryptoParams.CamId:" + verifierProof.CamId)
+	fmt.Println("vCryptoParams.CustomerId:" + verifierProof.UserId)
+	fmt.Println("vCryptoParams.H:" + verifierProof.H)
+	fmt.Println("vCryptoParams.R:" + verifierProof.R)
+	fmt.Println("vCryptoParams.S:" + verifierProof.S)
+
+	results <- putils.VerifierProofChannelResult{
+		URL:   url,
+		Proof: *verifierProof,
+		Error: err,
+	}
+}
+
+func RequestCommitment(camId string, customerId string, url string) (*putils.CampaignCustomerVerifierProof, error) {
+	conn, err := net.Dial("tcp", url)
+	if err != nil {
+		// sendLog("Error connecting:", err.Error())
+
+		fmt.Println("Error connecting:" + err.Error())
+		return nil, errors.New("ERROR:" + err.Error())
+	}
+
+	requestArgs := putils.ProofGenerationRequest{
+		CamId:      camId,
+		CustomerId: customerId,
+	}
+
+	jsonArgs, err := json.Marshal(requestArgs)
+
+	putils.SendRequest(conn, "commit", string(jsonArgs))
+	// wait for response
+	responseStr, err := bufio.NewReader(conn).ReadString('\n')
+
+	if err != nil {
+		// sendLog("Error connecting:", err.Error())
+		log.Println("Error after creating:", err.Error())
+		return nil, errors.New("Error  after creating:" + err.Error())
+	}
+	fmt.Println("Reiceived From: " + url + "-Response:" + responseStr)
+
+	response, err := putils.ParseResponse(responseStr)
+
+	if err != nil {
+		return nil, errors.New("Error:" + err.Error())
+	}
+
+	var subProof putils.CampaignCustomerVerifierProof
+	err = json.Unmarshal([]byte(response.Data), &subProof)
+
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+		return nil, err
+	}
+
+	fmt.Println("Returned-vCryptoParams.CamId:" + subProof.CamId)
+	return &subProof, nil
 }
 
 func (s *ProofSmartContract) GetAllProofs(ctx contractapi.TransactionContextInterface) ([]*putils.CollectedCustomerProof, error) {
@@ -171,7 +246,7 @@ func (s *ProofSmartContract) AddCustomerProofCampaign(ctx contractapi.Transactio
 	rs := strings.Split(rsStr, ";")
 
 	collectedProof := putils.CollectedCustomerProof{
-		ID:   proofId,
+		Id:   proofId,
 		Comm: comm,
 		Rs:   rs,
 	}
@@ -192,7 +267,7 @@ func (s *ProofSmartContract) AddCustomerProofCampaign(ctx contractapi.Transactio
 
 func (s *ProofSmartContract) GetProofById(ctx contractapi.TransactionContextInterface, proofId string) (*putils.CollectedCustomerProof, error) {
 	proofJSON, err := ctx.GetStub().GetState(proofId)
-	// backupJSON, err := ctx.GetStub().GetState(backupID)
+	// backupJSON, err := ctx.GetStub().GetState(backupId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from world state: %v", err)
 	}
@@ -209,9 +284,9 @@ func (s *ProofSmartContract) GetProofById(ctx contractapi.TransactionContextInte
 	return &proof, nil
 }
 
-func (s *ProofSmartContract) DeleteProofByID(ctx contractapi.TransactionContextInterface, proofId string) (bool, error) {
+func (s *ProofSmartContract) DeleteProofById(ctx contractapi.TransactionContextInterface, proofId string) (bool, error) {
 	proofJSON, err := ctx.GetStub().GetState(proofId)
-	// backupJSON, err := ctx.GetStub().GetState(backupID)
+	// backupJSON, err := ctx.GetStub().GetState(backupId)
 	if err != nil {
 		return false, fmt.Errorf("failed to read from world state: %v", err)
 	}
@@ -263,7 +338,7 @@ func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionCont
 		return false, err
 	}
 
-	putils.SendLog("campaign.ID", campaign.ID, LOG_MODE)
+	putils.SendLog("campaign.Id", campaign.Id, LOG_MODE)
 	putils.SendLog("campaign.Name", campaign.Name, LOG_MODE)
 	putils.SendLog("campaign.VerifierURLs", string(len(campaign.VerifierURLs)), LOG_MODE)
 
@@ -275,46 +350,61 @@ func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionCont
 	}
 
 	// putils.SendLog("proof.H", proof.H)
-	putils.SendLog("proof.Comm", proof.Comm)
+	putils.SendLog("proof.Comm", proof.Comm, LOG_MODE)
 
-	for i, R := range proof.Rs {
-		putils.SendLog("proof.R["+string(i)+"]", R)
-	}
+	verificationResult, err := VerifyCommitmentSocket(&campaign, proof)
+
+	return verificationResult, err
+}
+
+func VerifyCommitmentSocket(campaign *putils.Campaign, proof *putils.CollectedCustomerProof) (bool, error) {
+	fmt.Printf("proof.Rs: %s\n", proof.Rs)
+	numVerifiers := len(campaign.VerifierURLs)
+	vcChannel := make(chan putils.VerifierCommitmentChannelResult)
+	wg := sync.WaitGroup{}
+	wg.Add(numVerifiers)
 
 	// callinng verifiers to calculate proof.Comm again based on proof.Rs
-	var C ristretto.Point
 	for i, verifierURL := range campaign.VerifierURLs {
 		// call verifier to compute sub commitment
-		comURL := verifierURL + "/camp/" + camId + "/verify"
-		ciEnc, err := ComputeCommitment3(camId, proof.Rs[i], comURL)
+		go ConcurrentRequestVerification(campaign.Id, proof.Rs[i], verifierURL, vcChannel, &wg)
+	}
 
-		if err != nil {
-			return false, err
+	fmt.Println("Calculating total comm")
+	// var subComs, randomValues []string
+	var Ci, C ristretto.Point
+	for i := 0; i < numVerifiers; i++ {
+		result := <-vcChannel
+		fmt.Printf("URL: %s\n", result.URL)
+		// fmt.Printf("Error: %v\n" + result.Error)
+		fmt.Printf("Comm: %s\n", result.Comm)
+
+		if result.Error != nil {
+			return false, result.Error
 		}
 
-		ciBytes, err := b64.StdEncoding.DecodeString(*ciEnc)
-
-		if err != nil {
-			return false, err
-		}
-
-		ci := putils.ConvertBytesToPoint(ciBytes)
+		Ci = putils.ConvertStringToPoint(result.Comm)
+		// CiBytes, _ := b64.StdEncoding.DecodeString(subProof.Comm)
+		// Ci = convertBytesToPoint(CiBytes)
 
 		if i == 0 {
-			C = ci
+			C = Ci
 		} else {
-			C.Add(&C, &ci)
+			C.Add(&C, &Ci)
+
+			// putils.SendLog("Current Comm", putils.ConvertPointToString(C), DEBUG_LOG)
 		}
+
+		// randomValues = append(randomValues, result.Proof.R)
+		// subComs = append(subComs, result.Proof.Comm)
 	}
 
-	CommBytes, err := b64.StdEncoding.DecodeString(proof.Comm)
-	if err != nil {
-		return false, err
-	}
+	close(vcChannel)
 
-	putils.SendLog("proof.Com", proof.Comm, LOG_MODE)
-	putils.SendLog("calculated Com", b64.StdEncoding.EncodeToString(C.Bytes()), LOG_MODE)
-	comm := putils.ConvertBytesToPoint(CommBytes)
+	comm := putils.ConvertStringToPoint(proof.Comm)
+
+	// putils.SendLog("proof.Com", proof.Comm, LOG_MODE)
+	// putils.SendLog("calculated Com", b64.StdEncoding.EncodeToString(C.Bytes()), LOG_MODE)
 	if C.Equals(&comm) {
 		return true, nil
 	} else {
@@ -322,239 +412,206 @@ func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionCont
 	}
 }
 
-func RequestCustomerCampaignCryptoParams(id string, userId string, numVerifiers int) putils.CampaignCryptoParams {
-	var cryptoParams putils.CampaignCryptoParams
+func ConcurrentRequestVerification(camId string, r string, url string, results chan putils.VerifierCommitmentChannelResult, wg *sync.WaitGroup) {
+	ci, err := RequestVerification(camId, r, url)
 
-	c := &http.Client{}
+	wg.Done()
 
-	// ID             string
-	// CustomerId	   stringGet
-	// NumOfVerifiers int
-	message := putils.CampaignCryptoRequest{
-		CamId:        id,
-		CustomerId:   userId,
-		NumVerifiers: numVerifiers,
+	fmt.Println("Done with " + url)
+	fmt.Printf("ci: %s\n", *ci)
+
+	results <- putils.VerifierCommitmentChannelResult{
+		URL:   url,
+		Comm:  *ci,
+		Error: err,
 	}
-
-	jsonData, err := json.Marshal(message)
-
-	request := string(jsonData)
-
-	reqJSON, err := http.NewRequest("POST", cryptoParamsRequestURL, strings.NewReader(request))
-	if err != nil {
-		fmt.Printf("http.NewRequest() error: %v\n", err)
-		return cryptoParams
-	}
-
-	respJSON, err := c.Do(reqJSON)
-	if err != nil {
-		fmt.Printf("http.Do() error: %v\n", err)
-		return cryptoParams
-	}
-	defer respJSON.Body.Close()
-
-	data, err := ioutil.ReadAll(respJSON.Body)
-	if err != nil {
-		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-		return cryptoParams
-	}
-
-	fmt.Println("return data all:", string(data))
-
-	err = json.Unmarshal([]byte(data), &cryptoParams)
-	if err != nil {
-		println(err)
-	}
-
-	return cryptoParams
 }
 
-func ComputeCommitment3(campId string, rEnc string, url string) (*string, error) {
-	putils.SendLog("computeCommitment3 at", url)
-	client := &http.Client{}
-
-	message := putils.VerificationRequest{
-		CamId: campId,
-		R:     rEnc,
+func RequestVerification(camId string, r string, url string) (*string, error) {
+	conn, err := net.Dial("tcp", url)
+	if err != nil {
+		fmt.Println("Error connecting:" + err.Error())
+		return nil, errors.New("ERROR:" + err.Error())
 	}
 
-	jsonData, err := json.Marshal(message)
-	request := string(jsonData)
-
-	putils.SendLog("request", request)
-	reqData, err := http.NewRequest("POST", url, strings.NewReader(request))
-
-	if err != nil {
-		fmt.Printf("http.NewRequest() error: %v\n", err)
-		return nil, err
+	requestArgs := putils.VerificationRequest{
+		CamId: camId,
+		R:     r,
 	}
 
-	respJSON, err := client.Do(reqData)
-	// putils.SendLog("respJSON", *respJSON)
-	if err != nil {
-		fmt.Printf("http.Do() error: %v\n", err)
-		return nil, err
-	}
-	defer respJSON.Body.Close()
+	jsonArgs, err := json.Marshal(requestArgs)
 
-	data, err := ioutil.ReadAll(respJSON.Body)
-	putils.SendLog("data", string(data))
+	putils.SendRequest(conn, "verify", string(jsonArgs))
+	// wait for response
+	// wait for response
+	responseStr, err := bufio.NewReader(conn).ReadString('\n')
+
 	if err != nil {
-		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-		return nil, err
+		// sendLog("Error connecting:", err.Error())
+		log.Println("Error after creating:", err.Error())
+		return nil, errors.New("Error  after creating:" + err.Error())
+	}
+	fmt.Println("Reiceived From: " + url + "-Response:" + responseStr)
+
+	response, err := putils.ParseResponse(responseStr)
+
+	if err != nil {
+		return nil, errors.New("Error:" + err.Error())
 	}
 
 	var verificationResponse putils.VerificationResponse
-	err = json.Unmarshal([]byte(data), &verificationResponse)
+	err = json.Unmarshal([]byte(response.Data), &verificationResponse)
+
 	if err != nil {
-		println(err)
+		fmt.Println("error: " + err.Error())
+		return nil, err
 	}
 
-	putils.SendLog("verificationResponse.H:", verificationResponse.H, LOG_MODE)
-	putils.SendLog("verificationResponse.s:", verificationResponse.S, LOG_MODE)
-	putils.SendLog("verificationResponse.r:", verificationResponse.R, LOG_MODE)
-	putils.SendLog("verificationResponse.Comm:", verificationResponse.Comm, LOG_MODE)
+	// putils.SendLog("verificationResponse.H:", verificationResponse.H, LOG_MODE)
+	// putils.SendLog("verificationResponse.s:", verificationResponse.S, LOG_MODE)
+	// putils.SendLog("verificationResponse.r:", verificationResponse.R, LOG_MODE)
+	// putils.SendLog("verificationResponse.Comm:", verificationResponse.Comm, LOG_MODE)
 
 	return &verificationResponse.Comm, nil
 }
 
-func computeCommitment2(campId string, userId, url string) (*putils.CampaignCustomerVerifierProof, error) {
-	putils.SendLog("request calculate proof verifier crypto at", url, LOG_MODE)
+// func RequestCustomerCampaignCryptoParams(id string, userId string, numVerifiers int) putils.CampaignCryptoParams {
+// 	var cryptoParams putils.CampaignCryptoParams
 
-	client := &http.Client{}
-	// requestArgs := NewVerifierCryptoParamsRequest{
-	// 	CamId: camId,
-	// 	H:     cryptoParams.H,
-	// }
+// 	c := &http.Client{}
 
-	// jsonArgs, err := json.Marshal(requestArgs)
-	// request := string(jsonArgs)
-	reqData, err := http.NewRequest("POST", url, strings.NewReader(""))
-	// putils.SendLog("request", request)
-	// putils.SendLog("err", err.Error())
-	if err != nil {
-		fmt.Printf("http.NewRequest() error: %v\n", err)
-		return nil, err
-	}
+// 	// Id             string
+// 	// CustomerId	   stringGet
+// 	// NumOfVerifiers int
+// 	message := putils.CampaignCryptoRequest{
+// 		CamId:        id,
+// 		CustomerId:   userId,
+// 		NumVerifiers: numVerifiers,
+// 	}
 
-	respJSON, err := client.Do(reqData)
-	if err != nil {
-		fmt.Printf("http.Do() error: %v\n", err)
-		return nil, err
-	}
-	defer respJSON.Body.Close()
+// 	jsonData, err := json.Marshal(message)
 
-	data, err := ioutil.ReadAll(respJSON.Body)
-	putils.SendLog("data", string(data), LOG_MODE)
-	if err != nil {
-		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-		return nil, err
-	}
+// 	request := string(jsonData)
 
-	fmt.Println("return data all:", string(data))
-	var subProof putils.CampaignCustomerVerifierProof
-	err = json.Unmarshal([]byte(data), &subProof)
+// 	reqJSON, err := http.NewRequest("POST", cryptoParamsRequestURL, strings.NewReader(request))
+// 	if err != nil {
+// 		fmt.Printf("http.NewRequest() error: %v\n", err)
+// 		return cryptoParams
+// 	}
 
-	if err != nil {
-		fmt.Printf("http.NewRequest() error: %v\n", err)
-		return nil, err
-	}
+// 	respJSON, err := c.Do(reqJSON)
+// 	if err != nil {
+// 		fmt.Printf("http.Do() error: %v\n", err)
+// 		return cryptoParams
+// 	}
+// 	defer respJSON.Body.Close()
 
-	return &subProof, nil
-}
+// 	data, err := ioutil.ReadAll(respJSON.Body)
+// 	if err != nil {
+// 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+// 		return cryptoParams
+// 	}
 
-func computeCommitment(campID string, url string, i int, cryptoParams putils.CampaignCryptoParams) string {
-	//connect to verifier: campID,  H , r
-	putils.SendLog("Start of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"", LOG_MODE)
-	// var param CommRequest
-	var rBytes []byte
-	var rEnc, hEnc string
-	client := &http.Client{}
-	// putils.SendLog("create connection of commCompute:", "")
+// 	fmt.Println("return data all:", string(data))
 
-	hBytes := cryptoParams.H
-	hEnc = b64.StdEncoding.EncodeToString(hBytes)
-	putils.SendLog("Encode H: ", hEnc, LOG_MODE)
+// 	err = json.Unmarshal([]byte(data), &cryptoParams)
+// 	if err != nil {
+// 		println(err)
+// 	}
 
-	// if url == com1URL {
-	// 	rBytes = camParam.R1
-	// 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
+// 	return cryptoParams
+// }
 
-	// } else if url == com2URL {
-	// 	rBytes = camParam.R2
-	// 	rEnc = b64.StdEncoding.EncodeToString(rBytes)
-	// }
+// func ComputeCommitment3(campId string, rEnc string, url string) (*string, error) {
+// 	putils.SendLog("computeCommitment3 at", url, LOG_MODE)
+// 	client := &http.Client{}
 
-	putils.SendLog("num r values: ", string(len(cryptoParams.R1)), LOG_MODE)
-	rBytes = cryptoParams.R1[i]
-	// putils.SendLog("R["+string(i)+"]: ", rBytes)
-	rEnc = b64.StdEncoding.EncodeToString(rBytes)
-	putils.SendLog("Encode R["+string(i)+"]: ", rEnc, LOG_MODE)
+// 	message := putils.VerificationRequest{
+// 		CamId: campId,
+// 		R:     rEnc,
+// 	}
 
-	// jsonData, _ := json.Marshal(param)
-	message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", campID, hEnc, rEnc)
-	// request := string(jsonData)
+// 	jsonData, err := json.Marshal(message)
+// 	request := string(jsonData)
 
-	putils.SendLog("commCompute.message", message)
+// 	putils.SendLog("request", request, LOG_MODE)
+// 	reqData, err := http.NewRequest("POST", url, strings.NewReader(request))
 
-	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(message))
-	if err != nil {
-		fmt.Printf("http.NewRequest() error: %v\n", err)
-	}
+// 	if err != nil {
+// 		fmt.Printf("http.NewRequest() error: %v\n", err)
+// 		return nil, err
+// 	}
 
-	respJSON, err := client.Do(reqJSON)
-	if err != nil {
-		fmt.Printf("http.Do() error: %v\n", err)
-	}
-	defer respJSON.Body.Close()
+// 	respJSON, err := client.Do(reqData)
+// 	// putils.SendLog("respJSON", *respJSON)
+// 	if err != nil {
+// 		fmt.Printf("http.Do() error: %v\n", err)
+// 		return nil, err
+// 	}
+// 	defer respJSON.Body.Close()
 
-	data, err := ioutil.ReadAll(respJSON.Body)
-	if err != nil {
-		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-	}
+// 	data, err := ioutil.ReadAll(respJSON.Body)
+// 	putils.SendLog("data", string(data), LOG_MODE)
+// 	if err != nil {
+// 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+// 		return nil, err
+// 	}
 
-	putils.SendLog("commValue:", string(data), LOG_MODE)
-	putils.SendLog("end of commCompute:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"", LOG_MODE)
+// 	var verificationResponse putils.VerificationResponse
+// 	err = json.Unmarshal([]byte(data), &verificationResponse)
+// 	if err != nil {
+// 		println(err)
+// 	}
 
-	return string(data)
-}
+// 	putils.SendLog("verificationResponse.H:", verificationResponse.H, LOG_MODE)
+// 	putils.SendLog("verificationResponse.s:", verificationResponse.S, LOG_MODE)
+// 	putils.SendLog("verificationResponse.r:", verificationResponse.R, LOG_MODE)
+// 	putils.SendLog("verificationResponse.Comm:", verificationResponse.Comm, LOG_MODE)
 
-func commVerify(campID string, url string, r string) string {
-	//connect to verifier: campID,  H , r
-	// putils.SendLog("Start of commVerify:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
+// 	return &verificationResponse.Comm, nil
+// }
 
-	// var hEnc string
-	c := &http.Client{}
+// func computeCommitment2(campId string, userId, url string) (*putils.CampaignCustomerVerifierProof, error) {
+// 	putils.SendLog("request calculate proof verifier crypto at", url, LOG_MODE)
 
-	// hBytes := camParam.H
-	// hEnc = b64.StdEncoding.EncodeToString(hBytes)
+// 	client := &http.Client{}
+// 	// requestArgs := NewVerifierCryptoParamsRequest{
+// 	// 	CamId: camId,
+// 	// 	H:     cryptoParams.H,
+// 	// }
 
-	// putils.SendLog("commVerify.r in string", r)
+// 	// jsonArgs, err := json.Marshal(requestArgs)
+// 	// request := string(jsonArgs)
+// 	reqData, err := http.NewRequest("POST", url, strings.NewReader(""))
+// 	// putils.SendLog("request", request)
+// 	// putils.SendLog("err", err.Error())
+// 	if err != nil {
+// 		fmt.Printf("http.NewRequest() error: %v\n", err)
+// 		return nil, err
+// 	}
 
-	// jsonData, _ := json.Marshal(param)
-	// message := fmt.Sprintf("{\"id\": \"%s\", \"H\": \"%s\", \"r\": \"%s\"}", campID, hEnc, r)
-	message := fmt.Sprintf("{\"id\": \"%s\", \"r\": \"%s\"}", campID, r)
+// 	respJSON, err := client.Do(reqData)
+// 	if err != nil {
+// 		fmt.Printf("http.Do() error: %v\n", err)
+// 		return nil, err
+// 	}
+// 	defer respJSON.Body.Close()
 
-	// request := string(jsonData)
+// 	data, err := ioutil.ReadAll(respJSON.Body)
+// 	putils.SendLog("data", string(data), LOG_MODE)
+// 	if err != nil {
+// 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
+// 		return nil, err
+// 	}
 
-	reqJSON, err := http.NewRequest("POST", url, strings.NewReader(message))
-	if err != nil {
-		fmt.Printf("http.NewRequest() error: %v\n", err)
-	}
+// 	fmt.Println("return data all:", string(data))
+// 	var subProof putils.CampaignCustomerVerifierProof
+// 	err = json.Unmarshal([]byte(data), &subProof)
 
-	respJSON, err := c.Do(reqJSON)
-	if err != nil {
-		fmt.Printf("http.Do() error: %v\n", err)
-	}
-	defer respJSON.Body.Close()
+// 	if err != nil {
+// 		fmt.Printf("http.NewRequest() error: %v\n", err)
+// 		return nil, err
+// 	}
 
-	data, err := ioutil.ReadAll(respJSON.Body)
-	if err != nil {
-		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-	}
-
-	// putils.SendLog("commValue:", string(data))
-	// putils.SendLog("end of commVerify:", "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"")
-
-	return string(data)
-}
+// 	return &subProof, nil
+// }

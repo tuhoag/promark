@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/bwesterb/go-ristretto"
-	redis "gopkg.in/redis.v4"
 	"io/ioutil"
 	"math/big"
 	"net"
 	"net/http"
 	"strings"
+
+	"github.com/bwesterb/go-ristretto"
+	redis "gopkg.in/redis.v4"
 )
 
 type PromarkRequest struct {
@@ -24,15 +25,15 @@ type PromarkResponse struct {
 	Data  string `json:"data"`
 }
 
+type VerifierCryptoParamsRequest struct {
+	CamId string `json:"camId"`
+	H     string `json:"h"`
+}
+
 type VerifierCryptoParams struct {
 	CamId string `json:"camId"`
 	H     string `json:"h"`
 	S     string `json:"s"`
-}
-
-type VerifierCryptoParamsRequest struct {
-	CamId string `json:"camId"`
-	H     string `json:"h"`
 }
 
 type DebugLog struct {
@@ -46,7 +47,7 @@ type CampaignCryptoParams struct {
 }
 
 type Campaign struct {
-	ID           string   `json:"ID"`
+	Id           string   `json:"Id"`
 	Name         string   `json:"Name"`
 	Advertiser   string   `json:"Advertiser"`
 	Business     string   `json:"Business"`
@@ -58,6 +59,11 @@ type CampaignCryptoRequest struct {
 	CamId        string `json:"camId"`
 	CustomerId   string `json:"customerId"`
 	NumVerifiers int    `json:"numVerifiers"`
+}
+
+type ProofGenerationRequest struct {
+	CamId      string `json:"camId"`
+	CustomerId string `json:"customerId`
 }
 
 type VerificationRequest struct {
@@ -96,7 +102,7 @@ type ProofCustomerCampaign struct {
 }
 
 type CollectedCustomerProof struct {
-	ID   string   `json:"ID"`
+	Id   string   `json:"Id"`
 	Comm string   `json:"Comm"`
 	Rs   []string `json:"Rs"`
 }
@@ -105,6 +111,18 @@ type VerifierCryptoChannelResult struct {
 	URL                  string
 	VerifierCryptoParams VerifierCryptoParams
 	Error                error
+}
+
+type VerifierProofChannelResult struct {
+	URL   string
+	Proof CampaignCustomerVerifierProof
+	Error error
+}
+
+type VerifierCommitmentChannelResult struct {
+	URL   string
+	Comm  string
+	Error error
 }
 
 var logURL = "http://logs.promark.com:5003/log"
@@ -219,8 +237,17 @@ var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857
 
 func ConvertStringToPoint(s string) ristretto.Point {
 	bytes, _ := b64.StdEncoding.DecodeString(s)
-	point = convertBytesToPoint(bytes)
+
+	point := ConvertBytesToPoint(bytes)
 	return point
+}
+
+func ConvertStringToScalar(s string) ristretto.Scalar {
+	bytes, _ := b64.StdEncoding.DecodeString(s)
+
+	scalar := ConvertBytesToScalar(bytes)
+
+	return scalar
 }
 
 func ConvertBytesToPoint(b []byte) ristretto.Point {
@@ -247,16 +274,31 @@ func ConvertBytesToScalar(b []byte) ristretto.Scalar {
 	return r
 }
 
-func ConvertScalarToString(s ristretto.Scalar) string {
-	sBytes := s.Bytes()
-	sString := string(sBytes)
-
-	return sString
+func ConvertScalarToString(scalar ristretto.Scalar) string {
+	s := b64.StdEncoding.EncodeToString(scalar.Bytes())
+	return s
 }
 
-func ConvertPointToString(h ristretto.Point) string {
-	hBytes := h.Bytes()
-	hEnc := b64.StdEncoding.EncodeToString(hBytes)
+func ConvertPointToString(point ristretto.Point) string {
+	s := b64.StdEncoding.EncodeToString(point.Bytes())
 
-	return hEnc
+	return s
+}
+
+func CommitTo(H *ristretto.Point, r *ristretto.Scalar, x *ristretto.Scalar) ristretto.Point {
+	//ec.g.mul(r).add(H.mul(x));
+	var result, rPoint, transferPoint ristretto.Point
+	rPoint.ScalarMultBase(r)
+	transferPoint.ScalarMult(H, x)
+	result.Add(&rPoint, &transferPoint)
+	return result
+}
+
+func GenerateH() ristretto.Point {
+	var random ristretto.Scalar
+	var H ristretto.Point
+	random.Rand()
+	H.ScalarMultBase(&random)
+
+	return H
 }
