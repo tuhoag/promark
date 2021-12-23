@@ -13,8 +13,8 @@ function CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType
         const advertierPeerName = "peer" + Math.floor(Math.random()*10000) % numPeersPerOrgs;
         const businessPeerName = "peer" + Math.floor(Math.random()*10000) % numPeersPerOrgs;
 
-        const advPeerURL = "http://" + advertierPeerName + "."+advertiser + ".promark.com:5000";
-        const busPeerURL = "http://" + businessPeerName + "."+business + ".promark.com:5000";
+        const advPeerURL = advertierPeerName + "."+advertiser + ".promark.com:5000";
+        const busPeerURL = businessPeerName + "."+business + ".promark.com:5000";
 
         verifierURLs.push(advPeerURL);
         verifierURLs.push(busPeerURL);

@@ -96,6 +96,10 @@ function runVerifier2Service() {
     $SCRIPTS_DIR/external-service.sh $LOG_LEVEL 2
 }
 
+function runClientService() {
+    $SCRIPTS_DIR/external-service.sh $LOG_LEVEL 3 $1 $2
+}
+
 function buildExternalService() {
     local orgNum=$1
     local peerNum=$2
@@ -386,6 +390,8 @@ elif [ $MODE = "service" ]; then
         runVerifier2Service $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "log" ]; then
         runLogService $NO_ORGS $NO_PEERS
+    elif [ $SUB_MODE = "client" ]; then
+        runClientService $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "build" ]; then
         buildExternalService $NO_ORGS $NO_PEERS
     else

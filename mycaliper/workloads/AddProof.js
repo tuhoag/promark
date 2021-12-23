@@ -67,7 +67,7 @@ class AddProofWorkload extends WorkloadModuleBase {
         const transArgs = {
             contractId: this.roundArguments.contractId,
             contractFunction: "AddCustomerProofCampaign",
-            contractArguments: [proofId, "mMSjJGAk/NfSvkJ6xxlGtQGfynYZuC4DQOPOg6NRHkg=", "SueLYtANTNb+JKAoEp5D2gUERB5BjD5wT0ePLGdtyww=;ooi7Y5LdJd8mlY4r7o1C+82OHi5OQMcC1Lclp9SKiAE="],
+            contractArguments: [proofId, "zjXOu/ZYujIPtJmG7sqwMgEQUQfcaw2XPNsonyjUxHQ=", "T1Gy81+h8HBoILuKtCU41Xks5QolA//fwvp5N6kLlwY=;PNUtQ7Wb3HAkRxC4IlpwOJXSQLWB7+raySPYfAjHLwI="],
             readOnly: true
         };
 

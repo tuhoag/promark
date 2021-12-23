@@ -27,3 +27,5 @@ log.txt
 /src/*/*/vendor
 /src/chaincodes/packages
 go.sum
+src/applications/wallet
+/src/applications/package-lock.json

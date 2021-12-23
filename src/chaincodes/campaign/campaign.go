@@ -66,7 +66,7 @@ func (s *CampaignSmartContract) GetAllCampaigns(ctx contractapi.TransactionConte
 	return campaigns, nil
 }
 
-func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) error {
+func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) (*putils.Campaign, error) {
 	putils.SendLog("campaignId", camId, LOG_MODE)
 	putils.SendLog("campaignName", name, LOG_MODE)
 	putils.SendLog("advertiser", advertiser, LOG_MODE)
@@ -76,34 +76,34 @@ func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContex
 
 	existing, err := ctx.GetStub().GetState(camId)
 	if err != nil {
-		return errors.New("Unable to read the world state")
+		return nil, errors.New("Unable to read the world state")
 	}
 
 	if existing != nil {
-		return fmt.Errorf("Cannot create asset since its raw id %s is existed", camId)
+		return nil, fmt.Errorf("Cannot create campaign since its id %s is existed", camId)
 	}
 
 	verifierURLs := strings.Split(verifierURLStr, ";")
 	campaign, err := CreateCampaignSocket(camId, name, advertiser, business, verifierURLs)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	campaignJSON, err := json.Marshal(campaign)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = ctx.GetStub().PutState(camId, campaignJSON)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	fmt.Println("CampaignJSON:" + string(campaignJSON))
 
-	return nil
+	return campaign, nil
 }
 
 func CreateCampaignSocket(camId string, name string, advertiser string, business string, verifierURLs []string) (*putils.Campaign, error) {
