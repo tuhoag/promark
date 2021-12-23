@@ -1,0 +1,51 @@
+name: "Promark Network"
+version: "1.0"
+
+client:
+  organization: adv0
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+
+channels:
+  mychannel:
+    orderers:
+      - orderer.promark.com
+    peers:
+      - peer0.adv0.promark.com
+      - peer0.bus0.promark.com
+
+organizations:
+  adv0:
+    mspid: adv0MSP
+    peers:
+      - peer0.adv0.promark.com
+
+  bus0:
+    mspid: bus0MSP
+    peers:
+      - peer0.bus0.promark.com
+
+orderers:
+  orderer.promark.com:
+    url: grpcs://0.0.0.0:7050
+    grpcOptions:
+      ssl-target-name-override: orderer.promark.com
+    tlsCACerts:
+      path: ../../organizations/ordererOrganizations/promark.com/tlsca/tlsca.promark.com-cert.pem
+
+peers:
+  peer0.adv0.promark.com:
+    url: grpcs://0.0.0.0:5000
+    grpcOptions:
+      ssl-target-name-override: peer0.adv0.promark.com
+    tlsCACerts:
+      path: ../../organizations/peerOrganizations/adv0.promark.com/peers/peer0.adv0.promark.com/msp/tlscacerts/tlsca.adv0.promark.com-cert.pem
+
+  peer0.bus0.promark.com:
+    url: grpcs://0.0.0.0:6000
+    grpcOptions:
+      ssl-target-name-override: peer0.bus0.promark.com
+    tlsCACerts:
+      path: ../../organizations/peerOrganizations/bus0.promark.com/peers/peer0.bus0.promark.com/msp/tlscacerts/tlsca.bus0.promark.com-cert.pem
