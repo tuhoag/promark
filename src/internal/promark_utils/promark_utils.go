@@ -47,12 +47,12 @@ type CampaignCryptoParams struct {
 }
 
 type Campaign struct {
-	Id           string   `json:"Id"`
-	Name         string   `json:"Name"`
-	Advertiser   string   `json:"Advertiser"`
-	Business     string   `json:"Business"`
-	CommC        string   `json:"CommC"`
-	VerifierURLs []string `json:"VerifierURLs"`
+	Id           string   `json:"id"`
+	Name         string   `json:"name"`
+	Advertiser   string   `json:"advertiser"`
+	Business     string   `json:"business"`
+	CommC        string   `json:"comm"`
+	VerifierURLs []string `json:"verifierURLs"`
 }
 
 type CampaignCryptoRequest struct {
