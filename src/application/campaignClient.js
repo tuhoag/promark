@@ -32,27 +32,6 @@ const findVerifierURLs = (orgName, numPeers, numVerifiers) => {
     return verifierAddresses
 }
 
-const callCreateCampaign = async (network, camId, advName, busName, verifierAddresses) => {
-    // Get addressability to commercial paper contract
-    console.log("camId: " + camId)
-    console.log("advName: " + advName)
-    console.log("busName: " + busName)
-    console.log("verifierAddresses: " + verifierAddresses)
-
-    console.log('Use campaign.promark smart contract.');
-    const contract = await network.getContract('campaign');
-
-    // issue commercial paper
-    console.log('Submit campaign issue transaction.');
-    const verifierAddressesStr = verifierAddresses.join(";")
-    const response = await contract.submitTransaction("CreateCampaign", camId, camId, advName, busName, verifierAddressesStr);
-
-    // process response
-    console.log("response: " + response);
-
-    return response
-}
-
 const generateCampaignArgs = (numOrgsPerType, numPeersPerOrg, numVerifiers) => {
     const camId = "c" + getId(10000);
     const advName = findAdvertiser(numOrgsPerType);
@@ -62,6 +41,7 @@ const generateCampaignArgs = (numOrgsPerType, numPeersPerOrg, numVerifiers) => {
 
     return {
         id: camId,
+        name: `Campaign ${camId}`,
         advertiser: advName,
         business: busName,
         verifierURLs,
@@ -69,27 +49,19 @@ const generateCampaignArgs = (numOrgsPerType, numPeersPerOrg, numVerifiers) => {
 }
 
 const createRandomCampaign = async (numOrgsPerType, numPeersPerOrg, numVerifiers) => {
-    const campaign = generateCampaignArgs(numOrgsPerType, numPeersPerOrg, numVerifiers);
+    utils.callChaincodeFn(async network => {
+        const contract = await network.getContract('campaign');
 
-    let gateway;
-    try {
-        gateway = await utils.connectToGateway(setting.userName, setting.orgName, setting.orgUserName);
-        const network = await gateway.getNetwork(setting.channelName);
-
-        const response = await callCreateCampaign(network, campaign.id, campaign.advertiser, campaign.business, campaign.verifierURLs);
-        console.log("response: " + response);
-
+        console.log('Submit campaign transaction.');
+        const campaign = generateCampaignArgs(numOrgsPerType, numPeersPerOrg, numVerifiers);
+        const verifierAddressesStr = campaign.verifierURLs.join(";")
+        return contract.submitTransaction("CreateCampaign", campaign.id, campaign.name, campaign.advertiser, campaign.business, verifierAddressesStr);
+    }, async response => {
         const resultCampaign = JSON.parse(response);
-        console.log(`result campaign.Id: ${resultCampaign.id} - Name: ${resultCampaign.name} - Adv: ${resultCampaign.advertiser} - Bus: ${resultCampaign.business} - Verifiers: ${resultCampaign.verifierURLs}`)
-        console.log('Transaction complete.');
-    } catch (error) {
-        console.log(`Error processing transaction. ${error}`);
-        console.log(error.stack);
-    } finally {
-        // Disconnect from the gateway
-        console.log('Disconnect from Fabric gateway.');
-        gateway.disconnect();
-    }
+        console.log(`result campaign.Id: ${resultCampaign.id} - Name: ${resultCampaign.name} - Adv: ${resultCampaign.advertiser} - Bus: ${resultCampaign.business} - Verifiers: ${resultCampaign.verifierURLs}`);
+    });
+
+    console.log('Transaction complete.');
 }
 
 const callGetCampaignById = async (network, camId) => {
@@ -110,101 +82,45 @@ const callGetCampaignById = async (network, camId) => {
 }
 
 const getCampaignById = async (camId) => {
-    let gateway;
-    try {
-        gateway = await utils.connectToGateway(setting.userName, setting.orgName, setting.orgUserName);
-        const network = await gateway.getNetwork(setting.channelName);
+    utils.callChaincodeFn(async network => {
+        const contract = await network.getContract('campaign');
 
-        const response = await callGetCampaignById(network, camId);
-        console.log("response: " + response);
-
+        console.log('Submit campaign transaction.');
+        return contract.submitTransaction("GetCampaignById", camId);
+    }, async response => {
         const resultCampaign = JSON.parse(response);
-        console.log(`result campaign.Id: ${resultCampaign.id} - Name: ${resultCampaign.name} - Adv: ${resultCampaign.advertiser} - Bus: ${resultCampaign.business} - Verifiers: ${resultCampaign.verifierURLs}`)
-        console.log('Transaction complete.');
-    } catch (error) {
-        console.log(`Error processing transaction. ${error}`);
-        console.log(error.stack);
-    } finally {
-        // Disconnect from the gateway
-        console.log('Disconnect from Fabric gateway.');
-        gateway.disconnect();
-    }
+        console.log(`result campaign.Id: ${resultCampaign.id} - Name: ${resultCampaign.name} - Adv: ${resultCampaign.advertiser} - Bus: ${resultCampaign.business} - Verifiers: ${resultCampaign.verifierURLs}`);
+    });
+
+    console.log('Transaction complete.');
 }
 
-class ChaincodeCaller {
-    constructor() {
-        this.gateway = null;
-        this.network = null;
-    }
-
-    static async init() {
-        let caller = new ChaincodeCaller();
-        caller.gateway = await utils.connectToGateway(setting.userName, setting.orgName, setting.orgUserName);
-        caller.network = await caller.gateway.getNetwork(setting.channelName);
-
-        return caller
-    }
-
-    async call(fn) {
-        return fn(this.network);
-    }
-
-    async disconnect() {
-        this.gateway.disconnect();
-    }
-}
-
-const callChaincodeFn = async (requestFn, responseFn) => {
-    let gateway;
-    try {
-        gateway = await utils.connectToGateway(setting.userName, setting.orgName, setting.orgUserName);
-        const network = await gateway.getNetwork(setting.channelName);
-        console.log('Use campaign.promark smart contract.');
-        const response = await requestFn(network);
-        await responseFn(response);
-    } catch (error) {
-        console.log(`Error processing transaction. ${error}`);
-        console.log(error.stack);
-    } finally {
-        // Disconnect from the gateway
-        console.log('Disconnect from Fabric gateway.');
-        gateway.disconnect();
-    }
-}
 
 const getAllCampaigns = async () => {
-    caller = await ChaincodeCaller.init();
-    caller.call(async (network) => {
+    utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("campaign");
         console.log('Submit transaction.');
         return contract.submitTransaction("GetAllCampaigns");
-    }).then(response => {
+    }, async (response) => {
         console.log("response: " + response);
-    }).finally(() => caller.disconnect());
+    });
 }
 
-const callGetAllCampaigns = async (network) => {
-    console.log('Use campaign.promark smart contract.');
-    const contract = await network.getContract('campaign');
 
-    // issue commercial paper
-    console.log('Submit transaction.');
-    const response = await contract.submitTransaction("GetAllCampaigns");
-
-    // process response
-    console.log("response: " + response);
-
-    return response
+const deleteCampaignById = async (camId) => {
+    utils.callChaincodeFn(async (network) => {
+        const contract = await network.getContract("campaign");
+        console.log('Submit transaction.');
+        return contract.submitTransaction("DeleteCampaignById", camId);
+    }, async (response) => {
+        console.log("response: " + response);
+    });
 }
+
 
 module.exports = {
-    // findAdvertiser,
-    // findBusiness,
-    // findVerifierAddresses,
-    // getId,
-    // generateCampaignArgs,
-    // createCampaign,
     createRandomCampaign,
     getCampaignById,
     getAllCampaigns,
+    deleteCampaignById
 }

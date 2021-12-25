@@ -1,7 +1,9 @@
-const { Wallets, Gateway } = require('fabric-network')
+const { Wallets, Gateway } = require('fabric-network');
 const fs = require('fs');
 const yaml = require('js-yaml');
 const path = require('path');
+
+const setting = require('./setting');
 
 const buildCPP = async () => {
     return yaml.safeLoad(fs.readFileSync('connection-profile.yaml', 'utf8'));
@@ -79,6 +81,49 @@ const connectToNetwork = async (userName, orgName, orgUserName) => {
 }
 
 
+class ChaincodeCaller {
+    constructor() {
+        this.gateway = null;
+        this.network = null;
+    }
+
+    static async init() {
+        let caller = new ChaincodeCaller();
+        caller.gateway = await connectToGateway(setting.userName, setting.orgName, setting.orgUserName);
+        caller.network = await caller.gateway.getNetwork(setting.channelName);
+
+        return caller
+    }
+
+    async call(fn) {
+        return fn(this.network);
+    }
+
+    async disconnect() {
+        this.gateway.disconnect();
+    }
+}
+
+const callChaincodeFn = async (requestFn, responseFn) => {
+    let gateway;
+    try {
+        gateway = await connectToGateway(setting.userName, setting.orgName, setting.orgUserName);
+        const network = await gateway.getNetwork(setting.channelName);
+        console.log('Use campaign.promark smart contract.');
+        const response = await requestFn(network);
+        await responseFn(response);
+    } catch (error) {
+        console.log(`Error processing transaction. ${error}`);
+        console.log(error.stack);
+    } finally {
+        // Disconnect from the gateway
+        console.log('Disconnect from Fabric gateway.');
+        gateway.disconnect();
+    }
+}
+
 module.exports = {
-    connectToGateway: connectToGateway,
+    connectToGateway,
+    callChaincodeFn,
+    ChaincodeCaller,
 }

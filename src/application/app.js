@@ -19,6 +19,9 @@ const campaignCommandHandler = async (argv) => {
         return camClient.getCampaignById(camId);
     } else if (command == "all") {
         return camClient.getAllCampaigns();
+    } else if (command == "del") {
+        const camId = argv[1];
+        return camClient.deleteCampaignById(camId);
     } else {
         throw `Unsupported campaign command ${command}`;
     }
