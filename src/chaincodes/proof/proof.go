@@ -23,7 +23,7 @@ import (
 	"github.com/hyperledger/fabric/common/util"
 )
 
-var LOG_MODE = "test"
+var LOG_MODE = "debug"
 
 type ProofSmartContract struct {
 	contractapi.Contract
@@ -98,6 +98,13 @@ func GenerateCustomerCampaignProofSocket(campaign *putils.Campaign, userId strin
 		fmt.Println(result.Error)
 		fmt.Println(result.Proof)
 
+		putils.SendLog("result.URL:"+result.URL+"H:"+result.Proof.H+"-R:"+result.Proof.R+"-S:"+result.Proof.S+"-Comm:"+result.Proof.Comm, "", LOG_MODE)
+		// putils.SendLog("result.Error", result.Error.Error(), LOG_MODE)
+		// putils.SendLog("result.Proof.H", result.Proof.H, LOG_MODE)
+		// putils.SendLog("result.Proof.R", result.Proof.R, LOG_MODE)
+		// putils.SendLog("result.Proof.S", result.Proof.S, LOG_MODE)
+		// putils.SendLog("result.Proof.Comm", result.Proof.Comm, LOG_MODE)
+
 		if result.Error != nil {
 			return nil, result.Error
 		}
@@ -132,6 +139,9 @@ func GenerateCustomerCampaignProofSocket(campaign *putils.Campaign, userId strin
 	fmt.Printf("proof.Rs: %s\n", proof.Rs)
 	fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
 
+	// s := fmt.Sprintf("%s is %d years old.\n", name, age)
+	putils.SendLog(fmt.Sprintf("proof.Comm:%s- Rs:%s-SubComs:%s", proof.Comm, proof.Rs, proof.SubComs), "", LOG_MODE)
+
 	return &proof, nil
 }
 
@@ -147,6 +157,11 @@ func ConcurrentRequestCommitment(camId string, customerId string, url string, re
 	fmt.Println("vCryptoParams.R:" + verifierProof.R)
 	fmt.Println("vCryptoParams.S:" + verifierProof.S)
 
+	putils.SendLog("Done with", url, LOG_MODE)
+	putils.SendLog("vCryptoParams.CamId:", verifierProof.CamId, LOG_MODE)
+	putils.SendLog("vCryptoParams.CustomerId:", verifierProof.UserId, LOG_MODE)
+	putils.SendLog("vCryptoParams.S:", verifierProof.S, LOG_MODE)
+
 	results <- putils.VerifierProofChannelResult{
 		URL:   url,
 		Proof: *verifierProof,
@@ -155,9 +170,10 @@ func ConcurrentRequestCommitment(camId string, customerId string, url string, re
 }
 
 func RequestCommitment(camId string, customerId string, url string) (*putils.CampaignCustomerVerifierProof, error) {
+	putils.SendLog("RequestCommitment at", url, LOG_MODE)
 	conn, err := net.Dial("tcp", url)
 	if err != nil {
-		// sendLog("Error connecting:", err.Error())
+		putils.SendLog("Error connecting:", err.Error(), LOG_MODE)
 
 		fmt.Println("Error connecting:" + err.Error())
 		return nil, errors.New("ERROR:" + err.Error())
@@ -180,6 +196,7 @@ func RequestCommitment(camId string, customerId string, url string) (*putils.Cam
 		return nil, errors.New("Error  after creating:" + err.Error())
 	}
 	fmt.Println("Reiceived From: " + url + "-Response:" + responseStr)
+	putils.SendLog("Reiceived From: "+url+"-Response:", responseStr, LOG_MODE)
 
 	response, err := putils.ParseResponse(responseStr)
 
@@ -195,7 +212,8 @@ func RequestCommitment(camId string, customerId string, url string) (*putils.Cam
 		return nil, err
 	}
 
-	fmt.Println("Returned-vCryptoParams.CamId:" + subProof.CamId)
+	fmt.Println("Returned from " + url + "-subProof.CamId:" + subProof.CamId)
+
 	return &subProof, nil
 }
 

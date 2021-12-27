@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -11,6 +12,8 @@ import (
 	// redis "gopkg.in/redis.v4"
 	putils "internal/promark_utils"
 )
+
+var ctx = context.Background()
 
 func main() {
 	port := os.Getenv("API_PORT")
@@ -103,7 +106,7 @@ func createCampaignCryptoParams(camId string) (*putils.CampaignCryptoParams, err
 	client := putils.GetRedisConnection()
 
 	//generate campaign param
-	_, err := client.Get(camId).Result()
+	_, err := client.Get(ctx, camId).Result()
 	var cryptoParams putils.CampaignCryptoParams
 
 	if err != nil {
@@ -124,7 +127,7 @@ func createCampaignCryptoParams(camId string) (*putils.CampaignCryptoParams, err
 		}
 
 		//store to redis db
-		err = client.Set(camId, jsonParam, 0).Err()
+		err = client.Set(ctx, camId, jsonParam, 0).Err()
 		if err != nil {
 			return nil, err
 		}
@@ -139,7 +142,7 @@ func createCampaignCryptoParams(camId string) (*putils.CampaignCryptoParams, err
 func GetCampaignCryptoParams(camId string) (*putils.CampaignCryptoParams, error) {
 	client := putils.GetRedisConnection()
 
-	val, err := client.Get(camId).Result()
+	val, err := client.Get(ctx, camId).Result()
 	if err != nil {
 		fmt.Println(err)
 		return nil, err

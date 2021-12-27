@@ -1,22 +1,19 @@
 const utils = require('./utils');
-const setting = require('./setting');
+// const setting = require('./setting');
 
-const getId = (maxNum) => {
-    return Math.floor(Math.random() * 100) % maxNum;
-}
 
 const findAdvertiser = (numAdvs) => {
-    return "adv" + getId(numAdvs);
+    return "adv" + utils.getId(numAdvs);
 }
 
 const findBusiness = (numBuses) => {
-    return "bus" + getId(numBuses);
+    return "bus" + utils.getId(numBuses);
 }
 
 const findVerifierURLs = (orgName, numPeers, numVerifiers) => {
     // select peer
     // peer0.adv0.promark.com:5000
-    const peerName = "peer" + getId(numPeers);
+    const peerName = "peer" + utils.getId(numPeers);
 
     if (numVerifiers > numPeers) {
         throw `numVerifiers (${numVerifiers}$) is higher than numPeers (${numPeers}).`;
@@ -33,7 +30,7 @@ const findVerifierURLs = (orgName, numPeers, numVerifiers) => {
 }
 
 const generateCampaignArgs = (numOrgsPerType, numPeersPerOrg, numVerifiers) => {
-    const camId = "c" + getId(10000);
+    const camId = "c" + utils.getId(10000);
     const advName = findAdvertiser(numOrgsPerType);
     const busName = findBusiness(numOrgsPerType);
     const verifierURLs = findVerifierURLs(advName, numPeersPerOrg, numVerifiers);
@@ -64,22 +61,6 @@ const createRandomCampaign = async (numOrgsPerType, numPeersPerOrg, numVerifiers
     console.log('Transaction complete.');
 }
 
-const callGetCampaignById = async (network, camId) => {
-    // Get addressability to commercial paper contract
-    console.log("camId: " + camId)
-
-    console.log('Use campaign.promark smart contract.');
-    const contract = await network.getContract('campaign');
-
-    // issue commercial paper
-    console.log('Submit campaign issue transaction.');
-    const response = await contract.submitTransaction("GetCampaignById", camId);
-
-    // process response
-    console.log("response: " + response);
-
-    return response
-}
 
 const getCampaignById = async (camId) => {
     utils.callChaincodeFn(async network => {

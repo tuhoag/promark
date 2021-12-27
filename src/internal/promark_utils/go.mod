@@ -3,5 +3,5 @@ module promark_utils
 go 1.13
 
 require (
-	gopkg.in/redis.v4 v4.2.4 // indirect
+	github.com/go-redis/redis/v8 v8.11.4 // indirect
 )

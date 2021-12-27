@@ -27,14 +27,14 @@ func main() {
 	CreateCampaignSocket("c001", "Campaign001", "adv0", "bus0", []string{"peer0.adv0.promark.com:5000", "peer0.bus0.promark.com:5000"})
 
 	campaign := putils.Campaign{
-		Id:           "c001",
+		Id:           "c54",
 		Name:         "Campaign001",
 		Advertiser:   "adv0",
 		Business:     "bus0",
 		CommC:        "",
 		VerifierURLs: []string{"peer0.adv0.promark.com:5000", "peer0.bus0.promark.com:5000"},
 	}
-	proof, _ := GenerateCustomerCampaignProofSocket(&campaign, "u001")
+	proof, _ := GenerateCustomerCampaignProofSocket(&campaign, "u92")
 
 	collectedProof := putils.CollectedCustomerProof{
 		Id:   "p001",

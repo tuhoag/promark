@@ -6,7 +6,7 @@ const path = require('path');
 const setting = require('./setting');
 
 const buildCPP = async () => {
-    return yaml.safeLoad(fs.readFileSync('connection-profile.yaml', 'utf8'));
+    return yaml.safeLoad(fs.readFileSync('connectionProfile.yaml', 'utf8'));
 }
 
 const buildWallet = async (userName) => {
@@ -122,8 +122,13 @@ const callChaincodeFn = async (requestFn, responseFn) => {
     }
 }
 
+const getId = (maxNum) => {
+    return Math.floor(Math.random() * 100) % maxNum;
+}
+
 module.exports = {
     connectToGateway,
     callChaincodeFn,
     ChaincodeCaller,
+    getId,
 }

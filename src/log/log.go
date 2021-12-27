@@ -11,8 +11,10 @@ import (
 var f *os.File
 
 func main() {
+	port := os.Getenv("LOG_PORT")
+
 	var err error
-	f, err = os.Create("logfile")
+	f, err = os.Create("promark.log")
 
 	if err != nil {
 		panic(err)
@@ -21,7 +23,7 @@ func main() {
 	http.HandleFunc("/", home)
 	fmt.Println("Hello welcome to log service!")
 	http.HandleFunc("/log", printLog)
-	http.ListenAndServe(":5003", nil)
+	http.ListenAndServe(":"+port, nil)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {

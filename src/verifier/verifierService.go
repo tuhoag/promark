@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
@@ -15,10 +16,13 @@ import (
 	putils "internal/promark_utils"
 
 	"github.com/bwesterb/go-ristretto"
-	redis "gopkg.in/redis.v4"
+	redis "github.com/go-redis/redis/v8"
 	// "strings"
 	// "log"
 )
+
+var ctx = context.Background()
+var LOG_MODE = "debug"
 
 func main() {
 	port := os.Getenv("API_PORT")
@@ -67,6 +71,8 @@ func handleConnection(conn net.Conn) {
 
 	fmt.Println("command:" + request.Command)
 	fmt.Println("requestData:" + request.Data)
+	putils.SendLog(os.Getenv("CORE_PEER_ID")+"command", request.Command, LOG_MODE)
+	putils.SendLog(os.Getenv("CORE_PEER_ID")+"requestData", request.Data, LOG_MODE)
 
 	if request.Command == "create" {
 		// fmt.Println("ok:", string(command))
@@ -115,7 +121,7 @@ func SetVerifierCryptoParams(paramsRequest putils.VerifierCryptoParamsRequest) (
 
 	var cryptoParams putils.VerifierCryptoParams
 
-	val, err := client.Get(paramsRequest.CamId).Result()
+	val, err := client.Get(ctx, paramsRequest.CamId).Result()
 	err = json.Unmarshal([]byte(val), &cryptoParams)
 	var s ristretto.Scalar
 	if err != nil {
@@ -141,7 +147,7 @@ func SetVerifierCryptoParams(paramsRequest putils.VerifierCryptoParamsRequest) (
 		}
 
 		fmt.Println("Store-vCryptoParams JSON: " + string(jsonParam))
-		err = client.Set(cryptoParams.CamId, jsonParam, 0).Err()
+		err = client.Set(ctx, cryptoParams.CamId, jsonParam, 0).Err()
 		if err != nil {
 			return false, err
 		}
@@ -159,7 +165,7 @@ func GetVerifierCryptoParams(camId string) (*putils.VerifierCryptoParams, error)
 
 	var cryptoParams putils.VerifierCryptoParams
 
-	val, err := client.Get(camId).Result()
+	val, err := client.Get(ctx, camId).Result()
 
 	if err == redis.Nil {
 		fmt.Println("camId " + camId + " does not exist")
@@ -207,21 +213,153 @@ func CalculateCommitmentHandler(conn net.Conn, requestData string) {
 	fmt.Println("Got - vCryptoParams.H:" + vCryptoParams.H)
 	fmt.Println("Got - vCryptoParams.S:" + vCryptoParams.S)
 
-	subProof, err := SetCustomerCampaignProof(paramsRequest.CamId, paramsRequest.CustomerId, *vCryptoParams)
+	err = SetCustomerCampaignProofTransaction(paramsRequest.CamId, paramsRequest.CustomerId, *vCryptoParams)
 
-	if err != nil && subProof == nil {
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+	subProof, err := GetCustomerCampaignProof(paramsRequest.CamId, paramsRequest.CustomerId)
+	if err != nil {
 		putils.SendResponse(conn, err.Error(), "")
 	}
 
-	param, err := json.Marshal(&subProof)
-	putils.SendResponse(conn, "", string(param))
+	fmt.Println("Calculated Proof - Comm:" + subProof.Comm)
+	// response := putils.CampaignCustomerVerifierProof{}
+	responseData, err := json.Marshal(subProof)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	putils.SendResponse(conn, "", string(responseData))
 }
 
-func SetCustomerCampaignProof(camId string, userId string, vCryptoParams putils.VerifierCryptoParams) (*putils.CampaignCustomerVerifierProof, error) {
+func GetCustomerCampaignProof(camId string, userId string) (*putils.CampaignCustomerVerifierProof, error) {
+	client := putils.GetRedisConnection()
+	proofId := camId + ":" + userId
+	subProofJSON, err := client.Get(ctx, proofId).Result()
+
+	if err != nil {
+		// proof is not existed
+		return nil, err
+	}
+	var subProof putils.CampaignCustomerVerifierProof
+	err = json.Unmarshal([]byte(subProofJSON), &subProof)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &subProof, nil
+}
+
+func SetCustomerCampaignProofTransaction(camId string, userId string, vCryptoParams putils.VerifierCryptoParams) error {
+	fmt.Println(os.Getenv("CORE_PEER_ID") + ":SetCustomerCampaignProofTransaction:" + camId + ":" + userId)
+	putils.SendLog(os.Getenv("CORE_PEER_ID")+"SetCustomerCampaignProofTransaction", camId+":"+userId, LOG_MODE)
+
+	maxRetries := 3
+	proofId := camId + ":" + userId
+
+	// var subProof putils.CampaignCustomerVerifierProof
+
+	txf := func(tx *redis.Tx) error {
+		// Get the current value or zero.
+		// val, err := rdb.Get(ctx, "key").Result()
+		_, err := tx.Get(ctx, proofId).Result()
+		if err != nil && err != redis.Nil {
+			// proof is not existed
+			return err
+		}
+
+		// Actual operation (local in optimistic lock).
+		if err == redis.Nil {
+			var rScalar ristretto.Scalar
+			rScalar.Rand()
+			fmt.Println("Generated random scalar")
+
+			// convert H
+			hPoint := putils.ConvertStringToPoint(vCryptoParams.H)
+
+			// convert s
+			sScalar := putils.ConvertStringToScalar(vCryptoParams.S)
+
+			// calculate commitment
+			comm := putils.CommitTo(&hPoint, &rScalar, &sScalar)
+
+			fmt.Println("Calculated comm")
+
+			// return R, Com
+			rEnc := putils.ConvertScalarToString(rScalar)
+			commEnc := putils.ConvertPointToString(comm)
+
+			subProof := putils.CampaignCustomerVerifierProof{
+				CamId:  camId,
+				UserId: userId,
+				H:      vCryptoParams.H,
+				R:      rEnc,
+				S:      vCryptoParams.S,
+				Comm:   commEnc,
+			}
+
+			fmt.Println("Initialized subproof")
+			fmt.Println("subproof.CamId:" + subProof.CamId)
+
+			jsonParam, err := json.Marshal(subProof)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("Converted subproof to JSON:" + string(jsonParam))
+
+			// Operation is commited only if the watched keys remain unchanged.
+			_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+				pipe.Set(ctx, proofId, jsonParam, 0)
+
+				fmt.Println("Added subproof to db")
+
+				return nil
+			})
+
+			return err
+		}
+
+		return nil
+	}
+
+	// Retry if the key has been changed.
+	client := putils.GetRedisConnection()
+	for i := 0; i < maxRetries; i++ {
+		err := client.Watch(ctx, txf, proofId)
+		if err == nil {
+			// Success.
+			putils.SendLog(os.Getenv("CORE_PEER_ID")+"Success", "", LOG_MODE)
+
+			// subProofJSON, _ := client.Get(ctx, proofId).Result()
+			// subProof
+			// json.Unmarshal([]byte(subProofJSON), &subProof)
+			// // // json.Unmarshal(client.Get(ctx, proofId), &subProof)
+			// fmt.Println("Updated subproof successfully")
+			// fmt.Println("subproof.comm:" + subProof.Comm)
+			return nil
+		}
+		if err == redis.TxFailedErr {
+			// Optimistic lock lost. Retry.
+			fmt.Println("There are some modifications on subproof")
+			continue
+		}
+		// Return any other error.
+		return err
+	}
+
+	return errors.New("SetCustomerCampaignProofTransaction reached maximum number of retries")
+}
+
+func SetCustomerCampaignProof2(camId string, userId string, vCryptoParams putils.VerifierCryptoParams) (*putils.CampaignCustomerVerifierProof, error) {
+	// generate random values
+
 	var subProof putils.CampaignCustomerVerifierProof
 	proofId := camId + ":" + userId
 	client := putils.GetRedisConnection()
-	val, err := client.Get(proofId).Result()
+	val, err := client.Get(ctx, proofId).Result()
 	err = json.Unmarshal([]byte(val), &subProof)
 
 	if err != nil {
@@ -258,7 +396,63 @@ func SetCustomerCampaignProof(camId string, userId string, vCryptoParams putils.
 			return nil, err
 		}
 
-		err = client.Set(proofId, jsonParam, 0).Err()
+		err = client.Set(ctx, proofId, jsonParam, 0).Err()
+		if err != nil {
+			return nil, err
+		}
+
+	} else {
+		fmt.Printf("The CampaignCustomerVerifierProof is existed for id %s", proofId)
+		return &subProof, fmt.Errorf("subProof with id %s is existed", proofId)
+	}
+
+	return &subProof, nil
+}
+
+func SetCustomerCampaignProof(camId string, userId string, vCryptoParams putils.VerifierCryptoParams) (*putils.CampaignCustomerVerifierProof, error) {
+	// generate random values
+
+	var subProof putils.CampaignCustomerVerifierProof
+	proofId := camId + ":" + userId
+	client := putils.GetRedisConnection()
+	val, err := client.Get(ctx, proofId).Result()
+	err = json.Unmarshal([]byte(val), &subProof)
+
+	if err != nil {
+		// params are not existed
+		fmt.Println(err)
+		// generate R
+		var rScalar ristretto.Scalar
+		rScalar.Rand()
+
+		// convert H
+		hPoint := putils.ConvertStringToPoint(vCryptoParams.H)
+
+		// convert s
+		sScalar := putils.ConvertStringToScalar(vCryptoParams.S)
+
+		// calculate commitment
+		comm := putils.CommitTo(&hPoint, &rScalar, &sScalar)
+
+		// return R, Com
+		rEnc := putils.ConvertScalarToString(rScalar)
+		commEnc := putils.ConvertPointToString(comm)
+
+		subProof = putils.CampaignCustomerVerifierProof{
+			CamId:  camId,
+			UserId: userId,
+			H:      vCryptoParams.H,
+			R:      rEnc,
+			S:      vCryptoParams.S,
+			Comm:   commEnc,
+		}
+
+		jsonParam, err := json.Marshal(subProof)
+		if err != nil {
+			return nil, err
+		}
+
+		err = client.Set(ctx, proofId, jsonParam, 0).Err()
 		if err != nil {
 			return nil, err
 		}

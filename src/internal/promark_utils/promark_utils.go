@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/bwesterb/go-ristretto"
-	redis "gopkg.in/redis.v4"
+	redis "github.com/go-redis/redis/v8"
 )
 
 type PromarkRequest struct {
@@ -220,15 +220,15 @@ func GetRedisConnection() *redis.Client {
 		PoolSize: 10000,
 	})
 
-	pong, err := client.Ping().Result()
-	if err != nil {
-		fmt.Errorf("ERROR: %s", err)
-		// f.WriteString("ERROR: " + err.Error())
+	// pong, err := client.Ping().Result()
+	// if err != nil {
+	// 	fmt.Errorf("ERROR: %s", err)
+	// 	// f.WriteString("ERROR: " + err.Error())
 
-		return nil
-	}
-	fmt.Println("pong:" + string(pong))
-	// f.WriteString("pong:" + string(pong) + "\n")
+	// 	return nil
+	// }
+	// fmt.Println("pong:" + string(pong))
+	// // f.WriteString("pong:" + string(pong) + "\n")
 	return client
 }
 
