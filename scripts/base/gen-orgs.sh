@@ -6,8 +6,8 @@ function generateOrgs() {
     local orgNum=$1
     local peerNum=$2
 
-    configPath="${ORG_CONFIG_PATH}/crypto-config-${orgNum}-${peerNum}.yaml"
-    outputPath=$ORGANIZATION_OUTPUTS
+    local configPath="${ORG_CONFIG_PATH}/crypto-config-${orgNum}-${peerNum}.yaml"
+    local outputPath=$CREDENTIALS_OUTPUTS
 
     infoln "Config path: $configPath"
     infoln "Output path: $outputPath"

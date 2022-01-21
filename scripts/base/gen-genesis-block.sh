@@ -13,6 +13,7 @@ function generateGenesisBlock() {
     fi
 
     if [ ! -d $CHANNEL_PATH ]; then
+        infoln "creating folder ${CHANNEL_PATH}"
         mkdir $CHANNEL_PATH
     fi
 
@@ -20,6 +21,8 @@ function generateGenesisBlock() {
 
     #   cp ./config/configtx.yaml $OUTPUTS/configtx.yaml
     getBlockPath $orgNum $peerNum $channelName
+
+    infoln "Blockpath: ${blockPath}"
     set -x
     configtxgen -profile "${orgNum}${peerNum}OrdererGenesis" -channelID system-channel -outputBlock $blockPath -configPath $CONFIG_PATH
     res=$?

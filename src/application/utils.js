@@ -20,7 +20,7 @@ const getOrCreateIdentity = async (wallet, orgUserName, orgName) => {
     const orgFullName = getOrgFullName(orgName)
     const orgUserFullName = getOrgUserFullName(orgUserName, orgFullName)
 
-    const cryptoPath = path.resolve(__dirname, '..', '..', 'organizations', 'peerOrganizations', orgFullName, "users", orgUserFullName, "msp");
+    const cryptoPath = path.resolve(__dirname, '..', '..', 'credentials', 'peerOrganizations', orgFullName, "users", orgUserFullName, "msp");
     const certPath = path.resolve(cryptoPath, "signcerts", orgUserFullName + "-cert.pem");
     const keyPath = path.resolve(cryptoPath, "keystore", "priv_sk")
 

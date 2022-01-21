@@ -29,3 +29,5 @@ log.txt
 go.sum
 src/application/wallet
 /src/applications/package-lock.json
+/credentials
+/scenarios

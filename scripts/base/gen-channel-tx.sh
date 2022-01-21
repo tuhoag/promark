@@ -11,7 +11,7 @@ function createChannelTx() {
     local channelName=$3
 	getChannelTxPath $orgNum $peerNum $channelName
 	# channel_tx_path=$?
-	local newConfigPath="${CONFIG_PATH}/configtx-${orgNum}-${peerNum}.yaml"
+	local newConfigPath="${CONFIG_PATH}/configtx.yaml"
 	infoln $newConfigPath
 	FABRIC_CFG_PATH=$newConfigPath
 	set -x

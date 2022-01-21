@@ -53,7 +53,7 @@ services:
         volumes:
             - /var/run/docker.sock:/host/var/run/docker.sock
             - ../config/core.yaml:/etc/hyperledger/fabric/core.yaml
-            - ../organizations:/organizations
+            # - ../organizations:/organizations
 
 
     peer-verifier-base:
@@ -86,6 +86,6 @@ services:
         volumes:
             - /var/run/docker.sock:/host/var/run/docker.sock
             - ../config/core.yaml:/etc/hyperledger/fabric/core.yaml
-            - ../organizations:/organizations
+            # - ../organizations:/organizations
             - ../src/verifier:/src/verifier
             - ../src/internal:/src/internal

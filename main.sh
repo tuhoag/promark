@@ -212,6 +212,16 @@ if [ $MODE = "restart" ]; then
         clear $NO_ORGS $NO_PEERS
         initialize $NO_ORGS $NO_PEERS
         networkUp $NO_ORGS $NO_PEERS
+    elif [ $SUB_MODE = "channel" ]; then
+        networkDown $NO_ORGS $NO_PEERS
+        clear $NO_ORGS $NO_PEERS
+        initialize $NO_ORGS $NO_PEERS
+        networkUp $NO_ORGS $NO_PEERS
+
+        sleep 1
+        createChannel $NO_ORGS $NO_PEERS
+        sleep 2
+        joinChannel $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "all" ]; then
         networkDown $NO_ORGS $NO_PEERS
         clear $NO_ORGS $NO_PEERS

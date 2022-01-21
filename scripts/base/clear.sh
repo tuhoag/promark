@@ -17,13 +17,13 @@ function clear() {
     $BASE_SCRIPTS_DIR/stop.sh $orgNum $peerNum $logLevel
 
     # remove organizations
-    rm -rf $ORGANIZATION_OUTPUTS
+    rm -rf $CREDENTIALS_OUTPUTS
 
     # remove volumes
     rm -rf volumes
 
     # remove channels
-    rm -rf channels
+    rm -rf ${CHANNEL_PATH}
 
     # remove log
     rm -rf $PWD/log.txt

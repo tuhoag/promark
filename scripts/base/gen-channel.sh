@@ -16,6 +16,11 @@ function createChannel() {
     getChannelTxPath $orgNum $peerNum $channelName
     getBlockPath $orgNum $peerNum $channelName
 
+    if [ ! -d $CHANNEL_PATH ]; then
+        infoln "creating folder ${CHANNEL_PATH}"
+        mkdir $CHANNEL_PATH
+    fi
+
     println "Creating channel..."
     set -x
     peer channel create -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME -c $channelName -f $channelTxPath --outputBlock $blockPath --tls --cafile $ORDERER_CA
