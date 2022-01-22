@@ -56,9 +56,66 @@ Organizations:
         Rule: "OR('adv1MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
-    # AnchorPeers:
-    #   - Host: peer0.adv1.promark.com
-    #     Port: 1060
+
+  - &Adv2
+    Name: adv2MSP
+    ID: adv2MSP
+    MSPDir: ../credentials/peerOrganizations/adv2.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('adv2MSP.admin', 'adv2MSP.peer', 'adv2MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('adv2MSP.admin', 'adv2MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('adv2MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('adv2MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+
+  - &Adv3
+    Name: adv3MSP
+    ID: adv3MSP
+    MSPDir: ../credentials/peerOrganizations/adv3.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('adv3MSP.admin', 'adv3MSP.peer', 'adv3MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('adv3MSP.admin', 'adv3MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('adv3MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('adv3MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+
+  - &Adv4
+    Name: adv4MSP
+    ID: adv4MSP
+    MSPDir: ../credentials/peerOrganizations/adv4.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('adv4MSP.admin', 'adv4MSP.peer', 'adv4MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('adv4MSP.admin', 'adv4MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('adv4MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('adv4MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
 
   - &Bus0
     Name: bus0MSP
@@ -108,6 +165,66 @@ Organizations:
     # AnchorPeers:
     # - Host: peer0.bus1.promark.com
     #   Port: 2060
+
+  - &Bus2
+    Name: bus2MSP
+    ID: bus2MSP
+    MSPDir: ../credentials/peerOrganizations/bus2.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus2MSP.admin', 'bus2MSP.peer', 'bus2MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus2MSP.admin', 'bus2MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus2MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus2MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+
+  - &Bus3
+    Name: bus3MSP
+    ID: bus3MSP
+    MSPDir: ../credentials/peerOrganizations/bus3.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus3MSP.admin', 'bus3MSP.peer', 'bus3MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus3MSP.admin', 'bus3MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus3MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus3MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
+
+  - &Bus4
+    Name: bus4MSP
+    ID: bus4MSP
+    MSPDir: ../credentials/peerOrganizations/bus4.promark.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('bus4MSP.admin', 'bus4MSP.peer', 'bus4MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('bus4MSP.admin', 'bus4MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('bus4MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('bus4MSP.peer')"
+    OrdererEndpoints:
+      - orderer.promark.com:7050
 
 Capabilities:
   Channel: &ChannelCapabilities
@@ -202,8 +319,6 @@ Profiles:
         Organizations:
           - *Adv0
           - *Bus0
-          # - *Adv1
-          # - *Bus1
 
   11Channel:
     Consortium: SampleConsortium
@@ -213,8 +328,6 @@ Profiles:
       Organizations:
         - *Adv0
         - *Bus0
-        # - *Adv1
-        # - *Bus1
 
       Capabilities:
         <<: *ApplicationCapabilities
@@ -245,6 +358,119 @@ Profiles:
         - *Bus0
         - *Adv1
         - *Bus1
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+  31OrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *Adv0
+          - *Bus0
+          - *Adv1
+          - *Bus1
+          - *Adv2
+          - *Bus2
+
+  31Channel:
+    Consortium: SampleConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Adv0
+        - *Bus0
+        - *Adv1
+        - *Bus1
+        - *Adv2
+        - *Bus2
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+  41OrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *Adv0
+          - *Bus0
+          - *Adv1
+          - *Bus1
+          - *Adv2
+          - *Bus2
+          - *Adv3
+          - *Bus3
+
+  41Channel:
+    Consortium: SampleConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Adv0
+        - *Bus0
+        - *Adv1
+        - *Bus1
+        - *Adv2
+        - *Bus2
+        - *Adv3
+        - *Bus3
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+  51OrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *Adv0
+          - *Bus0
+          - *Adv1
+          - *Bus1
+          - *Adv2
+          - *Bus2
+          - *Adv3
+          - *Bus3
+          - *Adv4
+          - *Bus4
+  51Channel:
+    Consortium: SampleConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Adv0
+        - *Bus0
+        - *Adv1
+        - *Bus1
+        - *Adv2
+        - *Bus2
+        - *Adv3
+        - *Bus3
+        - *Adv4
+        - *Bus4
 
       Capabilities:
         <<: *ApplicationCapabilities

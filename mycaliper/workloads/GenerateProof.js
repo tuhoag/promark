@@ -34,20 +34,22 @@ class GenerateProofWorkload extends WorkloadModuleBase {
         this.contractVersion = args.contractVersion;
         const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments;
 
-        // this.campaignIds = []
+        this.campaignIds = []
 
-        // for (let i = 0; i < args.numCampaigns; i++) {
-        //     const {camId, name, advertiser, business, verifierURLsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType)
-        //     const transArgs = {
-        //         contractId: "campaign",
-        //         contractFunction: 'CreateCampaign',
-        //         contractArguments: ["c" + i, name, advertiser, business, verifierURLsStr],
-        //         readOnly: true
-        //     };
+        for (let i = 0; i < args.numCampaigns; i++) {
+            const {camId, name, advertiser, business, verifierURLsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType)
+            const newCampaignId = "c" + i
+            const newCampaignName = "campaign " + i
+            const transArgs = {
+                contractId: "campaign",
+                contractFunction: 'CreateCampaign',
+                contractArguments: [newCampaignId, newCampaignName, advertiser, business, verifierURLsStr],
+                readOnly: false
+            };
 
-        //     this.campaignIds.push(camId)
-        //     await this.sutAdapter.sendRequests(transArgs);
-        // }
+            this.campaignIds.push(newCampaignId)
+            await this.sutAdapter.sendRequests(transArgs);
+        }
     }
 
     /**
@@ -56,20 +58,36 @@ class GenerateProofWorkload extends WorkloadModuleBase {
      */
     async submitTransaction() {
         // camId string, userId string
-        // const {numCampaigns, numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments;
+        const {numCampaigns, numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments;
 
-        // const camIdx = Math.floor(Math.random()*10000) % numCampaigns;
+        const camIdx = Math.floor(Math.random()*10000) % this.campaignIds.length;
         const userId = Math.floor(Math.random()*10000);
-        // const camId = this.campaignIds[camIdx]
+        const camId = this.campaignIds[camIdx]
 
         const transArgs = {
             contractId: this.roundArguments.contractId,
             contractFunction: "GenerateCustomerCampaignProof",
-            contractArguments: ["c002", userId],
+            contractArguments: [camId, userId],
             readOnly: true
         };
 
         return this.sutAdapter.sendRequests(transArgs);
+    }
+
+    async cleanupWorkloadModule() {
+        const args = this.roundArguments;
+
+        for (let i = 0; i < this.campaignIds.length; i++) {
+            const transArgs = {
+                contractId: "campaign",
+                contractFunction: 'DeleteCampaignById',
+                contractArguments: [this.campaignIds[i]],
+                readOnly: false
+            };
+
+            // this.campaignIds.push(newCampaignId)
+            await this.sutAdapter.sendRequests(transArgs);
+        }
     }
 }
 

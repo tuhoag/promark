@@ -52,6 +52,22 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
 
         return this.sutAdapter.sendRequests(transArgs);
     }
+
+    async cleanupWorkloadModule() {
+        // for (let i=0; i<this.roundArguments.backups; i++) {
+        //     const backupID = `BACKUP_${this.workerIndex}_${i}`;
+        //     console.log(`Worker ${this.workerIndex}: Deleting backup ${backupID}`);
+        //     const request = {
+        //         contractId: this.roundArguments.contractId,
+        //         contractFunction: 'DeleteBackup',
+        //         invokerIdentity: 'peer0.org1.example.com',
+        //         contractArguments: [backupID],
+        //         readOnly: false
+        //     };
+
+        //     await this.sutAdapter.sendRequests(request);
+        // }
+    }
 }
 
 /**

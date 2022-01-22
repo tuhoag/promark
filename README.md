@@ -21,3 +21,34 @@
 
 ## Monitoring
 Prometheus is enabled in the project as a monitoring framework. In addition, Grafana is added for better visualization. You can access Prometheus at: `http://0.0.0.0:9090` and Grafana at `http://0.0.0.0:3000`.
+
+## Ports
+There are two types of organizations: adv, bus with some additional services such as CA, couchdb, verifier,... Their ports are organized as follows:
+ - ADV0:
+    + Peer0: 5000
+        + CouchDB: 5001
+        + Verifier: 5002
+    + Peer1: 5010
+        + CouchDB: 5011
+        + Verifier: 5012
+- ADV1:
+    + Peer0: 5100
+        + CouchDB: 5101
+        + Verifier: 5102
+    + Peer1: 5110
+        + CouchDB: 5111
+        + Verifier: 5112
+- BUS0:
+    + Peer0: 6000
+        + CouchDB: 6001
+        + Verifier: 6002
+    + Peer1: 6010
+        + CouchDB: 6011
+        + Verifier: 6012
+- BUS1:
+    + Peer0: 6100
+        + CouchDB: 6101
+        + Verifier: 6102
+    + Peer1: 6110
+        + CouchDB: 6111
+        + Verifier: 6112

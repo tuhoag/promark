@@ -13,6 +13,8 @@ export CHANNEL_PATH=$PROJECT_DIR/channels
 export DOCKER_COMPOSE_DIR_PATH=$PROJECT_DIR/docker
 export FABRIC_CFG_PATH=$CONFIG_PATH
 export CHAINCODE_SRC_PATH=$PROJECT_DIR/src/chaincodes
+export CALIPER_DIR_PATH=$PROJECT_DIR/mycaliper
+export CLIENT_DIR_PATH=$PROJECT_DIR/src/application
 
 export FABRIC_VERSION=2.2
 export PROJECT_NAME=promark

@@ -14,7 +14,7 @@ PeerOrgs:
     Domain: adv0.promark.com
     EnableNodeOUs: true
     Template:
-      Count: 2
+      Count: 1
       SANS:
         - "localhost"
         - "127.0.0.1"
@@ -26,7 +26,7 @@ PeerOrgs:
     Domain: adv1.promark.com
     EnableNodeOUs: true
     Template:
-      Count: 2
+      Count: 1
       SANS:
         - "localhost"
         - "127.0.0.1"
@@ -38,7 +38,7 @@ PeerOrgs:
     Domain: bus0.promark.com
     EnableNodeOUs: true
     Template:
-      Count: 2
+      Count: 1
       SANS:
         - "localhost"
         - "127.0.0.1"
@@ -50,7 +50,7 @@ PeerOrgs:
     Domain: bus1.promark.com
     EnableNodeOUs: true
     Template:
-      Count: 2
+      Count: 1
       SANS:
         - "localhost"
         - "127.0.0.1"

@@ -17,7 +17,7 @@ function startNetwork() {
     infoln $peerNum
     infoln $docker_compose_path
 
-    FABRIC_LOG=$logLevel COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} up -d 2>&1
+    FABRIC_LOG=$logLevel COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} up -d --remove-orphans 2>&1
 
     docker ps -a
     if [ $? -ne 0 ]; then

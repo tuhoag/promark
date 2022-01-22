@@ -117,7 +117,17 @@ function buildExternalService() {
 
 
 function invokeCreateCamp() {
-    $SCRIPTS_DIR/create-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
+    local orgNum=$1
+    local peerNum=$2
+    local numVerifiers=1
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node app.js $orgNum $peerNum campaign create $numVerifiers
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/create-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
 function getAllCamp() {
@@ -199,6 +209,22 @@ function addGoPath {
     export PATH=$PATH:./go/bin
 }
 
+function evaluate {
+    local orgNum=$1
+    local peerNum=$2
+    local benchmarkName=$3
+
+    local networkConfigPath="${CALIPER_DIR_PATH}/networkConfig-${orgNum}-${peerNum}.yaml"
+    local benchmarksPath="${CALIPER_DIR_PATH}/benchmarks/${benchmarkName}.yaml"
+
+
+    pushd $CALIPER_DIR_PATH
+    set -x
+    npx caliper launch manager --caliper-workspace $CALIPER_DIR_PATH --caliper-networkconfig $networkConfigPath --caliper-benchconfig $benchmarksPath  --caliper-fabric-gateway-enabled --caliper-flow-only-test
+    { set +x; } 2>/dev/null
+    popd
+}
+
 MODE=$1
 # addGoPath
 
@@ -252,8 +278,8 @@ elif [ $MODE = "build" ]; then
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 
-elif [ $MODE = "clean" ]; then
-    clearNetwork
+# elif [ $MODE = "clean" ]; then
+#     clearNetwork
 elif [ $MODE = "path" ]; then
     addGoPath
 elif [ $MODE = "init" ]; then
@@ -268,6 +294,8 @@ elif [ $MODE = "init" ]; then
 elif [ $MODE = "clear" ]; then
     NO_ORGS=$2
     NO_PEERS=$3
+    clearNetwork
+    sleep 2
     clear $NO_ORGS $NO_PEERS
 elif [ $MODE = "up" ]; then
     NO_ORGS=$2
@@ -404,6 +432,27 @@ elif [ $MODE = "service" ]; then
         runClientService $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "build" ]; then
         buildExternalService $NO_ORGS $NO_PEERS
+    else
+        errorln "Unsupported $MODE $SUB_MODE command."
+    fi
+elif [ $MODE = "eval" ]; then
+    SUB_MODE=$2
+    SUB_SUB_MODE=$3
+    NO_ORGS=$4
+    NO_PEERS=$5
+
+    if [ $SUB_MODE = "camp" ]; then
+        if [ $SUB_SUB_MODE = "create" ]; then
+            evaluate $NO_ORGS $NO_PEERS "CreateCampaign"
+        else
+            errorln "Unsupported $MODE $SUB_MODE $SUB_SUB_MODE command."
+        fi
+    elif [ $SUB_MODE = "proof" ]; then
+        if [ $SUB_SUB_MODE = "gen" ]; then
+            evaluate $NO_ORGS $NO_PEERS "GenerateProof"
+        else
+            errorln "Unsupported $MODE $SUB_MODE $SUB_SUB_MODE command."
+        fi
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi

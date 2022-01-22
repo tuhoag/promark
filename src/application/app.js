@@ -44,8 +44,13 @@ const proofCommandHandler = async argv => {
 
 // Main program function
 const main = async (argv) => {
-    const command = argv[0];
-    const subArgs = argv.slice(1);
+    const numOrgsPerType = argv[0];
+    const numPeersPerOrg = argv[1];
+    const command = argv[2];
+    const subArgs = argv.slice(3);
+
+    global.numOrgsPerType = numOrgsPerType;
+    global.numPeersPerOrg = numPeersPerOrg;
 
     switch(command) {
         case "campaign":

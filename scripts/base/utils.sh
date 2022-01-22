@@ -71,6 +71,10 @@ function selectPeer() {
     export PEER_ORG_CA=${CREDENTIALS_OUTPUTS}/peerOrganizations/$org_domain/peers/$peer_domain/tls/ca.crt
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER_ORG_CA
     export CORE_PEER_MSPCONFIGPATH=${CREDENTIALS_OUTPUTS}/peerOrganizations/$org_domain/users/Admin@$org_domain/msp
+
+    # infoln $PEER_ORG_CA
+    # infoln $CORE_PEER_MSPCONFIGPATH
+
 }
 
 function getChannelTxPath() {
@@ -131,7 +135,7 @@ function parsePeerConnectionParameters() {
     peers=""
     for orgType in ${orgTypes[@]}; do
         for orgId in $(seq 0 $maxOrdId); do
-            for peerId in $(seq 0 $maxOrdId); do
+            for peerId in $(seq 0 $maxPeerId); do
                 selectPeer $orgType $orgId $peerId
 
                 peers="$peers $CORE_PEER_ADDRESS"

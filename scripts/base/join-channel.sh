@@ -17,11 +17,11 @@ function joinChannel() {
         for orgId in $(seq 0 $maxOrgId); do
             for peerId in $(seq 0 $maxPeerId); do
     # for org_id in $(seq 0 $maxOrgId); do
-                orgName="peer${orgId}.${orgType}${orgId}"
+                orgName="peer${peerId}.${orgType}${orgId}"
     #     for peer_id in $(seq 0 $maxPeerId); do
                 selectPeer $orgType $orgId $peerId
 
-                infoln "Joining Channel $channelName from Org $orgName's peer$peerId"
+                infoln "Joining Channel '${channelName}' from Org ${orgName}'s peer${peerId}"
 
                 # getChannelTxPath $orgNum $peerNum $channelName
                 getBlockPath $orgNum $peerNum $channelName

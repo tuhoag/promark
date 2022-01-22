@@ -5,8 +5,9 @@ const path = require('path');
 
 const setting = require('./setting');
 
-const buildCPP = async () => {
-    return yaml.safeLoad(fs.readFileSync('connectionProfile.yaml', 'utf8'));
+const buildCPP = async (numOrgsPerType, numPeersPerOrg) => {
+    const connectionProfileName = `connectionProfile-${numOrgsPerType}-${numPeersPerOrg}.yaml`;
+    return yaml.safeLoad(fs.readFileSync(connectionProfileName, 'utf8'));
 }
 
 const buildWallet = async (userName) => {
@@ -54,7 +55,7 @@ const connectToGateway = async (userName, orgName, orgUserName) => {
     const gateway = new Gateway();
 
     // Load connection profile; will be used to locate a gateway
-    let connectionProfile = await buildCPP();
+    let connectionProfile = await buildCPP(global.numOrgsPerType, global.numPeersPerOrg);
 
     // wallet = await buildWallet(userName)
     const orgUserFullName = await getOrCreateIdentity(wallet, orgUserName, orgName);

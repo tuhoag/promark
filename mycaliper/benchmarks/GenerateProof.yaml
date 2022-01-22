@@ -7,7 +7,7 @@ test:
     rounds:
       - label: GenerateProof
         description: GenerateProof benchmark
-        txNumber: 6000
+        txNumber: 2
         rateControl:
           type: fixed-rate
           opts:

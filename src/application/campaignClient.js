@@ -45,12 +45,11 @@ const generateCampaignArgs = (numOrgsPerType, numPeersPerOrg, numVerifiers) => {
     }
 }
 
-const createRandomCampaign = async (numOrgsPerType, numPeersPerOrg, numVerifiers) => {
+const createRandomCampaign = async (numVerifiers) => {
     utils.callChaincodeFn(async network => {
         const contract = await network.getContract('campaign');
-
         console.log('Submit campaign transaction.');
-        const campaign = generateCampaignArgs(numOrgsPerType, numPeersPerOrg, numVerifiers);
+        const campaign = generateCampaignArgs(global.numOrgsPerType, global.numPeersPerOrg, numVerifiers);
         const verifierAddressesStr = campaign.verifierURLs.join(";")
         return contract.submitTransaction("CreateCampaign", campaign.id, campaign.name, campaign.advertiser, campaign.business, verifierAddressesStr);
     }, async response => {
