@@ -2,7 +2,9 @@ const utils = require('./utils');
 
 
 exports.generateProofForRandomUser = (camId, userId) => {
-    utils.callChaincodeFn(async network => {
+    console.log(camId)
+    console.log(userId)
+    return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
 
         console.log('Submit campaign transaction.');
@@ -16,11 +18,28 @@ exports.generateProofForRandomUser = (camId, userId) => {
         return contract.submitTransaction("GenerateCustomerCampaignProof", camId, userId);
     }, async response => {
         console.log(`response:${response}`);
+        const resultProof = JSON.parse(response);
+        return resultProof
     });
-
-    console.log('Transaction complete.');
 }
 
-// module.exports = {
-//     // generateProofForRandomUser
-// };
+exports.addProof = (comm, rsStr) => {
+    // console.log(camId);
+
+    return utils.callChaincodeFn(async network => {
+        const contract = await network.getContract('proof');
+
+        console.log('Submit campaign transaction.');
+        // randomly generate a user id
+        const proofId = `p${utils.getId(10000)}`;
+        console.log(`proofId:${proofId}`);
+        console.log(`Comm:${comm}`);
+        console.log(`rsStr:${rsStr}`);
+        // proofId string, comm string, rsStr string
+        return contract.submitTransaction("AddCustomerProofCampaign", proofId, comm, rsStr);
+    }, async response => {
+        console.log(`response:${response}`);
+        const resultProof = JSON.parse(response);
+        return resultProof
+    });
+}

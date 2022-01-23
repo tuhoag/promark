@@ -23,7 +23,7 @@ import (
 	"sync"
 )
 
-var LOG_MODE = "DEBUG"
+var LOG_MODE = "test"
 
 type CampaignSmartContract struct {
 	contractapi.Contract

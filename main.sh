@@ -143,6 +143,17 @@ function getCampById() {
 }
 
 function invokeGenerateCustomerProof() {
+    # local orgNum=$1
+    # local peerNum=$2
+    # local camId=$3
+    # local userId=$4
+
+    # pushd $CLIENT_DIR_PATH
+    # set -x
+    # node app.js $orgNum $peerNum proof gen $camId $userId
+    # { set +x; } 2>/dev/null
+    # popd
+
     $SCRIPTS_DIR/generate-customer-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
@@ -225,6 +236,18 @@ function evaluate {
     popd
 }
 
+function testPromark {
+    local orgNum=$1
+    local peerNum=$2
+    # local numVerifiers=1
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node app.js $orgNum $peerNum "test"
+    { set +x; } 2>/dev/null
+    popd
+}
+
 MODE=$1
 # addGoPath
 
@@ -261,7 +284,7 @@ if [ $MODE = "restart" ]; then
 
         sleep 1
         deployChaincode $CAMPAIGN_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
-        sleep 15
+        sleep 20
         deployChaincode $PROOF_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
     else
         errorln "Unsupported $MODE $SUB_MODE command."
@@ -359,12 +382,12 @@ elif [ $MODE = "chaincode" ]; then
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
-elif [ $MODE = "camp" ]; then
+elif [ $MODE = "campaign" ]; then
     SUB_MODE=$2
     NO_ORGS=$3
     NO_PEERS=$4
 
-    if [ $SUB_MODE = "add" ]; then
+    if [ $SUB_MODE = "create" ]; then
         invokeCreateCamp $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "all" ]; then
         getAllCamp $NO_ORGS $NO_PEERS
@@ -383,7 +406,9 @@ elif [ $MODE = "proof" ]; then
     NO_PEERS=$4
 
     if [ $SUB_MODE = "gen" ]; then
-        invokeGenerateCustomerProof $NO_ORGS $NO_PEERS
+        camId=$5
+        userId=$6
+        invokeGenerateCustomerProof $NO_ORGS $NO_PEERS $camId $userId
     elif [ $SUB_MODE = "add" ]; then
         proofId=$5
         comm=$6
@@ -450,12 +475,21 @@ elif [ $MODE = "eval" ]; then
     elif [ $SUB_MODE = "proof" ]; then
         if [ $SUB_SUB_MODE = "gen" ]; then
             evaluate $NO_ORGS $NO_PEERS "GenerateProof"
+        elif [ $SUB_SUB_MODE = "add" ]; then
+            evaluate $NO_ORGS $NO_PEERS "AddProof"
         else
             errorln "Unsupported $MODE $SUB_MODE $SUB_SUB_MODE command."
         fi
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
+elif [ $MODE = "test" ]; then
+    # SUB_MODE=$2
+    # SUB_SUB_MODE=$3
+    NO_ORGS=$2
+    NO_PEERS=$3
+    testPromark $NO_ORGS $NO_PEERS
+
 else
     errorln "Unsupported $MODE command."
 fi

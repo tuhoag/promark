@@ -46,7 +46,7 @@ const generateCampaignArgs = (numOrgsPerType, numPeersPerOrg, numVerifiers) => {
 }
 
 const createRandomCampaign = async (numVerifiers) => {
-    utils.callChaincodeFn(async network => {
+    return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('campaign');
         console.log('Submit campaign transaction.');
         const campaign = generateCampaignArgs(global.numOrgsPerType, global.numPeersPerOrg, numVerifiers);
@@ -55,9 +55,11 @@ const createRandomCampaign = async (numVerifiers) => {
     }, async response => {
         const resultCampaign = JSON.parse(response);
         console.log(`result campaign.Id: ${resultCampaign.id} - Name: ${resultCampaign.name} - Adv: ${resultCampaign.advertiser} - Bus: ${resultCampaign.business} - Verifiers: ${resultCampaign.verifierURLs}`);
+        return resultCampaign;
+        // return resultCampaign;
     });
 
-    console.log('Transaction complete.');
+    // console.log('Transaction complete.');
 }
 
 

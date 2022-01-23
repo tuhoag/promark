@@ -112,7 +112,7 @@ const callChaincodeFn = async (requestFn, responseFn) => {
         const network = await gateway.getNetwork(setting.channelName);
         console.log('Use campaign.promark smart contract.');
         const response = await requestFn(network);
-        await responseFn(response);
+        return responseFn(response);
     } catch (error) {
         console.log(`Error processing transaction. ${error}`);
         console.log(error.stack);

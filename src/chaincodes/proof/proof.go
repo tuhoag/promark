@@ -23,7 +23,7 @@ import (
 	"github.com/hyperledger/fabric/common/util"
 )
 
-var LOG_MODE = "debug"
+var LOG_MODE = "test"
 
 type ProofSmartContract struct {
 	contractapi.Contract
@@ -246,7 +246,7 @@ func (s *ProofSmartContract) GetAllProofs(ctx contractapi.TransactionContextInte
 	return proofs, nil
 }
 
-func (s *ProofSmartContract) AddCustomerProofCampaign(ctx contractapi.TransactionContextInterface, proofId string, comm string, rsStr string) error {
+func (s *ProofSmartContract) AddCustomerProofCampaign(ctx contractapi.TransactionContextInterface, proofId string, comm string, rsStr string) (*putils.CollectedCustomerProof, error) {
 	putils.SendLog("AddCustomerProofCampaign", "", LOG_MODE)
 	putils.SendLog("proofId", proofId, LOG_MODE)
 	putils.SendLog("comm", comm, LOG_MODE)
@@ -254,11 +254,11 @@ func (s *ProofSmartContract) AddCustomerProofCampaign(ctx contractapi.Transactio
 
 	proofJSON, err := ctx.GetStub().GetState(proofId)
 	if err != nil {
-		return fmt.Errorf("failed to read from world state: %v", err)
+		return nil, fmt.Errorf("failed to read from world state: %v", err)
 	}
 
 	if proofJSON != nil {
-		return fmt.Errorf("the user proof raw id %s is existed", proofId)
+		return nil, fmt.Errorf("the user proof raw id %s is existed", proofId)
 	}
 
 	rs := strings.Split(rsStr, ";")
@@ -271,16 +271,16 @@ func (s *ProofSmartContract) AddCustomerProofCampaign(ctx contractapi.Transactio
 
 	collectedProofJSON, err := json.Marshal(collectedProof)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = ctx.GetStub().PutState(proofId, collectedProofJSON)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &collectedProof, nil
 }
 
 func (s *ProofSmartContract) GetProofById(ctx contractapi.TransactionContextInterface, proofId string) (*putils.CollectedCustomerProof, error) {
