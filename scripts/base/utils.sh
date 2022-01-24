@@ -93,38 +93,6 @@ function getBlockPath() {
     # return $blockPath
 }
 
-# function parsePeerConnectionParameters() {
-#     local orgNum=$1
-#     local peerNum=$2
-
-#     PEER_CONN_PARMS=""
-#     PEERS=""
-#     local peerNames=""
-
-#     infoln "$orgNum ; $peerNum"
-
-#     local maxOrgId=$(($orgNum - 1))
-#     local maxPeerId=$(($peerNum - 1))
-
-#     for orgId in $(seq 0 $maxOrgId); do
-#          infoln $orgId
-#          for peerId in $(seq 0 $maxPeerId); do
-#              for orgType in "adv" "bus"; do
-#                  local peerName="peer${peerId}.${orgType}${orgId}"
-#                  infoln "processed $peerName"
-#                  selectPeer $orgType $orgId $peerId
-#                  PEERS="$peerNames ${peerName}"
-#                  PEER_CONN_PARMS="$PEER_CONN_PARMS --peerAddresses $CORE_PEER_ADDRESS"
-#                 ## Set path to TLS certificate
-#                 TLSINFO=$(eval echo "--tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE")
-#                 PEER_CONN_PARMS="$PEER_CONN_PARMS $TLSINFO"
-#              done
-#          done
-#      done
-
-#     infoln "parsePeerConnectionParameters1: $PEERS $PEER_CONN_PARMS"
-# }
-
 function parsePeerConnectionParameters() {
     IFS=',' read -r -a orgTypes <<< $1
     local maxOrdId=$(($2 - 1))
@@ -146,6 +114,22 @@ function parsePeerConnectionParameters() {
     done
 
     infoln "parsePeerConnectionParameters: $PEERS $PEER_CONN_PARMS"
+}
+
+function getPackageId() {
+    packageName=$1
+
+    infoln "getPackageId: ${packageName}"
+    set -x
+    packageInfo=$(peer lifecycle chaincode queryinstalled) >&log.txt
+    res=$?
+    echo "packageInfo: ${packageInfo}"
+    packageHash=$(echo "$packageInfo" | sed -n "s/Package ID: ${packageName}:*//; s/, Label: ${packageName}$//p")
+    { set +x; } 2>/dev/null
+
+    echo "package id: $packageHash"
+    echo "${packageName}:${packageHash}"
+    export packageId="${packageName}:${packageHash}"
 }
 
 export -f errorln

@@ -23,13 +23,10 @@ function approveForMyOrg() {
 
                 selectPeer $orgType $orgId $peerId
 
-                local packageId=$(peer lifecycle chaincode queryinstalled)
-                infoln "packageId= ${packageId}"
-                packageId=${packageId%,*}
-                infoln "packageId= ${packageId}"
-                packageId=${packageId#*:}
-                infoln "packageId= ${packageId}"
-                packageId=${packageId##* }
+                packageName="${chaincodeName}_${sequence}"
+                getPackageId $packageName
+
+                # packageId=$(getPackageId $packageName)
                 infoln "My package id: $packageId"
 
                 set -x
