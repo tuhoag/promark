@@ -58,13 +58,11 @@ const createRandomCampaign = async (numVerifiers) => {
         return resultCampaign;
         // return resultCampaign;
     });
-
-    // console.log('Transaction complete.');
 }
 
 
 const getCampaignById = async (camId) => {
-    utils.callChaincodeFn(async network => {
+    return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('campaign');
 
         console.log('Submit campaign transaction.');
@@ -73,27 +71,43 @@ const getCampaignById = async (camId) => {
         const resultCampaign = JSON.parse(response);
         console.log(`result campaign.Id: ${resultCampaign.id} - Name: ${resultCampaign.name} - Adv: ${resultCampaign.advertiser} - Bus: ${resultCampaign.business} - Verifiers: ${resultCampaign.verifierURLs}`);
     });
-
-    console.log('Transaction complete.');
 }
 
 
 const getAllCampaigns = async () => {
-    utils.callChaincodeFn(async (network) => {
+    return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("campaign");
         console.log('Submit transaction.');
         return contract.submitTransaction("GetAllCampaigns");
     }, async (response) => {
-        console.log("response: " + response);
+        if (response.length == 0) {
+            console.log("No campaigns");
+            return [];
+        }
+
+        const campaigns = JSON.parse(response);
+        console.log(`got ${campaigns.length} campaigns`);
+        console.log(`campaigns: ${response}`);
+        return campaigns;
     });
 }
 
 
 const deleteCampaignById = async (camId) => {
-    utils.callChaincodeFn(async (network) => {
+    return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("campaign");
         console.log('Submit transaction.');
         return contract.submitTransaction("DeleteCampaignById", camId);
+    }, async (response) => {
+        console.log("response: " + response);
+    });
+}
+
+const deleteAllCampaigns = async () => {
+    return utils.callChaincodeFn(async (network) => {
+        const contract = await network.getContract("campaign");
+        console.log('Submit transaction.');
+        return contract.submitTransaction("DeleteAllCampaigns");
     }, async (response) => {
         console.log("response: " + response);
     });
@@ -104,5 +118,6 @@ module.exports = {
     createRandomCampaign,
     getCampaignById,
     getAllCampaigns,
-    deleteCampaignById
+    deleteCampaignById,
+    deleteAllCampaigns,
 }

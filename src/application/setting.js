@@ -4,5 +4,5 @@ module.exports = {
     orgName: "adv0",
     orgUserName: "User1",
     channelName: "mychannel",
-
+    initDataDirPath: "../../mycaliper/data/"
 }

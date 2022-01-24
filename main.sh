@@ -284,7 +284,7 @@ if [ $MODE = "restart" ]; then
 
         sleep 1
         deployChaincode $CAMPAIGN_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
-        sleep 20
+        sleep 1
         deployChaincode $PROOF_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
     else
         errorln "Unsupported $MODE $SUB_MODE command."

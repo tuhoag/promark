@@ -343,3 +343,27 @@ func (s *CampaignSmartContract) GetCampaignById(ctx contractapi.TransactionConte
 
 	return &campaign, nil
 }
+
+func (s *CampaignSmartContract) DeleteAllCampaigns(ctx contractapi.TransactionContextInterface) error {
+	campaigns, err := s.GetAllCampaigns(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	var result bool
+
+	for _, cam := range campaigns {
+		result, err = s.DeleteCampaignById(ctx, cam.Id)
+
+		if err != nil {
+			return err
+		}
+
+		if !result {
+			return fmt.Errorf("Cannot remove campaign %s", cam.Id)
+		}
+	}
+
+	return nil
+}

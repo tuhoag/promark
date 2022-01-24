@@ -1,9 +1,7 @@
 const utils = require('./utils');
 
 
-exports.generateProofForRandomUser = (camId, userId) => {
-    console.log(camId)
-    console.log(userId)
+exports.generateProofForRandomUser = async (camId, userId) => {
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
 
@@ -19,17 +17,17 @@ exports.generateProofForRandomUser = (camId, userId) => {
     }, async response => {
         console.log(`response:${response}`);
         const resultProof = JSON.parse(response);
-        return resultProof
+        return resultProof;
     });
 }
 
-exports.addProof = (comm, rsStr) => {
+exports.addProof = async (comm, rsStr) => {
     // console.log(camId);
 
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
 
-        console.log('Submit campaign transaction.');
+        console.log('Submit proof transaction.');
         // randomly generate a user id
         const proofId = `p${utils.getId(10000)}`;
         console.log(`proofId:${proofId}`);
@@ -40,6 +38,32 @@ exports.addProof = (comm, rsStr) => {
     }, async response => {
         console.log(`response:${response}`);
         const resultProof = JSON.parse(response);
-        return resultProof
+        return resultProof;
+    });
+}
+
+exports.deleteAllProofs = async () => {
+    return utils.callChaincodeFn(async network => {
+        const contract = await network.getContract('proof');
+        return contract.submitTransaction("DeleteAllProofs");
+    }, async response => {
+        console.log(`response:${response}`);
+    });
+}
+
+exports.getAllProofs = async () => {
+    return utils.callChaincodeFn(async (network) => {
+        const contract = await network.getContract("proof");
+        return contract.submitTransaction("GetAllProofs");
+    }, async (response) => {
+        if (response.length == 0) {
+            console.log("No proofs");
+            return [];
+        }
+
+        const proofs = JSON.parse(response);
+        console.log(`got ${proofs.length} proofs`);
+        console.log(`proofs: ${response}`);
+        return proofs;
     });
 }

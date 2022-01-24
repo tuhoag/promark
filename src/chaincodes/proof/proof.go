@@ -493,143 +493,26 @@ func RequestVerification(camId string, r string, url string) (*string, error) {
 	return &verificationResponse.Comm, nil
 }
 
-// func RequestCustomerCampaignCryptoParams(id string, userId string, numVerifiers int) putils.CampaignCryptoParams {
-// 	var cryptoParams putils.CampaignCryptoParams
+func (s *ProofSmartContract) DeleteAllProofs(ctx contractapi.TransactionContextInterface) error {
+	proofs, err := s.GetAllProofs(ctx)
 
-// 	c := &http.Client{}
+	if err != nil {
+		return err
+	}
 
-// 	// Id             string
-// 	// CustomerId	   stringGet
-// 	// NumOfVerifiers int
-// 	message := putils.CampaignCryptoRequest{
-// 		CamId:        id,
-// 		CustomerId:   userId,
-// 		NumVerifiers: numVerifiers,
-// 	}
+	var result bool
 
-// 	jsonData, err := json.Marshal(message)
+	for _, proof := range proofs {
+		result, err = s.DeleteProofById(ctx, proof.Id)
 
-// 	request := string(jsonData)
+		if err != nil {
+			return err
+		}
 
-// 	reqJSON, err := http.NewRequest("POST", cryptoParamsRequestURL, strings.NewReader(request))
-// 	if err != nil {
-// 		fmt.Printf("http.NewRequest() error: %v\n", err)
-// 		return cryptoParams
-// 	}
+		if !result {
+			return fmt.Errorf("Cannot remove proof %s", proof.Id)
+		}
+	}
 
-// 	respJSON, err := c.Do(reqJSON)
-// 	if err != nil {
-// 		fmt.Printf("http.Do() error: %v\n", err)
-// 		return cryptoParams
-// 	}
-// 	defer respJSON.Body.Close()
-
-// 	data, err := ioutil.ReadAll(respJSON.Body)
-// 	if err != nil {
-// 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-// 		return cryptoParams
-// 	}
-
-// 	fmt.Println("return data all:", string(data))
-
-// 	err = json.Unmarshal([]byte(data), &cryptoParams)
-// 	if err != nil {
-// 		println(err)
-// 	}
-
-// 	return cryptoParams
-// }
-
-// func ComputeCommitment3(campId string, rEnc string, url string) (*string, error) {
-// 	putils.SendLog("computeCommitment3 at", url, LOG_MODE)
-// 	client := &http.Client{}
-
-// 	message := putils.VerificationRequest{
-// 		CamId: campId,
-// 		R:     rEnc,
-// 	}
-
-// 	jsonData, err := json.Marshal(message)
-// 	request := string(jsonData)
-
-// 	putils.SendLog("request", request, LOG_MODE)
-// 	reqData, err := http.NewRequest("POST", url, strings.NewReader(request))
-
-// 	if err != nil {
-// 		fmt.Printf("http.NewRequest() error: %v\n", err)
-// 		return nil, err
-// 	}
-
-// 	respJSON, err := client.Do(reqData)
-// 	// putils.SendLog("respJSON", *respJSON)
-// 	if err != nil {
-// 		fmt.Printf("http.Do() error: %v\n", err)
-// 		return nil, err
-// 	}
-// 	defer respJSON.Body.Close()
-
-// 	data, err := ioutil.ReadAll(respJSON.Body)
-// 	putils.SendLog("data", string(data), LOG_MODE)
-// 	if err != nil {
-// 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-// 		return nil, err
-// 	}
-
-// 	var verificationResponse putils.VerificationResponse
-// 	err = json.Unmarshal([]byte(data), &verificationResponse)
-// 	if err != nil {
-// 		println(err)
-// 	}
-
-// 	putils.SendLog("verificationResponse.H:", verificationResponse.H, LOG_MODE)
-// 	putils.SendLog("verificationResponse.s:", verificationResponse.S, LOG_MODE)
-// 	putils.SendLog("verificationResponse.r:", verificationResponse.R, LOG_MODE)
-// 	putils.SendLog("verificationResponse.Comm:", verificationResponse.Comm, LOG_MODE)
-
-// 	return &verificationResponse.Comm, nil
-// }
-
-// func computeCommitment2(campId string, userId, url string) (*putils.CampaignCustomerVerifierProof, error) {
-// 	putils.SendLog("request calculate proof verifier crypto at", url, LOG_MODE)
-
-// 	client := &http.Client{}
-// 	// requestArgs := NewVerifierCryptoParamsRequest{
-// 	// 	CamId: camId,
-// 	// 	H:     cryptoParams.H,
-// 	// }
-
-// 	// jsonArgs, err := json.Marshal(requestArgs)
-// 	// request := string(jsonArgs)
-// 	reqData, err := http.NewRequest("POST", url, strings.NewReader(""))
-// 	// putils.SendLog("request", request)
-// 	// putils.SendLog("err", err.Error())
-// 	if err != nil {
-// 		fmt.Printf("http.NewRequest() error: %v\n", err)
-// 		return nil, err
-// 	}
-
-// 	respJSON, err := client.Do(reqData)
-// 	if err != nil {
-// 		fmt.Printf("http.Do() error: %v\n", err)
-// 		return nil, err
-// 	}
-// 	defer respJSON.Body.Close()
-
-// 	data, err := ioutil.ReadAll(respJSON.Body)
-// 	putils.SendLog("data", string(data), LOG_MODE)
-// 	if err != nil {
-// 		fmt.Printf("ioutil.ReadAll() error: %v\n", err)
-// 		return nil, err
-// 	}
-
-// 	fmt.Println("return data all:", string(data))
-// 	var subProof putils.CampaignCustomerVerifierProof
-// 	err = json.Unmarshal([]byte(data), &subProof)
-
-// 	if err != nil {
-// 		fmt.Printf("http.NewRequest() error: %v\n", err)
-// 		return nil, err
-// 	}
-
-// 	return &subProof, nil
-// }
+	return nil
+}

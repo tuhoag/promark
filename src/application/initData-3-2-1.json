@@ -1,0 +1,47 @@
+{
+    "campaigns": [
+        {
+            "id": "c1556",
+            "name": "Campaign c1556",
+            "advertiser": "adv0",
+            "business": "bus0",
+            "comm": "",
+            "verifierURLs": [
+                "peer0.adv0.promark.com:5000",
+                "peer0.bus0.promark.com:5000"
+            ]
+        },
+        {
+            "id": "c2378",
+            "name": "Campaign c2378",
+            "advertiser": "adv0",
+            "business": "bus0",
+            "comm": "",
+            "verifierURLs": [
+                "peer0.adv0.promark.com:5000",
+                "peer0.bus0.promark.com:5000"
+            ]
+        },
+        {
+            "id": "c9058",
+            "name": "Campaign c9058",
+            "advertiser": "adv0",
+            "business": "bus0",
+            "comm": "",
+            "verifierURLs": [
+                "peer0.adv0.promark.com:5000",
+                "peer0.bus0.promark.com:5000"
+            ]
+        }
+    ],
+    "proofs": [
+        {
+            "comm": "BiD0rYUQrYzcAKD27dobvkWDrxY/bwO0gGDIGUqb3WM=",
+            "rsStr": "Z+bst2742LMI+uptjmwBSxkaj0kWd+4MF410vKxnbQo=;ITt9uMLagkhJmfaulnRN5j9qj7fF5YeGOg1DAgDk0wI="
+        },
+        {
+            "comm": "NMurnU76Z/j0d0SLN7iiwsRAKfaiwfgDnzFs6axtYFg=",
+            "rsStr": "Li3jUbdIVaWnMB+rzbOYHgFq/xVjmMEqBpfWcBR5CQA=;6ZoEC3CHtJAMdfvSf/wURxrwtEUyGO5SnYDLaOBonwQ="
+        }
+    ]
+}

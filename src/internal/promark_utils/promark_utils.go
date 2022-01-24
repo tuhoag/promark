@@ -68,7 +68,7 @@ type ProofGenerationRequest struct {
 
 type VerificationRequest struct {
 	CamId string `json:"camId"`
-	R     string `json:"R"`
+	R     string `json:"r"`
 }
 
 type VerificationResponse struct {
@@ -96,15 +96,15 @@ type CampaignCustomerProof struct {
 }
 
 type ProofCustomerCampaign struct {
-	Comm    string   `json:"Comm"`
-	Rs      []string `json:"Rs"`
-	SubComs []string `json:"SubComs`
+	Comm    string   `json:"comm"`
+	Rs      []string `json:"rs"`
+	SubComs []string `json:"subComs`
 }
 
 type CollectedCustomerProof struct {
-	Id   string   `json:"Id"`
-	Comm string   `json:"Comm"`
-	Rs   []string `json:"Rs"`
+	Id   string   `json:"id"`
+	Comm string   `json:"comm"`
+	Rs   []string `json:"rs"`
 }
 
 type VerifierCryptoChannelResult struct {

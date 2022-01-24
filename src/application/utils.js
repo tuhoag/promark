@@ -124,7 +124,7 @@ const callChaincodeFn = async (requestFn, responseFn) => {
 }
 
 const getId = (maxNum) => {
-    return Math.floor(Math.random() * 100) % maxNum;
+    return Math.floor(Math.random() * 10000) % maxNum;
 }
 
 module.exports = {
