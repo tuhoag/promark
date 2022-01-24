@@ -7,11 +7,11 @@ test:
     rounds:
       - label: AddProof
         description: AddProof benchmark
-        txNumber: 10000
+        txNumber: 2
         rateControl:
           type: fixed-rate
           opts:
-            tps: 2
+            tps: 300
         workload:
           module: ./workloads/AddProof.js
           arguments:

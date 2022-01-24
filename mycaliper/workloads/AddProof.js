@@ -86,7 +86,7 @@ class AddProofWorkload extends WorkloadModuleBase {
 
         // const camIdx = Math.floor(Math.random()*10000) % numCampaigns;
         // const userId = Math.floor(Math.random()*10000);
-        const proofId = Math.floor(Math.random()*10000);
+        const proofId = `p${Math.floor(Math.random()*10000)}`;
         const proofIdx = Math.floor(Math.random()*10000) % this.proofs.length;
         const proof = this.proofs[proofIdx]
 
@@ -97,7 +97,7 @@ class AddProofWorkload extends WorkloadModuleBase {
             readOnly: false
         };
 
-        throw new Error(JSON.stringify(transArgs));
+        // throw new Error(JSON.stringify(transArgs));
 
         return this.sutAdapter.sendRequests(transArgs);
     }
