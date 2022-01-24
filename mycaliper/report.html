@@ -152,7 +152,7 @@
                     </tr>
 
                     <tr>
-                         <td>AddProof</td> <td>2</td> <td>0</td> <td>250.0</td> <td>5.07</td> <td>2.08</td> <td>3.58</td> <td>0.4</td>
+                         <td>AddProof</td> <td>5000</td> <td>0</td> <td>199.9</td> <td>0.10</td> <td>0.01</td> <td>0.01</td> <td>199.8</td>
                     </tr>
                 </table>
             </div>
@@ -170,7 +170,7 @@
                                      <th>Name</th> <th>Succ</th> <th>Fail</th> <th>Send Rate (TPS)</th> <th>Max Latency (s)</th> <th>Min Latency (s)</th> <th>Avg Latency (s)</th> <th>Throughput (TPS)</th>
                                 </tr>
                                 <tr>
-                                     <td>AddProof</td> <td>2</td> <td>0</td> <td>250.0</td> <td>5.07</td> <td>2.08</td> <td>3.58</td> <td>0.4</td>
+                                     <td>AddProof</td> <td>5000</td> <td>0</td> <td>199.9</td> <td>0.10</td> <td>0.01</td> <td>0.01</td> <td>199.8</td>
                                 </tr>
                             </table>
                         <h3>Resource utilization for AddProof</h3>
@@ -187,7 +187,7 @@ workers:
 rounds:
   - label: AddProof
     description: AddProof benchmark
-    txNumber: 2
+    txNumber: 5000
     rateControl:
       type: fixed-rate
       opts:
@@ -196,9 +196,9 @@ rounds:
       module: .&#x2F;workloads&#x2F;AddProof.js
       arguments:
         contractId: proof
-        numCampaigns: 1
-        numProofs: 1
-        numOrgsPerType: 1
+        numCampaigns: 2
+        numProofs: 2
+        numOrgsPerType: 2
         numPeersPerOrgs: 1
         numVerifiersPerType: 1
 </pre>

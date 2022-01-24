@@ -7,7 +7,7 @@ test:
     rounds:
       - label: AddProof
         description: AddProof benchmark
-        txNumber: 2
+        txNumber: 5000
         rateControl:
           type: fixed-rate
           opts:
@@ -16,9 +16,9 @@ test:
           module: ./workloads/AddProof.js
           arguments:
             contractId: proof
-            numCampaigns: 1
-            numProofs: 1
-            numOrgsPerType: 1
+            numCampaigns: 2
+            numProofs: 2
+            numOrgsPerType: 2
             numPeersPerOrgs: 1
             numVerifiersPerType: 1
 
