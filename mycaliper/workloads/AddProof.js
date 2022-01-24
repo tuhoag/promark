@@ -74,6 +74,8 @@ class AddProofWorkload extends WorkloadModuleBase {
             this.proofs.push(returnedProof)
             // throw new Error(returnedProof.Rs.join(";"));
         }
+
+        this.addedProofIds = [];
     }
 
     /**
@@ -88,7 +90,9 @@ class AddProofWorkload extends WorkloadModuleBase {
         // const userId = Math.floor(Math.random()*10000);
         const proofId = `p${Math.floor(Math.random()*10000)}`;
         const proofIdx = Math.floor(Math.random()*10000) % this.proofs.length;
-        const proof = this.proofs[proofIdx]
+        const proof = this.proofs[proofIdx];
+
+        this.addedProofIds.push(proofId);
 
         const transArgs = {
             contractId: this.roundArguments.contractId,
@@ -103,7 +107,33 @@ class AddProofWorkload extends WorkloadModuleBase {
     }
 
     async cleanupWorkloadModule() {
+        // delete campaigns
+        const args = this.roundArguments;
 
+        for (let i = 0; i < this.campaignIds.length; i++) {
+            const transArgs = {
+                contractId: "campaign",
+                contractFunction: 'DeleteCampaignById',
+                contractArguments: [this.campaignIds[i]],
+                readOnly: false
+            };
+
+            // this.campaignIds.push(newCampaignId)
+            await this.sutAdapter.sendRequests(transArgs);
+        }
+
+        // delete proofs
+        for (let i = 0; i < this.addedProofIds.length; i++) {
+            const transArgs = {
+                contractId: "proof",
+                contractFunction: 'DeleteProofById',
+                contractArguments: [this.addedProofIds[i]],
+                readOnly: false
+            };
+
+            // this.campaignIds.push(newCampaignId)
+            await this.sutAdapter.sendRequests(transArgs);
+        }
     }
 }
 
