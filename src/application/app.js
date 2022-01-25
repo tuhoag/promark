@@ -35,6 +35,7 @@ const campaignCommandHandler = async (argv) => {
 }
 
 const proofCommandHandler = async argv => {
+    logger.debug(`proof handler args: ${argv}`);
     const command = argv[0];
     let camId;
 
@@ -54,6 +55,11 @@ const proofCommandHandler = async argv => {
             return proofClient.getAllProofs();
         case "delall":
             return proofClient.deleteAllProofs();
+
+        case "verify":
+            camId = argv[1];
+            let proofId = argv[2];
+            return proofClient.verifyProof(camId, proofId);
 
         default:
             throw `Unsupported proof command ${command}`;
@@ -163,7 +169,7 @@ const deleteAllData = async () => {
 
 // Main program function
 const main = async (argv) => {
-    logger.info(argv)
+    logger.info(`main argv: ${argv}`);
     const numOrgsPerType = argv[0];
     const numPeersPerOrg = argv[1];
     const command = argv[2];

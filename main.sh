@@ -243,7 +243,18 @@ function invokeGetCustomerProofById() {
 }
 
 function invokeVerifyProof() {
-    $SCRIPTS_DIR/verify-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
+    local orgNum=$1
+    local peerNum=$2
+    local camId=$3
+    local proofId=$4
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node app.js $orgNum $peerNum proof verify "$camId" "$proofId"
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/verify-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
 }
 
 function runLogService() {

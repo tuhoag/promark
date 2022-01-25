@@ -9,7 +9,7 @@ exports.generateProofForRandomUser = async (camId, userId) => {
         if (userId === undefined) {
             userId = `u${utils.getId(10000)}`;
         }
-        logger.info(`GenerateCustomerCampaignProof: camId:${$camId} - userId:${userId}`);
+        logger.info(`GenerateCustomerCampaignProof: camId:${camId} - userId:${userId}`);
         return contract.submitTransaction("GenerateCustomerCampaignProof", camId, userId);
     }, async response => {
         logger.debug(`response:${response}`);
@@ -58,5 +58,16 @@ exports.getAllProofs = async () => {
         const proofs = JSON.parse(response);
         logger.debug(`got ${proofs.length} proofs: ${response}`);
         return proofs;
+    });
+}
+
+exports.verifyProof = async (camId, proofId) => {
+    return utils.callChaincodeFn(async (network) => {
+        const contract = await network.getContract("proof");
+        logger.info(`VerifyCampaignProof: camId: ${camId} - proofId: ${proofId}`);
+        return contract.submitTransaction("VerifyCampaignProof", camId, proofId);
+    }, async (response) => {
+        logger.debug(`response: ${response}`);
+        return response;
     });
 }
