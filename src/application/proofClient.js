@@ -1,42 +1,33 @@
 const utils = require('./utils');
-
+const logger = require('./logger')(__filename, "debug");
 
 exports.generateProofForRandomUser = async (camId, userId) => {
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
 
-        console.log('Submit campaign transaction.');
         // randomly generate a user id
         if (userId === undefined) {
             userId = `u${utils.getId(10000)}`;
         }
-        // const userId = `u${utils.getId(10000)}`;
-        console.log(`userId:${userId}`);
-        // userId = "u51"
+        logger.info(`GenerateCustomerCampaignProof: camId:${$camId} - userId:${userId}`);
         return contract.submitTransaction("GenerateCustomerCampaignProof", camId, userId);
     }, async response => {
-        console.log(`response:${response}`);
+        logger.debug(`response:${response}`);
         const resultProof = JSON.parse(response);
         return resultProof;
     });
 }
 
 exports.addProof = async (comm, rsStr) => {
-    // console.log(camId);
-
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
 
-        console.log('Submit proof transaction.');
         // randomly generate a user id
         const proofId = `p${utils.getId(10000)}`;
-        console.log(`proofId:${proofId}`);
-        console.log(`Comm:${comm}`);
-        console.log(`rsStr:${rsStr}`);
-        // proofId string, comm string, rsStr string
+        logger.info(`AddCustomerProofCampaign: proofId: ${proofId} - comm: ${comm} - rsStr: ${rsStr}`)
         return contract.submitTransaction("AddCustomerProofCampaign", proofId, comm, rsStr);
     }, async response => {
-        console.log(`response:${response}`);
+        logger.debug(`response:${response}`);
         const resultProof = JSON.parse(response);
         return resultProof;
     });
@@ -45,25 +36,27 @@ exports.addProof = async (comm, rsStr) => {
 exports.deleteAllProofs = async () => {
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
+        logger.info("DeleteAllProofs");
         return contract.submitTransaction("DeleteAllProofs");
     }, async response => {
-        console.log(`response:${response}`);
+        logger.debug(`response:${response}`);
+        return response;
     });
 }
 
 exports.getAllProofs = async () => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("proof");
+        logger.info("GetAllProofs");
         return contract.submitTransaction("GetAllProofs");
     }, async (response) => {
         if (response.length == 0) {
-            console.log("No proofs");
+            logger.debug("No proofs");
             return [];
         }
 
         const proofs = JSON.parse(response);
-        console.log(`got ${proofs.length} proofs`);
-        console.log(`proofs: ${response}`);
+        logger.debug(`got ${proofs.length} proofs: ${response}`);
         return proofs;
     });
 }

@@ -1,15 +1,17 @@
 'use strict';
 
 // Bring key classes into scope, most importantly Fabric SDK network class
+
+const fs = require('fs');
+const path = require('path');
 const utils = require('./utils');
 const camClient = require('./campaignClient');
 const proofClient = require('./proofClient');
-const fs = require('fs');
-const path = require('path');
 const setting = require('./setting');
+const logger = require('./logger')(__filename, "debug");
 
 const campaignCommandHandler = async (argv) => {
-    console.log(argv)
+    logger.debug(argv);
     const command = argv[0];
 
     if (command == "create") {
@@ -36,7 +38,7 @@ const proofCommandHandler = async argv => {
     const command = argv[0];
     let camId;
 
-    switch(command) {
+    switch (command) {
         case "gen":
             camId = argv[1];
             const userId = argv[2];
@@ -67,18 +69,18 @@ const testCommandHandler = async argv => {
     const numVerifiers = 1;
     // add a campaign
     let campaign = await camClient.createRandomCampaign(numOrgsPerType, numPeersPerOrg, numVerifiers);
-    console.log("outside:" + JSON.stringify(campaign));
+    logger.info("outside:" + JSON.stringify(campaign));
     // console.log(campaign);
 
     sleep(2000);
     // generate its proof
     let proof = await proofClient.generateProofForRandomUser(campaign.id);
-    console.log("outside:" + JSON.stringify(proof));
+    logger.info("outside:" + JSON.stringify(proof));
 
     sleep(2000);
     // add the generated proof
     let addedProof = await proofClient.addProof(campaign.id, proof.Comm, proof.Rs.join(";"));
-    console.log("outside:" + JSON.stringify(addedProof));
+    logger.info("outside:" + JSON.stringify(addedProof));
     // show all campaigns
 
     // show all proofs
@@ -87,7 +89,7 @@ const testCommandHandler = async argv => {
 const dataCommandHandler = async argv => {
     const command = argv[0];
 
-    switch(command) {
+    switch (command) {
         case "init":
             const numCampaigns = argv[1];
             const numProofs = argv[2];
@@ -105,7 +107,7 @@ const dataCommandHandler = async argv => {
 const initData = async (numCampaigns, numProofs, numVerifiers) => {
     let campaigns = [];
 
-    for (let i = 0; i < numCampaigns; i ++) {
+    for (let i = 0; i < numCampaigns; i++) {
         let campaign = await camClient.createRandomCampaign(numVerifiers);
 
         campaigns.push(campaign);
@@ -113,16 +115,16 @@ const initData = async (numCampaigns, numProofs, numVerifiers) => {
 
     let proofs = [];
 
-    for (let i = 0; i < numProofs; i ++) {
+    for (let i = 0; i < numProofs; i++) {
         const camIdx = utils.getId(campaigns.length);
-        console.log(JSON.stringify(campaigns[camIdx]));
+        logger.debug(JSON.stringify(campaigns[camIdx]));
         let proof = await proofClient.generateProofForRandomUser(campaigns[camIdx].id);
-        console.log(`generated proof: ${JSON.stringify(proof)}`);
+        logger.debug(`generated proof: ${JSON.stringify(proof)}`);
         proofs.push(proof);
     }
 
-    console.log(JSON.stringify(proofs));
-    console.log("printing proofs");
+    logger.debug(JSON.stringify(proofs));
+    logger.debug("printing proofs");
 
     let initData = {
         "campaigns": campaigns,
@@ -130,8 +132,8 @@ const initData = async (numCampaigns, numProofs, numVerifiers) => {
     }
 
     for (let proof of proofs) {
-        console.log(`comm:${proof.comm}`);
-        console.log(`rsStr:${proof.rs.join(";")}`);
+        logger.debug(`comm:${proof.comm}`);
+        logger.debug(`rsStr:${proof.rs.join(";")}`);
 
         initData["proofs"].push({
             "comm": proof.comm,
@@ -141,7 +143,7 @@ const initData = async (numCampaigns, numProofs, numVerifiers) => {
 
     const initDataPath = path.join(setting.initDataDirPath, `initData-${numCampaigns}-${numProofs}-${numVerifiers}.json`);
     fs.writeFileSync(initDataPath, JSON.stringify(initData));
-    console.log(`saved init data to: ${initDataPath}`);
+    logger.info(`saved init data to: ${initDataPath}`);
     return initData;
 }
 
@@ -149,7 +151,7 @@ const deleteAllData = async () => {
     // remove all init data
     fs.readdirSync(setting.initDataDirPath).forEach(file => {
         const filePath = path.join(setting.initDataDirPath, file);
-        console.log(`deleting file: ${filePath}`);
+        logger.info(`deleting file: ${filePath}`);
 
         fs.unlink(filePath, err => {
             if (err) throw err;
@@ -161,7 +163,7 @@ const deleteAllData = async () => {
 
 // Main program function
 const main = async (argv) => {
-    console.log(argv)
+    logger.info(argv)
     const numOrgsPerType = argv[0];
     const numPeersPerOrg = argv[1];
     const command = argv[2];
@@ -170,7 +172,7 @@ const main = async (argv) => {
     global.numOrgsPerType = numOrgsPerType;
     global.numPeersPerOrg = numPeersPerOrg;
 
-    switch(command) {
+    switch (command) {
         case "campaign":
             return campaignCommandHandler(subArgs);
         case "proof":
@@ -185,10 +187,10 @@ const main = async (argv) => {
 }
 
 main(process.argv.slice(2)).then(() => {
-    console.log('Issue program complete.');
-}).catch((e) => {
-    console.log('Issue program exception.');
-    console.log(e);
-    console.log(e.stack);
+    // logger.info("Program complete.")
+}).catch((err) => {
+    if (!err) {
+        logger.error("Error: " + err.stack);
+    }
     process.exit(-1);
 });

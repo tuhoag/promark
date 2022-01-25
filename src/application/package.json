@@ -12,7 +12,8 @@
     "fabric-ca-client": "^2.2.4",
     "fabric-gateway": "0.1.0-dev.20211029.6",
     "fabric-network": "^2.2.4",
-    "js-yaml": "^3.14.1"
+    "js-yaml": "^3.14.1",
+    "winston": "^3.4.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.5",

@@ -4,6 +4,8 @@ const yaml = require('js-yaml');
 const path = require('path');
 
 const setting = require('./setting');
+const logger = require('./logger')(__filename, "info");
+
 
 const buildCPP = async (numOrgsPerType, numPeersPerOrg) => {
     const connectionProfileName = `connectionProfile-${numOrgsPerType}-${numPeersPerOrg}.yaml`;
@@ -13,7 +15,7 @@ const buildCPP = async (numOrgsPerType, numPeersPerOrg) => {
 const buildWallet = async (userName) => {
     // Create a new  wallet : Note that wallet is for managing identities.
     const walletPath = './wallet/' + userName
-    console.log(`Built a file system wallet at ${walletPath}`);
+    logger.debug(`Built a file system wallet at ${walletPath}`);
     return Wallets.newFileSystemWallet(walletPath);
 }
 
@@ -68,7 +70,6 @@ const connectToGateway = async (userName, orgName, orgUserName) => {
     };
 
     // Connect to gateway using application specified parameters
-    console.log('Connect to Fabric gateway.');
 
     await gateway.connect(connectionProfile, connectionOptions);
 
@@ -77,7 +78,7 @@ const connectToGateway = async (userName, orgName, orgUserName) => {
 
 const connectToNetwork = async (userName, orgName, orgUserName) => {
     const gateway = connectToGateway(userName, orgName, orgUserName);
-    console.log('Use network channel: ' + setting.channelName);
+    logger.debug('Use network channel: ' + setting.channelName);
     return gateway.getNetwork(setting.channelName);
 }
 
@@ -110,15 +111,13 @@ const callChaincodeFn = async (requestFn, responseFn) => {
     try {
         gateway = await connectToGateway(setting.userName, setting.orgName, setting.orgUserName);
         const network = await gateway.getNetwork(setting.channelName);
-        console.log('Use campaign.promark smart contract.');
         const response = await requestFn(network);
         return responseFn(response);
     } catch (error) {
-        console.log(`Error processing transaction. ${error}`);
-        console.log(error.stack);
+        logger.error(error.stack);
     } finally {
         // Disconnect from the gateway
-        console.log('Disconnect from Fabric gateway.');
+        logger.debug('Disconnect from Fabric gateway.');
         gateway.disconnect();
     }
 }
