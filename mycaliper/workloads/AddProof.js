@@ -1,8 +1,11 @@
 'use strict';
 
 const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
-// const {}
 const utils = require('./utils');
+
+const logger = require('@hyperledger/caliper-core').CaliperUtils.getLogger('promark');
+
+let count = 0;
 /**
  * Workload module for the benchmark round.
  */
@@ -33,52 +36,13 @@ class AddProofWorkload extends WorkloadModuleBase {
         const args = this.roundArguments;
         this.contractId = args.contractId;
         this.contractVersion = args.contractVersion;
-        const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments;
+        const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numCampaigns, numProofs} = this.roundArguments;
 
-        // this.campaignIds = []
+        this.addedProofIds = [];
+        count += 1;
 
-        // // generate campaigns
-        // for (let i = 0; i < args.numCampaigns; i++) {
-        //     const {camId, name, advertiser, business, verifierURLsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType)
-        //     const newCampaignId = "c" + i
-        //     const newCampaignName = "campaign " + i
-        //     const transArgs = {
-        //         contractId: "campaign",
-        //         contractFunction: 'CreateCampaign',
-        //         contractArguments: [camId, name, advertiser, business, verifierURLsStr],
-        //         readOnly: false
-        //     };
-
-        //     let raw_result = await this.sutAdapter.sendRequests(transArgs);
-        //     let returnedCampaign = JSON.parse(raw_result.result.toString());
-        //     this.campaignIds.push(returnedCampaign.id);
-        //     // throw new Error(returnedCampaign.id);
-        // }
-
-        // // generate proofs
-        // this.proofs = []
-        // for (let i = 0; i < args.numProofs; i++) {
-        //     const camIdx = Math.floor(Math.random()*10000) % this.campaignIds.length;
-        //     const userId = Math.floor(Math.random()*10000);
-        //     const camId = this.campaignIds[camIdx]
-
-        //     const transArgs = {
-        //         contractId: this.roundArguments.contractId,
-        //         contractFunction: "GenerateCustomerCampaignProof",
-        //         contractArguments: [camId, userId],
-        //         readOnly: true
-        //     };
-
-        //     let raw_result = await this.sutAdapter.sendRequests(transArgs);
-        //     let returnedProof = JSON.parse(raw_result.result.toString());
-        //     this.proofs.push(returnedProof)
-        //     // throw new Error(returnedProof.Rs.join(";"));
-        // }
-
-        // this.addedProofIds = [];
-
-        // throw new Error(this.campaignIds);
-        // throw new Error(this.proofs);
+        this.initData = utils.loadInitData(numCampaigns, numProofs, numVerifiersPerType);
+        logger.info("this.initData: ", this.initData);
     }
 
     /**
@@ -88,13 +52,15 @@ class AddProofWorkload extends WorkloadModuleBase {
     async submitTransaction() {
         // proofId string, comm string, rsStr string
         const proofId = `p${Math.floor(Math.random()*100000)}`;
-        // const proofIdx = Math.floor(Math.random()*10000) % this.proofs.length;
-        // const proof = this.proofs[proofIdx];
+        const proofIdx = Math.floor(Math.random()*10000) % this.initData.proofs.length;
+        const proof = this.initData.proofs[proofIdx];
 
-        // this.addedProofIds.push(proofId);
+        this.addedProofIds.push(proofId);
 
-        const comm = "ZAmQ/LIHMx3DAZkq9zpwLO4BSa200+0nUNMUH1a0bTA=";
-        const rsStr = "NVMNc8Jt6jd0E4TOBQDirCxkq/hV3wkH5Xp4XuE0iAo=;mpRs6+moO3aoHVx+lcGNIaDKNwLVgXAeCgnGv/MzqgY=";
+        // const comm = "ZAmQ/LIHMx3DAZkq9zpwLO4BSa200+0nUNMUH1a0bTA=";
+        // const rsStr = "NVMNc8Jt6jd0E4TOBQDirCxkq/hV3wkH5Xp4XuE0iAo=;mpRs6+moO3aoHVx+lcGNIaDKNwLVgXAeCgnGv/MzqgY=";
+        const comm = proof.comm;
+        const rsStr = proof.rsStr;
 
         const transArgs = {
             contractId: this.roundArguments.contractId,
@@ -105,38 +71,25 @@ class AddProofWorkload extends WorkloadModuleBase {
 
         // throw new Error(JSON.stringify(transArgs));
 
+        logger.debug(`submitTransaction count: ${count}`);
+        // throw new Error(`submitTransaction count: ${count}`);
+
         return this.sutAdapter.sendRequests(transArgs);
     }
 
     async cleanupWorkloadModule() {
-        // delete campaigns
-    //     const args = this.roundArguments;
+        logger.info("addedProofIds.length:", this.addedProofIds.length);
 
-    //     for (let i = 0; i < this.campaignIds.length; i++) {
-    //         const transArgs = {
-    //             contractId: "campaign",
-    //             contractFunction: 'DeleteCampaignById',
-    //             contractArguments: [this.campaignIds[i]],
-    //             readOnly: false
-    //         };
+        for (let proofId of this.addedProofIds) {
+            const transArgs = {
+                contractId: "proof",
+                contractFunction: 'DeleteProofById',
+                contractArguments: [proofId],
+                readOnly: false
+            };
 
-    //         // this.campaignIds.push(newCampaignId)
-    //         await this.sutAdapter.sendRequests(transArgs);
-    //     }
-
-    //     throw new Error(this.addedProofIds);
-    //     // delete proofs
-    //     for (let i = 0; i < this.addedProofIds.length; i++) {
-    //         const transArgs = {
-    //             contractId: "proof",
-    //             contractFunction: 'DeleteProofById',
-    //             contractArguments: [this.addedProofIds[i]],
-    //             readOnly: false
-    //         };
-
-    //         // this.campaignIds.push(newCampaignId)
-    //         await this.sutAdapter.sendRequests(transArgs);
-    //     }
+            await this.sutAdapter.sendRequests(transArgs);
+        }
     }
 }
 

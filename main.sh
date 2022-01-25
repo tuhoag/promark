@@ -131,64 +131,120 @@ function invokeCreateCamp() {
 }
 
 function getAllCamp() {
-    $SCRIPTS_DIR/get-all-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
+    local orgNum=$1
+    local peerNum=$2
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node app.js $orgNum $peerNum campaign all
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/get-all-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
 function deleteCampById() {
-    $SCRIPTS_DIR/delete-camp-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME  "adv,bus" $1 $2
+    local orgNum=$1
+    local peerNum=$2
+    local camId=$3
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node app.js $orgNum $peerNum campaign del $camId
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/delete-camp-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME  "adv,bus" $1 $2
 }
 
 function getCampById() {
-    $SCRIPTS_DIR/get-campaign-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
+    local orgNum=$1
+    local peerNum=$2
+    local camId=$3
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node app.js $orgNum $peerNum campaign get $camId
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/get-campaign-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
 function invokeGenerateCustomerProof() {
-    # local orgNum=$1
-    # local peerNum=$2
-    # local camId=$3
-    # local userId=$4
+    local orgNum=$1
+    local peerNum=$2
+    local camId=$3
+    local userId=$4
 
-    # pushd $CLIENT_DIR_PATH
-    # set -x
-    # node app.js $orgNum $peerNum proof gen $camId $userId
-    # { set +x; } 2>/dev/null
-    # popd
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node app.js $orgNum $peerNum proof gen $camId $userId
+    { set +x; } 2>/dev/null
+    popd
 
-    $SCRIPTS_DIR/generate-customer-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
+    # $SCRIPTS_DIR/generate-customer-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
 function invokeAddCustomerProof() {
-    $SCRIPTS_DIR/add-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
+    local orgNum=$1
+    local peerNum=$2
+    local comm=$3
+    local rsStr=$4
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node app.js $orgNum $peerNum proof add $comm $rsStr
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/add-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
 }
 
 function invokeGetAllCustomerProofs() {
-    $SCRIPTS_DIR/get-all-proofs.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
+    local orgNum=$1
+    local peerNum=$2
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node app.js $orgNum $peerNum proof all
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/get-all-proofs.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
 }
 
 function invokeDelProofById() {
-    $SCRIPTS_DIR/del-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    local orgNum=$1
+    local peerNum=$2
+    local proofId=$3
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node app.js $orgNum $peerNum proof del $proofId
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/del-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
 }
 
 function invokeGetCustomerProofById() {
-    $SCRIPTS_DIR/get-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    local orgNum=$1
+    local peerNum=$2
+    local proofId=$3
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node app.js $orgNum $peerNum proof get $proofId
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/get-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
 }
 
 function invokeVerifyProof() {
     $SCRIPTS_DIR/verify-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
 }
-
-function getAllCampaignData() {
-    $SCRIPTS_DIR/get-all-campaign-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
-
-}
-
-function invokeCollectData() {
-    $SCRIPTS_DIR/create-data.sh $CHAINCODE_NAME $CHANNEL_NAME "adv,bus" $1 $2
-}
-
-# function invokeQueryById() {
-#     $SCRIPTS_DIR/query-ledger.sh $CHAINCODE_NAME $CHANNEL_NAME "adv" $1 $2
-# }
 
 function runLogService() {
     local orgNum=$1
@@ -392,9 +448,11 @@ elif [ $MODE = "campaign" ]; then
     elif [ $SUB_MODE = "all" ]; then
         getAllCamp $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "del" ]; then
-        deleteCampById $NO_ORGS $NO_PEERS
+        camId=$5
+        deleteCampById $NO_ORGS $NO_PEERS $camId
     elif [ $SUB_MODE = "get" ]; then
-        getCampById $NO_ORGS $NO_PEERS
+        camId=$5
+        getCampById $NO_ORGS $NO_PEERS $camId
     # elif [ $SUB_MODE = "query" ]; then
     #     invokeQueryById $NO_ORGS $NO_PEERS
     else
@@ -430,16 +488,6 @@ elif [ $MODE = "proof" ]; then
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 
-elif [ $MODE = "data" ]; then
-    SUB_MODE=$2
-    NO_ORGS=$3
-    NO_PEERS=$4
-
-    if [ $SUB_MODE = "add" ]; then
-        invokeCollectData $NO_ORGS $NO_PEERS
-    elif [ $SUB_MODE = "get" ]; then
-        getAllCampaignData $NO_ORGS $NO_PEERS
-    fi
 elif [ $MODE = "service" ]; then
     SUB_MODE=$2
     NO_ORGS=$3

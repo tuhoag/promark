@@ -1,7 +1,11 @@
 'use strict';
 
+const fs = require("fs");
+const process = require("process");
 
-function CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType) {
+const logger = require('@hyperledger/caliper-core').CaliperUtils.getLogger('promark');
+
+const CreateCampaignArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiersPerType) => {
     const camId = "c" + Math.floor(Math.random()*10000);
     const name = "Campaign " + camId;
     const advertiser = "adv"+Math.floor(Math.random()*10000) % numOrgsPerType;
@@ -26,4 +30,18 @@ function CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType
     };
 }
 
-module.exports = { CreateCampaignArgs };
+const loadInitData = (numCampaigns, numProofs, numVerifiersPerType) => {
+    const path = `./data/initData-${numCampaigns}-${numProofs}-${numVerifiersPerType}.json`;
+    // throw new Error(process.cwd());
+    try {
+        const data = fs.readFileSync(path, "utf8");
+        logger.info("raw init data: ", data);
+
+        return JSON.parse(data);
+    } catch (err) {
+        throw err;
+        logger.error(err);
+    }
+}
+
+module.exports = { CreateCampaignArgs, loadInitData };
