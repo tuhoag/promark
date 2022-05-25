@@ -54,23 +54,30 @@ class AddProofWorkload extends WorkloadModuleBase {
         const proofId = `p${Math.floor(Math.random()*100000)}`;
         const proofIdx = Math.floor(Math.random()*10000) % this.initData.proofs.length;
         const proof = this.initData.proofs[proofIdx];
-
-        this.addedProofIds.push(proofId);
-
-        // const comm = "ZAmQ/LIHMx3DAZkq9zpwLO4BSa200+0nUNMUH1a0bTA=";
-        // const rsStr = "NVMNc8Jt6jd0E4TOBQDirCxkq/hV3wkH5Xp4XuE0iAo=;mpRs6+moO3aoHVx+lcGNIaDKNwLVgXAeCgnGv/MzqgY=";
-        const comm = proof.comm;
-        const rsStr = proof.rsStr;
+        // const proofId = `p:${proof.deviceId}:${proof.camId}:${proof.customerId}:${proof.addedTimeStr}`;
+        // camId string, deviceId string, cusId string, cusComm string, cusRsStr string, addedTimeStr string
+        // "camId": "c5842",
+        // "deviceId": "d1",
+        // "customerId": "u239",
+        // "addedTimeStr": "2022-01-30T22:29:27.890Z",
+        // "cusComm": "hCMWcCIZ0n1oY7moL+lzepz1XcPDo8UjnnM5hCvpdgE=",
+        // "cusRsStr": "d/ZBfcHKWCNXjw5VsCGsxr9vQHf1rYrOUlAb1bJNqQc=;qQ9w12OSOJsjcc5C2eAfx0TGDSiUbSJjGdnQTIpEuwo="
+        // const transArgs = {
+        //     contractId: this.roundArguments.contractId,
+        //     contractFunction: "AddCustomerProofCampaign2",
+        //     contractArguments: [proof.camId, proof.deviceId, proof.customerId, proof.cusComm, proof.cusRsStr, proof.addedTimeStr],
+        //     readOnly: false
+        // };
 
         const transArgs = {
             contractId: this.roundArguments.contractId,
             contractFunction: "AddCustomerProofCampaign",
-            contractArguments: [proofId, comm, rsStr],
-            readOnly: true
+            contractArguments: [proofId, proof.cusComm, proof.cusRsStr],
+            readOnly: false
         };
+        // proofId := fmt.Sprintf("p:%s:%s:%s:%s", deviceId, camId, cusId, addedTimeStr)
 
-        // throw new Error(JSON.stringify(transArgs));
-
+        this.addedProofIds.push(proofId);
         logger.debug(`submitTransaction count: ${count}`);
         // throw new Error(`submitTransaction count: ${count}`);
 
@@ -80,6 +87,8 @@ class AddProofWorkload extends WorkloadModuleBase {
     async cleanupWorkloadModule() {
         logger.info("addedProofIds.length:", this.addedProofIds.length);
 
+        logger.info(this.addedProofIds);
+        // throw new Error();
         for (let proofId of this.addedProofIds) {
             const transArgs = {
                 contractId: "proof",

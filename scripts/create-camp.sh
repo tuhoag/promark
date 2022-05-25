@@ -20,13 +20,13 @@ function createCamp() {
     verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
 
     set -x
-    fcn_call0='{"function":"'${CC_CREATE_FCN}'","Args":["c0012","campaign001","Adv0","Bus0","peer0.adv0.promark.com:5000;peer0.bus0.promark.com:5000"]}'
+    fcn_call0='{"function":"'${CC_CREATE_FCN}'","Args":["c0012","campaign001","Adv0","Pub0","peer0.adv0.promark.com:5000;peer0.pub0.promark.com:5000"]}'
 
-    # fcn_call1='{"function":"'${CC_CREATE_FCN}'","Args":["id11","campaign11","Adv1","Bus1","http://peer0.adv1.promark.com:8510","http://peer0.bus1.promark.com:9010"]}'
+    # fcn_call1='{"function":"'${CC_CREATE_FCN}'","Args":["id11","campaign11","Adv1","Pub1","http://peer0.adv1.promark.com:8510","http://peer0.pub1.promark.com:9010"]}'
 
-    # fcn_call2='{"function":"'${CC_CREATE_FCN}'","Args":["id12","campaign12","Adv2","Bus2","http://peer0.adv2.promark.com:8520","http://peer0.bus2.promark.com:9020"]}'
+    # fcn_call2='{"function":"'${CC_CREATE_FCN}'","Args":["id12","campaign12","Adv2","Pub2","http://peer0.adv2.promark.com:8520","http://peer0.pub2.promark.com:9020"]}'
 
-    # fcn_call3='{"function":"'${CC_CREATE_FCN}'","Args":["id13","campaign13","Adv3","Bus3","http://peer0.adv3.promark.com:8530","http://peer0.bus3.promark.com:9030"]}'
+    # fcn_call3='{"function":"'${CC_CREATE_FCN}'","Args":["id13","campaign13","Adv3","Pub3","http://peer0.adv3.promark.com:8530","http://peer0.pub3.promark.com:9030"]}'
 
     infoln "invoke fcn call:${fcn_call0}"
     # peer lifecycle chaincode commit -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME  --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName --tls $peerConnectionParams --version $sequence --sequence $sequence

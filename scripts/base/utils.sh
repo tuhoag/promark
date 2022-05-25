@@ -51,8 +51,8 @@ function selectPeer() {
     # calculate port
     if [ $org_type = "adv" ]; then
         local base_port=$ADV_BASE_PORT
-    elif [ $org_type = "bus" ]; then
-        local base_port=$BUS_BASE_PORT
+    elif [ $org_type = "pub" ]; then
+        local base_port=$PUB_BASE_PORT
     else
         errorln "Org type $org_type is unsupported."
     fi
@@ -130,6 +130,21 @@ function getPackageId() {
     echo "package id: $packageHash"
     echo "${packageName}:${packageHash}"
     export packageId="${packageName}:${packageHash}"
+}
+
+function getSingleRandomOrgPolicy() {
+    IFS=',' read -r -a orgTypes <<< $1
+    local maxOrdId=$(($2 - 1))
+    local maxPeerId=$(($3 - 1))
+
+    # POLICY=--signature-policy="OR('adv0MSP.member','pub0MSP.member')"
+    policy="OR("
+    for orgType in ${orgTypes[@]}; do
+        for orgId in $(seq 0 $maxOrdId); do
+            policy="${policy}'${orgType}${orgId}MSP.member',"
+        done
+    done
+    policy="${policy::-1})"
 }
 
 export -f errorln

@@ -31,6 +31,9 @@ function clear() {
     # remove the chaincode package file before commit
     # rm chaincode/main.tar.gz
 
+    # docker rm -f $(docker ps -aq) || true
+    # docker rmi -f $(docker images -a -q) || true
+    # docker volume rm $(docker volume ls)  || true
 
     docker ps -a
     if [ $? -ne 0 ]; then

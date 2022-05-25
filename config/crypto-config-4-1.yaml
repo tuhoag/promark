@@ -58,8 +58,8 @@ PeerOrgs:
     Users:
       Count: 1
 
-  - Name: bus0
-    Domain: bus0.promark.com
+  - Name: pub0
+    Domain: pub0.promark.com
     EnableNodeOUs: true
     Template:
       Count: 1
@@ -70,8 +70,8 @@ PeerOrgs:
     Users:
       Count: 1
 
-  - Name: bus1
-    Domain: bus1.promark.com
+  - Name: pub1
+    Domain: pub1.promark.com
     EnableNodeOUs: true
     Template:
       Count: 1
@@ -82,8 +82,8 @@ PeerOrgs:
     Users:
       Count: 1
 
-  - Name: bus2
-    Domain: bus2.promark.com
+  - Name: pub2
+    Domain: pub2.promark.com
     EnableNodeOUs: true
     Template:
       Count: 1
@@ -94,8 +94,8 @@ PeerOrgs:
     Users:
       Count: 1
 
-  - Name: bus3
-    Domain: bus3.promark.com
+  - Name: pub3
+    Domain: pub3.promark.com
     EnableNodeOUs: true
     Template:
       Count: 1

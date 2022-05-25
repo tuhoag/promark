@@ -13,7 +13,7 @@ function runService() {
     if test $mode -eq 0; then
         FABRIC_LOG=$log_level COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} run --service-ports external.promark.com /bin/sh 2>&1
     elif test $mode -eq 1; then
-        FABRIC_LOG=$log_level COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} run --service-ports peer0.bus0.promark.com /bin/sh 2>&1
+        FABRIC_LOG=$log_level COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} run --service-ports peer0.pub0.promark.com /bin/sh 2>&1
     elif test $mode -eq 2; then
         FABRIC_LOG=$log_level COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} run --service-ports peer0.adv0.promark.com /bin/sh 2>&1
     elif test $mode -eq 3; then

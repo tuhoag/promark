@@ -6,8 +6,8 @@ const findAdvertiser = (numAdvs) => {
     return "adv" + utils.getId(numAdvs);
 }
 
-const findBusiness = (numBuses) => {
-    return "bus" + utils.getId(numBuses);
+const findPublisher = (numPubs) => {
+    return "pub" + utils.getId(numPubs);
 }
 
 const findVerifierURLs = (orgName, numPeers, numVerifiers) => {
@@ -29,31 +29,42 @@ const findVerifierURLs = (orgName, numPeers, numVerifiers) => {
     return verifierAddresses
 }
 
-const generateCampaignArgs = (numOrgsPerType, numPeersPerOrg, numVerifiers) => {
+const generateCampaignArgs = (numOrgsPerType, numPeersPerOrg, numVerifiers, deviceIdsStr) => {
     const camId = "c" + utils.getId(10000);
     const advName = findAdvertiser(numOrgsPerType);
-    const busName = findBusiness(numOrgsPerType);
+    const pubName = findPublisher(numOrgsPerType);
     const verifierURLs = findVerifierURLs(advName, numPeersPerOrg, numVerifiers);
-    verifierURLs.push(...findVerifierURLs(busName, numPeersPerOrg, numVerifiers));
+    verifierURLs.push(...findVerifierURLs(pubName, numPeersPerOrg, numVerifiers));
+    const deviceIds = deviceIdsStr.split(",");
+    const startTimeStr = Math.floor(new Date("2022-05-01").getTime() / 1000);
+    const endTimeStr = Math.floor(new Date("2022-06-01").getTime() / 1000);
 
-    return {
+    const result = {
         id: camId,
         name: `Campaign ${camId}`,
         advertiser: advName,
-        business: busName,
+        publisher: pubName,
+        startTimeStr,
+        endTimeStr,
         verifierURLs,
+        deviceIds,
     }
+
+    logger.debug(result)
+
+    return result
 }
 
-const createRandomCampaign = async (numVerifiers) => {
+const createRandomCampaign = async (numVerifiers, deviceIdsStr) => {
     return utils.callChaincodeFn(async network => {
 
         const contract = await network.getContract('campaign');
-        const campaign = generateCampaignArgs(global.numOrgsPerType, global.numPeersPerOrg, numVerifiers);
+        const campaign = generateCampaignArgs(global.numOrgsPerType, global.numPeersPerOrg, numVerifiers, deviceIdsStr);
         const verifierAddressesStr = campaign.verifierURLs.join(";")
-        logger.info(`Create Campaign: ${JSON.stringify(campaign)} and ${verifierAddressesStr}`);
 
-        return contract.submitTransaction("CreateCampaign", campaign.id, campaign.name, campaign.advertiser, campaign.business, verifierAddressesStr);
+        logger.info(`Create Campaign: ${JSON.stringify(campaign)} and ${verifierAddressesStr} - devices: ${campaign.deviceIds.join(";")}`);
+
+        return contract.submitTransaction("CreateCampaign", campaign.id, campaign.name, campaign.advertiser, campaign.publisher, campaign.startTimeStr, campaign.endTimeStr, verifierAddressesStr, campaign.deviceIds.join(";"));
     }, async response => {
         const resultCampaign = JSON.parse(response);
         logger.debug(`raw response: ${response}`);
@@ -116,6 +127,16 @@ const deleteAllCampaigns = async () => {
     });
 }
 
+const getChaincodeData = async () => {
+    return utils.callChaincodeFn(async (network) => {
+        const contract = await network.getContract("campaign");
+        logger.info("GetChaincodeData");
+        return contract.submitTransaction("GetChaincodeData");
+    }, async (response) => {
+        logger.debug(`response: ${response}`);
+        return response;
+    });
+}
 
 module.exports = {
     createRandomCampaign,
@@ -123,4 +144,5 @@ module.exports = {
     getAllCampaigns,
     deleteCampaignById,
     deleteAllCampaigns,
+    getChaincodeData,
 }

@@ -2,8 +2,8 @@
 
 ## Run the network
 - Initialize credentials by using cryptogen: `$ ./main.sh init`
-- Create channel and let peer.adv0 and peer0.bus0 join the created channel: `$ ./main.sh channel all 1 1`
-- Package chaincode and deploy it in peer0.adv0 and peer0.bus0: `$ ./main.sh chaincode all 1 1`
+- Create channel and let peer.adv0 and peer0.pub0 join the created channel: `$ ./main.sh channel all 1 1`
+- Package chaincode and deploy it in peer0.adv0 and peer0.pub0: `$ ./main.sh chaincode all 1 1`
 
 `chmod -R a+rwx promark/`
 
@@ -23,7 +23,7 @@
 Prometheus is enabled in the project as a monitoring framework. In addition, Grafana is added for better visualization. You can access Prometheus at: `http://0.0.0.0:9090` and Grafana at `http://0.0.0.0:3000`.
 
 ## Ports
-There are two types of organizations: adv, bus with some additional services such as CA, couchdb, verifier,... Their ports are organized as follows:
+There are two types of organizations: adv, pub with some additional services such as CA, couchdb, verifier,... Their ports are organized as follows:
  - ADV0:
     + Peer0: 5000
         + CouchDB: 5001
@@ -38,14 +38,14 @@ There are two types of organizations: adv, bus with some additional services suc
     + Peer1: 5110
         + CouchDB: 5111
         + Verifier: 5112
-- BUS0:
+- pub0:
     + Peer0: 6000
         + CouchDB: 6001
         + Verifier: 6002
     + Peer1: 6010
         + CouchDB: 6011
         + Verifier: 6012
-- BUS1:
+- PUB1:
     + Peer0: 6100
         + CouchDB: 6101
         + Verifier: 6102

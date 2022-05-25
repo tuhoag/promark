@@ -8,6 +8,7 @@ export LOG_LEVEL=INFO
 export FABRIC_LOGGING_SPEC=INFO # log of the host machine
 export CAMPAIGN_CHAINCODE_NAME="campaign"
 export PROOF_CHAINCODE_NAME="proof"
+export POC_CHAINCODE_NAME="poc"
 
 function initialize() {
     # generate all organizations
@@ -24,7 +25,7 @@ function createChannel() {
 
 function joinChannel() {
      # args: $CHANNEL_NAME <org type> <number of org> <number of peer>
-    $BASE_SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv,bus" $1 $2
+    $BASE_SCRIPTS_DIR/join-channel.sh $CHANNEL_NAME "adv,pub" $1 $2
 }
 
 function networkUp() {
@@ -41,6 +42,12 @@ function clear() {
     $BASE_SCRIPTS_DIR/clear.sh $1 $2 $LOG_LEVEL
 }
 
+function clearDocker() {
+    docker rm -f $(docker ps -aq) || true
+    docker rmi -f $(docker images -a -q) || true
+    docker volume rm $(docker volume ls)  || true
+}
+
 function monitor() {
     $BASE_SCRIPTS_DIR/monitor.sh
 }
@@ -51,20 +58,46 @@ function packageChaincode() {
 
 function installChaincode() {
     # args: $CHANNEL_NAME $CHAINCODE_NAME  <org name> <org id> <number of peer>
-    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $1 "adv,bus" $2 $3
-    # $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
+    $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $1 "adv,pub" $2 $3
+    # $BASE_SCRIPTS_DIR/install-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,pub" $1 $2
 }
 
 function approveChaincode {
-    # args: $CHANNEL_NAME $CHAINCODE_NAME  <org name> <org id> <number of peer> <sequence>
-    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $1 "adv,bus" $2 $3 $4
-    # $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    # approveChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS $SEQUENCE
+
+    if [ $1 = "poc" ]; then
+        # POLICY=--signature-policy="OR('adv0MSP.member','pub0MSP.member')"
+        getSingleRandomOrgPolicy "adv,pub" $2 $3
+        # echo "returned policy: $policy"
+        policy=--signature-policy=${policy}
+        # POLICY="--signature-policy=${getSingleRandomOrgPolicy "adv,pub" $2 $3}"
+        # local policy=--signature-policy="OR('adv0MSP.member','pub0MSP.member')"
+    # else
+    #     POLICY=--signature-policy "OR(adv0MSP.member, pub0MSP.member)"
+        # $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $1 "adv,pub" $2 $3 $4
+    fi
+
+    echo $policy
+    $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $1 "adv,pub" $2 $3 $4 $policy
+    # $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,pub" $1 $2 $3
 }
 
 function commitChaincode() {
     # args: $CHANNEL_NAME $CHAINCODE_NAME  <number of org> <number of peer>
-    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $1 "adv,bus" $2 $3 $4
-    # $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    if [ $1 = "poc" ]; then
+        # POLICY=--signature-policy="OR('adv0MSP.member','pub0MSP.member')"
+        getSingleRandomOrgPolicy "adv,pub" $2 $3
+        policy=--signature-policy=${policy}
+        # local policy=--signature-policy="OR('adv0MSP.member','pub0MSP.member')"
+    # else
+    #     POLICY=--signature-policy "OR(adv0MSP.member, pub0MSP.member)"
+        # $BASE_SCRIPTS_DIR/approve-chaincode.sh $CHANNEL_NAME $1 "adv,pub" $2 $3 $4
+    fi
+
+    # echo $POLICY
+
+    $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $1 "adv,pub" $2 $3 $4 $policy
+    # $BASE_SCRIPTS_DIR/commit-chaincode.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,pub" $1 $2 $3
 }
 
 function deployChaincode() {
@@ -110,7 +143,7 @@ function buildExternalService() {
 
     # FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache verifier1.promark.com 2>&1
 
-    # FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache peer0.bus0.promark.com 2>&1
+    # FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache peer0.pub0.promark.com 2>&1
 
     # FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache peer0.adv0.promark.com 2>&1
 }
@@ -120,14 +153,15 @@ function invokeCreateCamp() {
     local orgNum=$1
     local peerNum=$2
     local numVerifiers=1
+    local deviceIdsStr=$3
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node app.js $orgNum $peerNum campaign create $numVerifiers
+    node main.js $orgNum $peerNum campaign add $numVerifiers $deviceIdsStr
     { set +x; } 2>/dev/null
     popd
 
-    # $SCRIPTS_DIR/create-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
+    # $SCRIPTS_DIR/create-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,pub" $1 $2
 }
 
 function getAllCamp() {
@@ -136,11 +170,11 @@ function getAllCamp() {
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node app.js $orgNum $peerNum campaign all
+    node main.js $orgNum $peerNum campaign all
     { set +x; } 2>/dev/null
     popd
 
-    # $SCRIPTS_DIR/get-all-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
+    # $SCRIPTS_DIR/get-all-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,pub" $1 $2
 }
 
 function deleteCampById() {
@@ -150,11 +184,11 @@ function deleteCampById() {
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node app.js $orgNum $peerNum campaign del $camId
+    node main.js $orgNum $peerNum campaign del $camId
     { set +x; } 2>/dev/null
     popd
 
-    # $SCRIPTS_DIR/delete-camp-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME  "adv,bus" $1 $2
+    # $SCRIPTS_DIR/delete-camp-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME  "adv,pub" $1 $2
 }
 
 function getCampById() {
@@ -164,11 +198,11 @@ function getCampById() {
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node app.js $orgNum $peerNum campaign get $camId
+    node main.js $orgNum $peerNum campaign get $camId
     { set +x; } 2>/dev/null
     popd
 
-    # $SCRIPTS_DIR/get-campaign-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,bus" $1 $2
+    # $SCRIPTS_DIR/get-campaign-by-id.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,pub" $1 $2
 }
 
 function invokeGenerateCustomerProof() {
@@ -179,11 +213,11 @@ function invokeGenerateCustomerProof() {
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node app.js $orgNum $peerNum proof gen $camId $userId
+    node main.js $orgNum $peerNum proof gen $camId $userId
     { set +x; } 2>/dev/null
     popd
 
-    # $SCRIPTS_DIR/generate-customer-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
+    # $SCRIPTS_DIR/generate-customer-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2
 }
 
 function invokeAddCustomerProof() {
@@ -194,11 +228,11 @@ function invokeAddCustomerProof() {
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node app.js $orgNum $peerNum proof add $comm $rsStr
+    node main.js $orgNum $peerNum proof add $comm $rsStr
     { set +x; } 2>/dev/null
     popd
 
-    # $SCRIPTS_DIR/add-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
+    # $SCRIPTS_DIR/add-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2 $3 $4 $5
 }
 
 function invokeGetAllCustomerProofs() {
@@ -207,11 +241,11 @@ function invokeGetAllCustomerProofs() {
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node app.js $orgNum $peerNum proof all
+    node main.js $orgNum $peerNum proof all
     { set +x; } 2>/dev/null
     popd
 
-    # $SCRIPTS_DIR/get-all-proofs.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2
+    # $SCRIPTS_DIR/get-all-proofs.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2
 }
 
 function invokeDelProofById() {
@@ -221,11 +255,11 @@ function invokeDelProofById() {
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node app.js $orgNum $peerNum proof del $proofId
+    node main.js $orgNum $peerNum proof del $proofId
     { set +x; } 2>/dev/null
     popd
 
-    # $SCRIPTS_DIR/del-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    # $SCRIPTS_DIR/del-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2 $3
 }
 
 function invokeGetCustomerProofById() {
@@ -235,11 +269,11 @@ function invokeGetCustomerProofById() {
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node app.js $orgNum $peerNum proof get $proofId
+    node main.js $orgNum $peerNum proof get $proofId
     { set +x; } 2>/dev/null
     popd
 
-    # $SCRIPTS_DIR/get-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3
+    # $SCRIPTS_DIR/get-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2 $3
 }
 
 function invokeVerifyProof() {
@@ -250,11 +284,11 @@ function invokeVerifyProof() {
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node app.js $orgNum $peerNum proof verify "$camId" "$proofId"
+    node main.js $orgNum $peerNum proof verify $camId $proofId
     { set +x; } 2>/dev/null
     popd
 
-    # $SCRIPTS_DIR/verify-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,bus" $1 $2 $3 $4 $5
+    # $SCRIPTS_DIR/verify-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2 $3 $4 $5
 }
 
 function runLogService() {
@@ -277,11 +311,11 @@ function buildAllImages() {
     FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} build 2>&1
 }
 
-function clearNetwork {
-    docker rm -f $(docker ps -aq) || true
-    docker rmi -f $(docker images -a -q) || true
-    docker volume rm $(docker volume ls)  || true
-}
+# function clearNetwork {
+#     docker rm -f $(docker ps -aq) || true
+#     docker rmi -f $(docker images -a -q) || true
+#     docker volume rm $(docker volume ls)  || true
+# }
 
 function addGoPath {
     export PATH=$PATH:./go/bin
@@ -292,7 +326,7 @@ function evaluate {
     local peerNum=$2
     local benchmarkName=$3
 
-    local networkConfigPath="${CALIPER_DIR_PATH}/networkConfig-${orgNum}-${peerNum}.yaml"
+    local networkConfigPath="${CALIPER_DIR_PATH}/config/networkConfig-${orgNum}-${peerNum}.yaml"
     local benchmarksPath="${CALIPER_DIR_PATH}/benchmarks/${benchmarkName}.yaml"
 
 
@@ -310,18 +344,18 @@ function testPromark {
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node app.js $orgNum $peerNum "test"
+    node main.js $orgNum $peerNum "test"
     { set +x; } 2>/dev/null
     popd
 }
 
 MODE=$1
+NO_ORGS=$2
+NO_PEERS=$3
 # addGoPath
 
 if [ $MODE = "restart" ]; then
-    SUB_MODE=$2
-    NO_ORGS=$3
-    NO_PEERS=$4
+    SUB_MODE=$4
 
     if [ $SUB_MODE = "network" ]; then
         networkDown $NO_ORGS $NO_PEERS
@@ -353,14 +387,14 @@ if [ $MODE = "restart" ]; then
         deployChaincode $CAMPAIGN_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
         sleep 1
         deployChaincode $PROOF_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
+        sleep 1
+        deployChaincode $POC_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 
 elif [ $MODE = "build" ]; then
-    SUB_MODE=$2
-    NO_ORGS=$3
-    NO_PEERS=$4
+    SUB_MODE=$4
 
     if [ $SUB_MODE = "all" ]; then
         buildAllImages $NO_ORGS $NO_PEERS
@@ -370,11 +404,9 @@ elif [ $MODE = "build" ]; then
 
 # elif [ $MODE = "clean" ]; then
 #     clearNetwork
-elif [ $MODE = "path" ]; then
-    addGoPath
+# elif [ $MODE = "path" ]; then
+#     addGoPath
 elif [ $MODE = "init" ]; then
-    NO_ORGS=$2
-    NO_PEERS=$3
     clear $NO_ORGS $NO_PEERS
     sleep 10
     # rm chaincode/main.tar.gz
@@ -382,26 +414,17 @@ elif [ $MODE = "init" ]; then
     sleep 10
     networkUp $NO_ORGS $NO_PEERS
 elif [ $MODE = "clear" ]; then
-    NO_ORGS=$2
-    NO_PEERS=$3
-    clearNetwork
-    sleep 2
+    clearDocker
+    # sleep 2
     clear $NO_ORGS $NO_PEERS
 elif [ $MODE = "up" ]; then
-    NO_ORGS=$2
-    NO_PEERS=$3
     networkUp $NO_ORGS $NO_PEERS
 elif [ $MODE = "down" ]; then
-    NO_ORGS=$2
-    NO_PEERS=$3
     networkDown $NO_ORGS $NO_PEERS
 elif [ $MODE = "monitor" ]; then
     monitor
 elif [ $MODE = "channel" ]; then
-
-    SUB_MODE=$2
-    NO_ORGS=$3
-    NO_PEERS=$4
+    SUB_MODE=$4
 
     if [ $SUB_MODE = "create" ]; then
         createChannel $NO_ORGS $NO_PEERS
@@ -415,34 +438,26 @@ elif [ $MODE = "channel" ]; then
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "chaincode" ]; then
-    SUB_MODE=$2
-    CHAINCODE_NAME=$3
+    SUB_MODE=$4
+    CHAINCODE_NAME=$5
 
     if [ $SUB_MODE = "package" ]; then
-        SEQUENCE=$4
+        SEQUENCE=$6
 
         packageChaincode $CHAINCODE_NAME $SEQUENCE
     elif [ $SUB_MODE = "install" ]; then
-        NO_ORGS=$4
-        NO_PEERS=$5
         SEQUENCE=$6
 
         installChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "approve" ]; then
-        NO_ORGS=$4
-        NO_PEERS=$5
         SEQUENCE=$6
 
         approveChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS $SEQUENCE
     elif [ $SUB_MODE = "commit" ]; then
-        NO_ORGS=$4
-        NO_PEERS=$5
         SEQUENCE=$6
 
         commitChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS $SEQUENCE
     elif [ $SUB_MODE = "deploy" ]; then
-        NO_ORGS=$4
-        NO_PEERS=$5
         SEQUENCE=$6
 
         deployChaincode $CHAINCODE_NAME $NO_ORGS $NO_PEERS $SEQUENCE
@@ -450,11 +465,9 @@ elif [ $MODE = "chaincode" ]; then
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "campaign" ]; then
-    SUB_MODE=$2
-    NO_ORGS=$3
-    NO_PEERS=$4
+    SUB_MODE=$4
 
-    if [ $SUB_MODE = "create" ]; then
+    if [ $SUB_MODE = "add" ]; then
         invokeCreateCamp $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "all" ]; then
         getAllCamp $NO_ORGS $NO_PEERS
@@ -470,9 +483,7 @@ elif [ $MODE = "campaign" ]; then
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "proof" ]; then
-    SUB_MODE=$2
-    NO_ORGS=$3
-    NO_PEERS=$4
+    SUB_MODE=$4
 
     if [ $SUB_MODE = "gen" ]; then
         camId=$5
@@ -500,9 +511,7 @@ elif [ $MODE = "proof" ]; then
     fi
 
 elif [ $MODE = "service" ]; then
-    SUB_MODE=$2
-    NO_ORGS=$3
-    NO_PEERS=$4
+    SUB_MODE=$4
 
     if [ $SUB_MODE = "ext" ]; then
         runExternalService $NO_ORGS $NO_PEERS
@@ -520,12 +529,12 @@ elif [ $MODE = "service" ]; then
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "eval" ]; then
-    SUB_MODE=$2
-    SUB_SUB_MODE=$3
-    NO_ORGS=$4
-    NO_PEERS=$5
+    SUB_MODE=$4
+    SUB_SUB_MODE=$5
 
-    if [ $SUB_MODE = "camp" ]; then
+    # evaluate $NO_ORGS $NO_PEERS "CreateCampaign"
+
+    if [ $SUB_MODE = "campaign" ]; then
         if [ $SUB_SUB_MODE = "create" ]; then
             evaluate $NO_ORGS $NO_PEERS "CreateCampaign"
         else
@@ -534,8 +543,12 @@ elif [ $MODE = "eval" ]; then
     elif [ $SUB_MODE = "proof" ]; then
         if [ $SUB_SUB_MODE = "gen" ]; then
             evaluate $NO_ORGS $NO_PEERS "GenerateProof"
+        elif [ $SUB_SUB_MODE = "genpoc" ]; then
+            evaluate $NO_ORGS $NO_PEERS "GeneratePoC"
         elif [ $SUB_SUB_MODE = "add" ]; then
             evaluate $NO_ORGS $NO_PEERS "AddProof"
+        elif [ $SUB_SUB_MODE = "verify" ]; then
+            evaluate $NO_ORGS $NO_PEERS "VerifyProof"
         else
             errorln "Unsupported $MODE $SUB_MODE $SUB_SUB_MODE command."
         fi
@@ -543,10 +556,6 @@ elif [ $MODE = "eval" ]; then
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
 elif [ $MODE = "test" ]; then
-    # SUB_MODE=$2
-    # SUB_SUB_MODE=$3
-    NO_ORGS=$2
-    NO_PEERS=$3
     testPromark $NO_ORGS $NO_PEERS
 
 else

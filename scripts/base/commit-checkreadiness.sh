@@ -36,7 +36,7 @@ function checkCommitReadiness() {
 }
 
 checkCommitReadiness $1 $2 $3 $4 $5 $6
-# checkCommitReadiness $1 $2 "adv" "\"adv0MSP\": true" "\"bus0MSP\": false"
-# checkCommitReadiness $1 $2 "bus" "\"adv0MSP\": true" "\"bus0MSP\": false"
-# checkCommitReadiness $1 $2 "adv" "\"adv0MSP\": true" "\"bus0MSP\": true"
-# checkCommitReadiness $1 $2 "bus" "\"adv0MSP\": true" "\"bus0MSP\": true"
+# checkCommitReadiness $1 $2 "adv" "\"adv0MSP\": true" "\"pub0MSP\": false"
+# checkCommitReadiness $1 $2 "pub" "\"adv0MSP\": true" "\"pub0MSP\": false"
+# checkCommitReadiness $1 $2 "adv" "\"adv0MSP\": true" "\"pub0MSP\": true"
+# checkCommitReadiness $1 $2 "pub" "\"adv0MSP\": true" "\"pub0MSP\": true"

@@ -13,9 +13,11 @@ import (
 	"net"
 	"os"
 
+	pedersen "github.com/tuhoag/elliptic-curve-cryptography-go/pedersen"
+	eutils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
 	putils "internal/promark_utils"
 
-	"github.com/bwesterb/go-ristretto"
+	ristretto "github.com/bwesterb/go-ristretto"
 	redis "github.com/go-redis/redis/v8"
 	// "strings"
 	// "log"
@@ -38,6 +40,7 @@ func main() {
 	defer l.Close()
 
 	for {
+
 		c, err := l.Accept()
 		if err != nil {
 			fmt.Println("Error connecting:", err.Error())
@@ -82,6 +85,8 @@ func handleConnection(conn net.Conn) {
 		GetCampaignCryptoParamsHandler(conn, request.Data)
 	} else if request.Command == "commit" {
 		CalculateCommitmentHandler(conn, request.Data)
+	} else if request.Command == "commit-nosave" {
+		CalculateCommitmentNoSaveHandler(conn, request.Data)
 	} else if request.Command == "verify" {
 		VerifyCommitmentHandler(conn, request.Data)
 	} else {
@@ -213,7 +218,7 @@ func CalculateCommitmentHandler(conn net.Conn, requestData string) {
 	fmt.Println("Got - vCryptoParams.H:" + vCryptoParams.H)
 	fmt.Println("Got - vCryptoParams.S:" + vCryptoParams.S)
 
-	err = SetCustomerCampaignProofTransaction(paramsRequest.CamId, paramsRequest.CustomerId, *vCryptoParams)
+	err = SetCustomerCampaignProofTransaction(paramsRequest.CamId, paramsRequest.CustomerId, vCryptoParams)
 
 	if err != nil {
 		putils.SendResponse(conn, err.Error(), "")
@@ -224,6 +229,51 @@ func CalculateCommitmentHandler(conn net.Conn, requestData string) {
 	}
 
 	fmt.Println("Calculated Proof - Comm:" + subProof.Comm)
+	// response := putils.CampaignCustomerVerifierProof{}
+	responseData, err := json.Marshal(subProof)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	putils.SendResponse(conn, "", string(responseData))
+}
+
+func CalculateCommitmentNoSaveHandler(conn net.Conn, requestData string) {
+	// calculate commitment
+	var paramsRequest putils.ProofGenerationRequest
+	err := json.Unmarshal([]byte(requestData), &paramsRequest)
+
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	vCryptoParams, err := GetVerifierCryptoParams(paramsRequest.CamId)
+
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	if vCryptoParams == nil {
+		putils.SendResponse(conn, "vCryptoParams is not existed", "")
+		return
+	}
+
+	fmt.Println("Got - vCryptoParams.CamId:" + vCryptoParams.CamId)
+	fmt.Println("Got - vCryptoParams.H:" + vCryptoParams.H)
+	fmt.Println("Got - vCryptoParams.S:" + vCryptoParams.S)
+
+	subProof, err := CalculateCommitment(paramsRequest.CamId, paramsRequest.CustomerId, vCryptoParams)
+	// err = SetCustomerCampaignProofTransaction(paramsRequest.CamId, paramsRequest.CustomerId, *vCryptoParams)
+
+	// if err != nil {
+	// 	putils.SendResponse(conn, err.Error(), "")
+	// }
+	// subProof, err := GetCustomerCampaignProof(paramsRequest.CamId, paramsRequest.CustomerId)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	fmt.Printf("Calculated Proof - Comm:%s", subProof.Comm)
 	// response := putils.CampaignCustomerVerifierProof{}
 	responseData, err := json.Marshal(subProof)
 	if err != nil {
@@ -252,7 +302,47 @@ func GetCustomerCampaignProof(camId string, userId string) (*putils.CampaignCust
 	return &subProof, nil
 }
 
-func SetCustomerCampaignProofTransaction(camId string, userId string, vCryptoParams putils.VerifierCryptoParams) error {
+func CalculateCommitment(camId string, userId string, vCryptoParams *putils.VerifierCryptoParams) (*putils.CampaignCustomerVerifierProof, error) {
+	var rScalar ristretto.Scalar
+	rScalar.Rand()
+	fmt.Printf("Generated R: %s\n", rScalar)
+
+	// convert s
+	sScalar, err := eutils.ConvertStringToScalar(vCryptoParams.S)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("s: %s\n", sScalar)
+
+	// convert H
+	hPoint, err := eutils.ConvertStringToPoint(vCryptoParams.H)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("H: %s\n", hPoint)
+
+	// calculate commitment
+	comm := pedersen.CommitTo(hPoint, &rScalar, sScalar)
+
+	fmt.Printf("Calculated comm: %s\n", comm)
+
+	// return R, Com
+	rEnc := eutils.ConvertScalarToString(&rScalar)
+	commEnc := eutils.ConvertPointToString(comm)
+
+	subProof := putils.CampaignCustomerVerifierProof{
+		CamId:  camId,
+		UserId: userId,
+		H:      vCryptoParams.H,
+		R:      rEnc,
+		S:      vCryptoParams.S,
+		Comm:   commEnc,
+	}
+
+	return &subProof, nil
+}
+
+func SetCustomerCampaignProofTransaction(camId string, userId string, vCryptoParams *putils.VerifierCryptoParams) error {
 	fmt.Println(os.Getenv("CORE_PEER_ID") + ":SetCustomerCampaignProofTransaction:" + camId + ":" + userId)
 	putils.SendLog(os.Getenv("CORE_PEER_ID")+"SetCustomerCampaignProofTransaction", camId+":"+userId, LOG_MODE)
 
@@ -272,33 +362,34 @@ func SetCustomerCampaignProofTransaction(camId string, userId string, vCryptoPar
 
 		// Actual operation (local in optimistic lock).
 		if err == redis.Nil {
-			var rScalar ristretto.Scalar
-			rScalar.Rand()
-			fmt.Println("Generated random scalar")
+			subProof, err := CalculateCommitment(camId, userId, vCryptoParams)
+			// var rScalar ristretto.Scalar
+			// rScalar.Rand()
+			// fmt.Println("Generated random scalar")
 
-			// convert H
-			hPoint := putils.ConvertStringToPoint(vCryptoParams.H)
+			// // convert H
+			// hPoint := putils.ConvertStringToPoint(vCryptoParams.H)
 
-			// convert s
-			sScalar := putils.ConvertStringToScalar(vCryptoParams.S)
+			// // convert s
+			// sScalar := putils.ConvertStringToScalar(vCryptoParams.S)
 
-			// calculate commitment
-			comm := putils.CommitTo(&hPoint, &rScalar, &sScalar)
+			// // calculate commitment
+			// comm := putils.CommitTo(&hPoint, &rScalar, &sScalar)
 
-			fmt.Println("Calculated comm")
+			// fmt.Println("Calculated comm")
 
-			// return R, Com
-			rEnc := putils.ConvertScalarToString(rScalar)
-			commEnc := putils.ConvertPointToString(comm)
+			// // return R, Com
+			// rEnc := putils.ConvertScalarToString(rScalar)
+			// commEnc := putils.ConvertPointToString(comm)
 
-			subProof := putils.CampaignCustomerVerifierProof{
-				CamId:  camId,
-				UserId: userId,
-				H:      vCryptoParams.H,
-				R:      rEnc,
-				S:      vCryptoParams.S,
-				Comm:   commEnc,
-			}
+			// subProof := putils.CampaignCustomerVerifierProof{
+			// 	CamId:  camId,
+			// 	UserId: userId,
+			// 	H:      vCryptoParams.H,
+			// 	R:      rEnc,
+			// 	S:      vCryptoParams.S,
+			// 	Comm:   commEnc,
+			// }
 
 			fmt.Println("Initialized subproof")
 			fmt.Println("subproof.CamId:" + subProof.CamId)
@@ -366,21 +457,27 @@ func SetCustomerCampaignProof2(camId string, userId string, vCryptoParams putils
 		// params are not existed
 		fmt.Println(err)
 		// generate R
-		var rScalar ristretto.Scalar
+		var rScalar *ristretto.Scalar
 		rScalar.Rand()
 
 		// convert H
-		hPoint := putils.ConvertStringToPoint(vCryptoParams.H)
+		hPoint, err := eutils.ConvertStringToPoint(vCryptoParams.H)
+		if err != nil {
+			return nil, err
+		}
 
 		// convert s
-		sScalar := putils.ConvertStringToScalar(vCryptoParams.S)
+		sScalar, err := eutils.ConvertStringToScalar(vCryptoParams.S)
+		if err != nil {
+			return nil, err
+		}
 
 		// calculate commitment
-		comm := putils.CommitTo(&hPoint, &rScalar, &sScalar)
+		comm := pedersen.CommitTo(hPoint, rScalar, sScalar)
 
 		// return R, Com
-		rEnc := putils.ConvertScalarToString(rScalar)
-		commEnc := putils.ConvertPointToString(comm)
+		rEnc := eutils.ConvertScalarToString(rScalar)
+		commEnc := eutils.ConvertPointToString(comm)
 
 		subProof = putils.CampaignCustomerVerifierProof{
 			CamId:  camId,
@@ -422,21 +519,27 @@ func SetCustomerCampaignProof(camId string, userId string, vCryptoParams putils.
 		// params are not existed
 		fmt.Println(err)
 		// generate R
-		var rScalar ristretto.Scalar
+		var rScalar *ristretto.Scalar
 		rScalar.Rand()
 
 		// convert H
-		hPoint := putils.ConvertStringToPoint(vCryptoParams.H)
+		hPoint, err := eutils.ConvertStringToPoint(vCryptoParams.H)
+		if err != nil {
+			return nil, err
+		}
 
 		// convert s
-		sScalar := putils.ConvertStringToScalar(vCryptoParams.S)
+		sScalar, err := eutils.ConvertStringToScalar(vCryptoParams.S)
+		if err != nil {
+			return nil, err
+		}
 
 		// calculate commitment
-		comm := putils.CommitTo(&hPoint, &rScalar, &sScalar)
+		comm := pedersen.CommitTo(hPoint, rScalar, sScalar)
 
 		// return R, Com
-		rEnc := putils.ConvertScalarToString(rScalar)
-		commEnc := putils.ConvertPointToString(comm)
+		rEnc := eutils.ConvertScalarToString(rScalar)
+		commEnc := eutils.ConvertPointToString(comm)
 
 		subProof = putils.CampaignCustomerVerifierProof{
 			CamId:  camId,
@@ -485,7 +588,6 @@ func VerifyCommitmentHandler(conn net.Conn, requestData string) {
 
 	if vCryptoParams == nil {
 		putils.SendResponse(conn, "vCryptoParams is not existed", "")
-		return
 	}
 
 	fmt.Println("vCryptoParams.CamId:" + vCryptoParams.CamId)
@@ -493,24 +595,33 @@ func VerifyCommitmentHandler(conn net.Conn, requestData string) {
 	fmt.Println("vCryptoParams.S:" + vCryptoParams.S)
 
 	// convert H
-	hPoint := putils.ConvertStringToPoint(vCryptoParams.H)
+	hPoint, err := eutils.ConvertStringToPoint(vCryptoParams.H)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
 	// hDec, _ := b64.StdEncoding.DecodeString(vCryptoParams.H)
 	// hPoint := convertBytesToPoint(hDec)
 
 	// convert s
-	sScalar := putils.ConvertStringToScalar(vCryptoParams.S)
+	sScalar, err := eutils.ConvertStringToScalar(vCryptoParams.S)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
 	// sDec, _ := b64.StdEncoding.DecodeString(vCryptoParams.S)
 	// sScalar := convertBytesToScalar(sDec)
 
 	// convert r
-	rScalar := putils.ConvertStringToScalar(paramsRequest.R)
+	rScalar, err := eutils.ConvertStringToScalar(paramsRequest.R)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
 	// rDec, _ := b64.StdEncoding.DecodeString(request.R)
 	// rScalar := convertBytesToScalar(rDec)
 
 	// calculate commitment
 
-	comm := putils.CommitTo(&hPoint, &rScalar, &sScalar)
-	commEnc := putils.ConvertPointToString(comm)
+	comm := pedersen.CommitTo(hPoint, rScalar, sScalar)
+	commEnc := eutils.ConvertPointToString(comm)
 	// commEnc := b64.StdEncoding.EncodeToString(comm.Bytes())
 
 	response := putils.VerificationResponse{
@@ -524,5 +635,9 @@ func VerifyCommitmentHandler(conn net.Conn, requestData string) {
 	fmt.Println("response.Comm:" + response.Comm)
 
 	responseJSON, err := json.Marshal(&response)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
 	putils.SendResponse(conn, "", string(responseJSON))
 }

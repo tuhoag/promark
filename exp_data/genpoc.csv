@@ -1,0 +1,2 @@
+numOrgs,numVerifiers,maxLatency,minLatency,avgLatency,tps
+2,1,60,0.03,0.03,0.02

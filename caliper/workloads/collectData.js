@@ -29,13 +29,13 @@ const ver1s = ['http://peer0.adv0.promark.com:8500',
                 // 'http://peer0.adv2.promark.com:8520',
                 // 'http://peer0.adv3.promark.com:8530',
               ];
-const ver2s = ['http://peer0.bus0.promark.com:9000',
-            //    'http://peer1.bus0.promark.com:9001',
-            //     'http://peer0.bus1.promark.com:9010',
-            //     'http://peer1.bus1.promark.com:9011',
-                // 'http://peer0.bus0.promark.com:9000',
-                // 'http://peer0.bus2.promark.com:9020',
-                // 'http://peer0.bus3.promark.com:9030',
+const ver2s = ['http://peer0.pub0.promark.com:9000',
+            //    'http://peer1.pub0.promark.com:9001',
+            //     'http://peer0.pub1.promark.com:9010',
+            //     'http://peer1.pub1.promark.com:9011',
+                // 'http://peer0.pub0.promark.com:9000',
+                // 'http://peer0.pub2.promark.com:9020',
+                // 'http://peer0.pub3.promark.com:9030',
               ];
 /**
  * Workload module for the benchmark round.
@@ -70,7 +70,7 @@ class CreateCarWorkload extends WorkloadModuleBase {
             contractId: 'campaign',
             contractVersion: 'v1',
             contractFunction: 'AddCollectedData',
-            // invokerIdentity: 'peer0.bus1.promark.com',
+            // invokerIdentity: 'peer0.pub1.promark.com',
             contractArguments: [id, userName, totalComm, r1, r2, ver1, ver2],
             readOnly: false,
             timeout: 30
@@ -90,7 +90,7 @@ class CreateCarWorkload extends WorkloadModuleBase {
     //         contractId: 'campaign',
     //         contractVersion: 'v1',
     //         contractFunction: 'DeleteDataByUserId',
-    //         invokerIdentity: 'peer0.bus1.promark.com',
+    //         invokerIdentity: 'peer0.pub1.promark.com',
     //         contractArguments: [userName],
     //         readOnly: false
     //     };

@@ -1,18 +1,23 @@
 package promark_utils
 
 import (
-	b64 "encoding/base64"
+	"bufio"
+	// b64 "encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/big"
+	"log"
+	// "math/big"
 	"net"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
-	"github.com/bwesterb/go-ristretto"
+	ristretto "github.com/bwesterb/go-ristretto"
 	redis "github.com/go-redis/redis/v8"
+	tecc_utils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
 )
 
 type PromarkRequest struct {
@@ -50,9 +55,16 @@ type Campaign struct {
 	Id           string   `json:"id"`
 	Name         string   `json:"name"`
 	Advertiser   string   `json:"advertiser"`
-	Business     string   `json:"business"`
-	CommC        string   `json:"comm"`
+	Publisher    string   `json:"publisher"`
 	VerifierURLs []string `json:"verifierURLs"`
+	DeviceIds    []string `json:"deviceIds"`
+	StartTime    int64    `json:"startTime"`
+	EndTime      int64    `json:"endTime"`
+}
+
+type Proof struct {
+	Comm string   `json:"comm"`
+	Rs   []string `json:"rs"`
 }
 
 type CampaignCryptoRequest struct {
@@ -98,13 +110,23 @@ type CampaignCustomerProof struct {
 type ProofCustomerCampaign struct {
 	Comm    string   `json:"comm"`
 	Rs      []string `json:"rs"`
-	SubComs []string `json:"subComs`
+	SubComs []string `json:"subComs"`
+}
+
+type PoCProof struct {
+	Comm    string   `json:"comm"`
+	Rs      []string `json:"rs"`
+	SubComs []string `json:"subComs"`
 }
 
 type CollectedCustomerProof struct {
-	Id   string   `json:"id"`
-	Comm string   `json:"comm"`
-	Rs   []string `json:"rs"`
+	Id            string    `json:"id"`
+	CustomerProof Proof     `json:"customerProof"`
+	LocationProof Proof     `json:"locationProof"`
+	Comm          string    `json:"comm"`
+	Rs            []string  `json:"rs"`
+	AddedTime     time.Time `json:"addedTime"`
+	AddedTimeStr  string    `json:"addedTimeStr"`
 }
 
 type VerifierCryptoChannelResult struct {
@@ -211,8 +233,6 @@ func ParseResponse(responseStr string) (*PromarkResponse, error) {
 }
 
 func GetRedisConnection() *redis.Client {
-	// pool := redis.ConnectionPool(host="127.0.0.1", port=6379, db=0)
-	// client := redis.StrictRedis(connection_pool=pool)
 	client := redis.NewClient(&redis.Options{
 		Addr:     "127.0.0.1:6379",
 		Password: "",
@@ -220,85 +240,252 @@ func GetRedisConnection() *redis.Client {
 		PoolSize: 10000,
 	})
 
-	// pong, err := client.Ping().Result()
-	// if err != nil {
-	// 	fmt.Errorf("ERROR: %s", err)
-	// 	// f.WriteString("ERROR: " + err.Error())
-
-	// 	return nil
-	// }
-	// fmt.Println("pong:" + string(pong))
-	// // f.WriteString("pong:" + string(pong) + "\n")
 	return client
 }
 
-// The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
-var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857116359379907606001950938285454250989", 10)
+func GenerateProofFromVerifiers(campaign *Campaign, customerId string) (*PoCProof, error) {
+	// generate a random values for each verifiers
+	numVerifiers := len(campaign.VerifierURLs)
 
-func ConvertStringToPoint(s string) ristretto.Point {
-	bytes, _ := b64.StdEncoding.DecodeString(s)
+	var C ristretto.Point
+	var subComs, randomValues []string
 
-	point := ConvertBytesToPoint(bytes)
-	return point
+	C.SetZero()
+	fmt.Printf("Init C: %s\n", C)
+	for i := 0; i < numVerifiers; i++ {
+		verifierURL := campaign.VerifierURLs[i]
+
+		fmt.Println("Call RequestToCreateVerifierCampaignCryptoParamsSocket: " + verifierURL)
+		verifierProof, err := RequestCommitmentNoSave(campaign.Id, customerId, verifierURL)
+
+		if err != nil {
+			return nil, err
+		}
+
+		Ci, err := tecc_utils.ConvertStringToPoint(verifierProof.Comm)
+
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Printf("Transfer %s to point %s\n", verifierProof.Comm, Ci)
+
+		C.Add(&C, Ci)
+		fmt.Printf("Current C: %s after adding %s\n", C, Ci)
+
+		randomValues = append(randomValues, verifierProof.R)
+		subComs = append(subComs, verifierProof.Comm)
+	}
+
+	CommEnc := tecc_utils.ConvertPointToString(&C)
+
+	proof := PoCProof{
+		Comm:    CommEnc,
+		Rs:      randomValues,
+		SubComs: subComs,
+	}
+
+	fmt.Println("proof.Comm: " + proof.Comm)
+	fmt.Printf("proof.Rs: %s\n", proof.Rs)
+	fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
+
+	return &proof, nil
 }
 
-func ConvertStringToScalar(s string) ristretto.Scalar {
-	bytes, _ := b64.StdEncoding.DecodeString(s)
+func GenerateProofFromVerifiersSocketAsync(campaign *Campaign, userId string) (*PoCProof, error) {
+	// generate a random values for each verifiers
+	numVerifiers := len(campaign.VerifierURLs)
+	// putils.SendLog("numVerifiers", string(numVerifiers), LOG_MODE)
 
-	scalar := ConvertBytesToScalar(bytes)
+	var C ristretto.Point
+	C.SetZero()
+	vProofChannel := make(chan VerifierProofChannelResult)
 
-	return scalar
+	wg := sync.WaitGroup{}
+	wg.Add(numVerifiers)
+
+	for i := 0; i < numVerifiers; i++ {
+		verifierURL := campaign.VerifierURLs[i]
+
+		fmt.Println("Call RequestToCreateVerifierCampaignCryptoParamsSocket: " + verifierURL)
+		go ConcurrentRequestCommitment(campaign.Id, userId, verifierURL, vProofChannel, &wg)
+	}
+
+	fmt.Println("Printing results")
+	var subComs, randomValues []string
+
+	for i := 0; i < numVerifiers; i++ {
+		result := <-vProofChannel
+		fmt.Println(result.URL)
+		fmt.Println(result.Error)
+		fmt.Println(result.Proof)
+
+		// SendLog("result.URL:"+result.URL+"H:"+result.Proof.H+"-R:"+result.Proof.R+"-S:"+result.Proof.S+"-Comm:"+result.Proof.Comm, "", LOG_MODE)
+		// putils.SendLog("result.Error", result.Error.Error(), LOG_MODE)
+		// putils.SendLog("result.Proof.H", result.Proof.H, LOG_MODE)
+		// putils.SendLog("result.Proof.R", result.Proof.R, LOG_MODE)
+		// putils.SendLog("result.Proof.S", result.Proof.S, LOG_MODE)
+		// putils.SendLog("result.Proof.Comm", result.Proof.Comm, LOG_MODE)
+
+		if result.Error != nil {
+			return nil, result.Error
+		}
+
+		Ci, err := tecc_utils.ConvertStringToPoint(result.Proof.Comm)
+
+		if err != nil {
+			return nil, err
+		}
+
+		C.Add(&C, Ci)
+
+		randomValues = append(randomValues, result.Proof.R)
+		subComs = append(subComs, result.Proof.Comm)
+	}
+
+	close(vProofChannel)
+
+	CommEnc := tecc_utils.ConvertPointToString(&C)
+
+	proof := PoCProof{
+		Comm:    CommEnc,
+		Rs:      randomValues,
+		SubComs: subComs,
+	}
+
+	fmt.Println("proof.Comm: " + proof.Comm)
+	fmt.Printf("proof.Rs: %s\n", proof.Rs)
+	fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
+
+	return &proof, nil
 }
 
-func ConvertBytesToPoint(b []byte) ristretto.Point {
-	var H ristretto.Point
-	var hBytes [32]byte
+func ConcurrentRequestCommitment(camId string, customerId string, url string, results chan VerifierProofChannelResult, wg *sync.WaitGroup) {
+	verifierProof, err := RequestCommitment(camId, customerId, url)
 
-	copy(hBytes[:32], b[:])
+	wg.Done()
 
-	result := H.SetBytes(&hBytes)
-	fmt.Println("in convertBytesToPoint result:", result)
+	fmt.Println("Done with " + url)
+	fmt.Println("vCryptoParams.CamId:" + verifierProof.CamId)
+	fmt.Println("vCryptoParams.CustomerId:" + verifierProof.UserId)
+	fmt.Println("vCryptoParams.H:" + verifierProof.H)
+	fmt.Println("vCryptoParams.R:" + verifierProof.R)
+	fmt.Println("vCryptoParams.S:" + verifierProof.S)
 
-	return H
+	// putils.SendLog("Done with", url, LOG_MODE)
+	// putils.SendLog("vCryptoParams.CamId:", verifierProof.CamId, LOG_MODE)
+	// putils.SendLog("vCryptoParams.CustomerId:", verifierProof.UserId, LOG_MODE)
+	// putils.SendLog("vCryptoParams.S:", verifierProof.S, LOG_MODE)
+
+	results <- VerifierProofChannelResult{
+		URL:   url,
+		Proof: *verifierProof,
+		Error: err,
+	}
 }
 
-func ConvertBytesToScalar(b []byte) ristretto.Scalar {
-	var r ristretto.Scalar
-	var rBytes [32]byte
+func RequestCommitmentNoSave(camId string, customerId string, url string) (*CampaignCustomerVerifierProof, error) {
+	// putils.SendLog("RequestCommitment at", url, LOG_MODE)
+	conn, err := net.Dial("tcp", url)
+	if err != nil {
+		// putils.SendLog("Error connecting:", err.Error(), LOG_MODE)
 
-	copy(rBytes[:32], b[:])
+		fmt.Println("Error connecting:" + err.Error())
+		return nil, errors.New("ERROR:" + err.Error())
+	}
 
-	result := r.SetBytes(&rBytes)
-	fmt.Println("in convertBytesToScalar result:", result)
+	requestArgs := ProofGenerationRequest{
+		CamId:      camId,
+		CustomerId: customerId,
+	}
 
-	return r
+	jsonArgs, err := json.Marshal(requestArgs)
+
+	SendRequest(conn, "commit-nosave", string(jsonArgs))
+	// wait for response
+	responseStr, err := bufio.NewReader(conn).ReadString('\n')
+
+	if err != nil {
+		// sendLog("Error connecting:", err.Error())
+		log.Println("Error after creating:", err.Error())
+		return nil, errors.New("Error  after creating:" + err.Error())
+	}
+	fmt.Println("Reiceived From: " + url + "-Response:" + responseStr)
+	// SendLog("Reiceived From: "+url+"-Response:", responseStr, LOG_MODE)
+
+	response, err := ParseResponse(responseStr)
+
+	if err != nil {
+		return nil, errors.New("Error:" + err.Error())
+	}
+
+	var subProof CampaignCustomerVerifierProof
+	err = json.Unmarshal([]byte(response.Data), &subProof)
+
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+		return nil, err
+	}
+
+	fmt.Println("Returned from " + url + "-subProof.CamId:" + subProof.CamId)
+
+	return &subProof, nil
 }
 
-func ConvertScalarToString(scalar ristretto.Scalar) string {
-	s := b64.StdEncoding.EncodeToString(scalar.Bytes())
-	return s
+func RequestCommitment(camId string, customerId string, url string) (*CampaignCustomerVerifierProof, error) {
+	// putils.SendLog("RequestCommitment at", url, LOG_MODE)
+	conn, err := net.Dial("tcp", url)
+	if err != nil {
+		// putils.SendLog("Error connecting:", err.Error(), LOG_MODE)
+
+		fmt.Println("Error connecting:" + err.Error())
+		return nil, errors.New("ERROR:" + err.Error())
+	}
+
+	requestArgs := ProofGenerationRequest{
+		CamId:      camId,
+		CustomerId: customerId,
+	}
+
+	jsonArgs, err := json.Marshal(requestArgs)
+
+	SendRequest(conn, "commit", string(jsonArgs))
+	// wait for response
+	responseStr, err := bufio.NewReader(conn).ReadString('\n')
+
+	if err != nil {
+		// sendLog("Error connecting:", err.Error())
+		log.Println("Error after creating:", err.Error())
+		return nil, errors.New("Error  after creating:" + err.Error())
+	}
+	fmt.Println("Reiceived From: " + url + "-Response:" + responseStr)
+	// SendLog("Reiceived From: "+url+"-Response:", responseStr, LOG_MODE)
+
+	response, err := ParseResponse(responseStr)
+
+	if err != nil {
+		return nil, errors.New("Error:" + err.Error())
+	}
+
+	var subProof CampaignCustomerVerifierProof
+	err = json.Unmarshal([]byte(response.Data), &subProof)
+
+	if err != nil {
+		fmt.Printf("http.NewRequest() error: %v\n", err)
+		return nil, err
+	}
+
+	fmt.Println("Returned from " + url + "-subProof.CamId:" + subProof.CamId)
+
+	return &subProof, nil
 }
 
-func ConvertPointToString(point ristretto.Point) string {
-	s := b64.StdEncoding.EncodeToString(point.Bytes())
+func StringInSlice(a string, list []string) bool {
 
-	return s
-}
-
-func CommitTo(H *ristretto.Point, r *ristretto.Scalar, x *ristretto.Scalar) ristretto.Point {
-	//ec.g.mul(r).add(H.mul(x));
-	var result, rPoint, transferPoint ristretto.Point
-	rPoint.ScalarMultBase(r)
-	transferPoint.ScalarMult(H, x)
-	result.Add(&rPoint, &transferPoint)
-	return result
-}
-
-func GenerateH() ristretto.Point {
-	var random ristretto.Scalar
-	var H ristretto.Point
-	random.Rand()
-	H.ScalarMultBase(&random)
-
-	return H
+	for _, b := range list {
+		if strings.Compare(a, b) == 0 {
+			return true
+		}
+	}
+	return false
 }

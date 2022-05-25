@@ -10,7 +10,11 @@ function approveForMyOrg() {
     local peerNum=$5
     local sequence=$6
     local chaincode_package_path="$CHAINCODE_PACKAGE_DIR/${chaincodeName}.tar.gz"
+    # local policy=--signature-policy="OR('adv0MSP.member','pub0MSP.member')"
+    local policy=$7
 
+
+    echo "policy: $policy"
     local maxPeerId=$(($peerNum - 1))
     local maxOrgId=$(($orgNum - 1))
 
@@ -30,7 +34,7 @@ function approveForMyOrg() {
                 infoln "My package id: $packageId"
 
                 set -x
-                peer lifecycle chaincode approveformyorg -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName --version $sequence --package-id $packageId --sequence $sequence >&log.txt
+                peer lifecycle chaincode approveformyorg -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName --version $sequence --package-id $packageId --sequence $sequence $policy >&log.txt
                 res=$?
                 { set +x; } 2>/dev/null
 
@@ -43,4 +47,4 @@ function approveForMyOrg() {
     done
 }
 
-approveForMyOrg $1 $2 $3 $4 $5 $6
+approveForMyOrg $1 $2 $3 $4 $5 $6 $7

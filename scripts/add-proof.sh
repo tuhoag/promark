@@ -24,7 +24,7 @@ function addCustomerProof() {
 
     set -x
     fcn_call0='{"function":"'${CC_COLLECT_PROOF_FCN}'","Args":["'${proofId}'","'${comm}'","'${rsStr}'"]}'
-    # fcn_call0='{"function":"'${CC_CREATE_FCN}'","Args":["c:001","campaign100","Adv0","Bus0","http://peer0.adv0.promark.com:8500;http://peer0.bus0.promark.com:9000"]}'
+    # fcn_call0='{"function":"'${CC_CREATE_FCN}'","Args":["c:001","campaign100","Adv0","Pub0","http://peer0.adv0.promark.com:8500;http://peer0.pub0.promark.com:9000"]}'
     # fcn_call0='{"function":"CollectCustomerProofCampaign","Args":["p001","p001","p001"]}'
 
     infoln "invoke fcn call:${fcn_call0}"

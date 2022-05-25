@@ -23,7 +23,7 @@ function parsePeerConnectionParameters() {
     for orgId in $(seq 0 $maxOrgId); do
         infoln $orgId
         for peerId in $(seq 0 $maxPeerId); do
-            for orgType in "adv" "bus"; do
+            for orgType in "adv" "pub"; do
                 local peerName="peer${peerId}.${orgType}${orgId}"
                 infoln "processed $peerName"
                 selectPeer $orgType $orgId $peerId
@@ -74,7 +74,7 @@ function addData() {
     verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
 
     set -x
-    fcn_call='{"function":"'${CC_CREATE_FCN}'","Args":["id6","user6","2","kPEjPY0+xY9am+XnKy5Lj9QJVWZ8GTynTX4LrT+eliU=","RL0Peky2vLZ1khRy9zQo4Bw26tzd28cGruHBacC23Qs=;g6Xt3smh3u3BrdAYYkPrfz8ddpIkX2GMgChSEfHyEQw=","http://peer0.bus0.promark.com:9000;http://peer0.adv0.promark.com:8500"]}'
+    fcn_call='{"function":"'${CC_CREATE_FCN}'","Args":["id6","user6","2","kPEjPY0+xY9am+XnKy5Lj9QJVWZ8GTynTX4LrT+eliU=","RL0Peky2vLZ1khRy9zQo4Bw26tzd28cGruHBacC23Qs=;g6Xt3smh3u3BrdAYYkPrfz8ddpIkX2GMgChSEfHyEQw=","http://peer0.pub0.promark.com:9000;http://peer0.adv0.promark.com:8500"]}'
 
     infoln "invoke fcn call:${fcn_call}"
     peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS -c ${fcn_call} >&log.txt

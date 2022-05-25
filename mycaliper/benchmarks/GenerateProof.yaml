@@ -5,9 +5,26 @@ test:
       type: local
       number: 1
     rounds:
-      - label: GenerateProof
+      - label: GenerateProof(tps:200)
         description: GenerateProof benchmark
-        txNumber: 2
+        txNumber: 5000
+        rateControl:
+          type: fixed-rate
+          opts:
+            tps: 200
+        workload:
+          module: ./workloads/GenerateProof.js
+          arguments:
+            contractId: proof
+            numCampaigns: 1
+            numOrgsPerType: 1
+            numPeersPerOrgs: 1
+            numVerifiersPerType: 1
+            numDevices: 1
+
+      - label: GenerateProof(tps:300)
+        description: GenerateProof benchmark
+        txNumber: 5000
         rateControl:
           type: fixed-rate
           opts:
@@ -20,6 +37,58 @@ test:
             numOrgsPerType: 1
             numPeersPerOrgs: 1
             numVerifiersPerType: 1
+            numDevices: 1
+
+      - label: GenerateProof(tps:325)
+        description: GenerateProof benchmark
+        txNumber: 5000
+        rateControl:
+          type: fixed-rate
+          opts:
+            tps: 325
+        workload:
+          module: ./workloads/GenerateProof.js
+          arguments:
+            contractId: proof
+            numCampaigns: 1
+            numOrgsPerType: 1
+            numPeersPerOrgs: 1
+            numVerifiersPerType: 1
+            numDevices: 1
+
+      - label: GenerateProof(tps:350)
+        description: GenerateProof benchmark
+        txNumber: 5000
+        rateControl:
+          type: fixed-rate
+          opts:
+            tps: 350
+        workload:
+          module: ./workloads/GenerateProof.js
+          arguments:
+            contractId: proof
+            numCampaigns: 1
+            numOrgsPerType: 1
+            numPeersPerOrgs: 1
+            numVerifiersPerType: 1
+            numDevices: 1
+
+      - label: GenerateProof(tps:400)
+        description: GenerateProof benchmark
+        txNumber: 5000
+        rateControl:
+          type: fixed-rate
+          opts:
+            tps: 400
+        workload:
+          module: ./workloads/GenerateProof.js
+          arguments:
+            contractId: proof
+            numCampaigns: 1
+            numOrgsPerType: 1
+            numPeersPerOrgs: 1
+            numVerifiersPerType: 1
+            numDevices: 1
 
 
 

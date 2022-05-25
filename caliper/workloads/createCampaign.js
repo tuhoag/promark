@@ -8,15 +8,15 @@ const advs = ['adv0',
 // 'adv1',
 // 'adv2'
 ];
-const buss = ['bus0',
-// 'bus1', 'bus2'
+const pubs = ['pub0',
+// 'pub1', 'pub2'
 ];
-const vers = ['http://peer0.bus0.promark.com:9000',
+const vers = ['http://peer0.pub0.promark.com:9000',
              'http://peer0.adv0.promark.com:8500',
             //  'http://peer0.adv1.promark.com:8600',
             //  'http://peer0.adv2.promark.com:8700',
-            //  'http://peer0.bus1.promark.com:9100',
-            //  'http://peer0.bus2.promark.com:9200'
+            //  'http://peer0.pub1.promark.com:9100',
+            //  'http://peer0.pub2.promark.com:9200'
             ];
 
 /**
@@ -42,18 +42,18 @@ class CreateCarWorkload extends WorkloadModuleBase {
         let campaignName = 'campaign' + id;
         // let campaignName = names[Math.floor(Math.random() * names.length)];
         let campaignAdv = advs[Math.floor(Math.random() * advs.length)].toString();
-        let campaignBus = buss[Math.floor(Math.random() * buss.length)].toString();
+        let campaignPub = pubs[Math.floor(Math.random() * pubs.length)].toString();
         let ver1 = vers.find(a =>a.includes(campaignAdv));
-        let ver2 = vers.find(a =>a.includes(campaignBus));
+        let ver2 = vers.find(a =>a.includes(campaignPub));
         console.log(`ver1: ${campaignAdv}:${ver1}`);
-        console.log(`ver1: ${campaignBus}:${ver2}`);
+        console.log(`ver1: ${campaignPub}:${ver2}`);
 
         let args = {
             contractId: 'campaign',
             contractVersion: 'v1',
             contractFunction: 'CreateCampaign',
             // invokerIdentity: 'peer0.adv0.promark.com',
-            contractArguments: [id, campaignName, campaignAdv, campaignBus, ver1, ver2],
+            contractArguments: [id, campaignName, campaignAdv, campaignPub, ver1, ver2],
             timeout: 30
         };
         console.log(`submitTransaction: ${args}`);

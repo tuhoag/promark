@@ -14,7 +14,7 @@ channels:
       - orderer.promark.com
     peers:
       - peer0.adv0.promark.com
-      - peer0.bus0.promark.com
+      - peer0.pub0.promark.com
 
 organizations:
   adv0:
@@ -22,10 +22,10 @@ organizations:
     peers:
       - peer0.adv0.promark.com
 
-  bus0:
-    mspid: bus0MSP
+  pub0:
+    mspid: pub0MSP
     peers:
-      - peer0.bus0.promark.com
+      - peer0.pub0.promark.com
 
 orderers:
   orderer.promark.com:
@@ -43,9 +43,9 @@ peers:
     tlsCACerts:
       path: ../../credentials/peerOrganizations/adv0.promark.com/peers/peer0.adv0.promark.com/msp/tlscacerts/tlsca.adv0.promark.com-cert.pem
 
-  peer0.bus0.promark.com:
+  peer0.pub0.promark.com:
     url: grpcs://0.0.0.0:6000
     grpcOptions:
-      ssl-target-name-override: peer0.bus0.promark.com
+      ssl-target-name-override: peer0.pub0.promark.com
     tlsCACerts:
-      path: ../../credentials/peerOrganizations/bus0.promark.com/peers/peer0.bus0.promark.com/msp/tlscacerts/tlsca.bus0.promark.com-cert.pem
+      path: ../../credentials/peerOrganizations/pub0.promark.com/peers/peer0.pub0.promark.com/msp/tlscacerts/tlsca.pub0.promark.com-cert.pem

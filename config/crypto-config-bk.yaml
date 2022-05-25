@@ -33,7 +33,7 @@ PeerOrgs:
         - "0.0.0.0"
     Users:
       Count: 1
-  
+
   # - Name: adv2
   #   Domain: adv2.promark.com
   #   EnableNodeOUs: true
@@ -45,7 +45,7 @@ PeerOrgs:
   #       - "0.0.0.0"
   #   Users:
   #     Count: 1
-  
+
   # - Name: adv3
   #   Domain: adv3.promark.com
   #   EnableNodeOUs: true
@@ -81,7 +81,7 @@ PeerOrgs:
   #       - "0.0.0.0"
   #   Users:
   #     Count: 1
-  
+
   # - Name: adv6
   #   Domain: adv6.promark.com
   #   EnableNodeOUs: true
@@ -202,8 +202,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  - Name: bus0
-    Domain: bus0.promark.com
+  - Name: pub0
+    Domain: pub0.promark.com
     EnableNodeOUs: true
     Template:
       Count: 2
@@ -214,8 +214,8 @@ PeerOrgs:
     Users:
       Count: 1
 
-  - Name: bus1
-    Domain: bus1.promark.com
+  - Name: pub1
+    Domain: pub1.promark.com
     EnableNodeOUs: true
     Template:
       Count: 2
@@ -225,9 +225,9 @@ PeerOrgs:
         - "0.0.0.0"
     Users:
       Count: 1
-  
-  # - Name: bus2
-  #   Domain: bus2.promark.com
+
+  # - Name: pub2
+  #   Domain: pub2.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 2
@@ -238,8 +238,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus3
-  #   Domain: bus3.promark.com
+  # - Name: pub3
+  #   Domain: pub3.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 2
@@ -250,8 +250,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus4
-  #   Domain: bus4.promark.com
+  # - Name: pub4
+  #   Domain: pub4.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1
@@ -262,8 +262,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus5
-  #   Domain: bus5.promark.com
+  # - Name: pub5
+  #   Domain: pub5.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1
@@ -274,8 +274,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus6
-  #   Domain: bus6.promark.com
+  # - Name: pub6
+  #   Domain: pub6.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1
@@ -286,8 +286,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus7
-  #   Domain: bus7.promark.com
+  # - Name: pub7
+  #   Domain: pub7.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1
@@ -298,8 +298,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus8
-  #   Domain: bus8.promark.com
+  # - Name: pub8
+  #   Domain: pub8.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1
@@ -310,8 +310,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus9
-  #   Domain: bus9.promark.com
+  # - Name: pub9
+  #   Domain: pub9.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1
@@ -322,8 +322,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus10
-  #   Domain: bus10.promark.com
+  # - Name: pub10
+  #   Domain: pub10.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1
@@ -334,8 +334,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus11
-  #   Domain: bus11.promark.com
+  # - Name: pub11
+  #   Domain: pub11.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1
@@ -346,8 +346,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus12
-  #   Domain: bus12.promark.com
+  # - Name: pub12
+  #   Domain: pub12.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1
@@ -358,8 +358,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus13
-  #   Domain: bus13.promark.com
+  # - Name: pub13
+  #   Domain: pub13.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1
@@ -370,8 +370,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus14
-  #   Domain: bus14.promark.com
+  # - Name: pub14
+  #   Domain: pub14.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1
@@ -382,8 +382,8 @@ PeerOrgs:
   #   Users:
   #     Count: 1
 
-  # - Name: bus15
-  #   Domain: bus15.promark.com
+  # - Name: pub15
+  #   Domain: pub15.promark.com
   #   EnableNodeOUs: true
   #   Template:
   #     Count: 1

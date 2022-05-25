@@ -59,7 +59,7 @@ Organizations:
     # AnchorPeers:
     #   - Host: peer0.adv1.promark.com
     #     Port: 1060
-  
+
   # - &Adv2
   #   Name: adv2MSP
   #   ID: adv2MSP
@@ -358,7 +358,7 @@ Organizations:
   #   AnchorPeers:
   #     - Host: peer0.adv14.promark.com
   #       Port: 1190
-  
+
   # - &Adv15
   #   Name: adv15MSP
   #   ID: adv15MSP
@@ -380,377 +380,377 @@ Organizations:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
   #     - Host: peer0.adv15.promark.com
-  #       Port: 1200        
+  #       Port: 1200
 
-  - &Bus0
-    Name: bus0MSP
-    ID: bus0MSP
-    MSPDir: ../organizations/peerOrganizations/bus0.promark.com/msp
+  - &Pub0
+    Name: pub0MSP
+    ID: pub0MSP
+    MSPDir: ../organizations/peerOrganizations/pub0.promark.com/msp
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('bus0MSP.admin', 'bus0MSP.peer', 'bus0MSP.client')"
+        Rule: "OR('pub0MSP.admin', 'pub0MSP.peer', 'pub0MSP.client')"
       Writers:
         Type: Signature
-        Rule: "OR('bus0MSP.admin', 'bus0MSP.client')"
+        Rule: "OR('pub0MSP.admin', 'pub0MSP.client')"
       Admins:
         Type: Signature
-        Rule: "OR('bus0MSP.admin')"
+        Rule: "OR('pub0MSP.admin')"
       Endorsement:
         Type: Signature
-        Rule: "OR('bus0MSP.peer')"
+        Rule: "OR('pub0MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
     # AnchorPeers defines the location of peers which can be used for
         # cross-org gossip communication. Note, this value is only encoded in
         # the genesis block in the Application section context.
     # AnchorPeers:
-    #     - Host: peer0.bus0.promark.com
+    #     - Host: peer0.pub0.promark.com
     #       Port: 2050
 
-  - &Bus1
-    Name: bus1MSP
-    ID: bus1MSP
-    MSPDir: ../organizations/peerOrganizations/bus1.promark.com/msp
+  - &Pub1
+    Name: pub1MSP
+    ID: pub1MSP
+    MSPDir: ../organizations/peerOrganizations/pub1.promark.com/msp
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('bus1MSP.admin', 'bus1MSP.peer', 'bus1MSP.client')"
+        Rule: "OR('pub1MSP.admin', 'pub1MSP.peer', 'pub1MSP.client')"
       Writers:
         Type: Signature
-        Rule: "OR('bus1MSP.admin', 'bus1MSP.client')"
+        Rule: "OR('pub1MSP.admin', 'pub1MSP.client')"
       Admins:
         Type: Signature
-        Rule: "OR('bus1MSP.admin')"
+        Rule: "OR('pub1MSP.admin')"
       Endorsement:
         Type: Signature
-        Rule: "OR('bus1MSP.peer')"
+        Rule: "OR('pub1MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
     # AnchorPeers:
-    # - Host: peer0.bus1.promark.com
+    # - Host: peer0.pub1.promark.com
     #   Port: 2060
-  
-  # - &Bus2
-  #   Name: bus2MSP
-  #   ID: bus2MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus2.promark.com/msp
+
+  # - &Pub2
+  #   Name: pub2MSP
+  #   ID: pub2MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub2.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus2MSP.admin', 'bus2MSP.peer', 'bus2MSP.client')"
+  #       Rule: "OR('pub2MSP.admin', 'pub2MSP.peer', 'pub2MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus2MSP.admin', 'bus2MSP.client')"
+  #       Rule: "OR('pub2MSP.admin', 'pub2MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus2MSP.admin')"
+  #       Rule: "OR('pub2MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus2MSP.peer')"
+  #       Rule: "OR('pub2MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus2.promark.com
+  #   - Host: peer0.pub2.promark.com
   #     Port: 2070
 
-  # - &Bus3
-  #   Name: bus3MSP
-  #   ID: bus3MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus3.promark.com/msp
+  # - &Pub3
+  #   Name: pub3MSP
+  #   ID: pub3MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub3.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus3MSP.admin', 'bus3MSP.peer', 'bus3MSP.client')"
+  #       Rule: "OR('pub3MSP.admin', 'pub3MSP.peer', 'pub3MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus3MSP.admin', 'bus3MSP.client')"
+  #       Rule: "OR('pub3MSP.admin', 'pub3MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus3MSP.admin')"
+  #       Rule: "OR('pub3MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus3MSP.peer')"
+  #       Rule: "OR('pub3MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus3.promark.com
+  #   - Host: peer0.pub3.promark.com
   #     Port: 2080
 
-  # - &Bus4
-  #   Name: bus4MSP
-  #   ID: bus4MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus4.promark.com/msp
+  # - &Pub4
+  #   Name: pub4MSP
+  #   ID: pub4MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub4.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus4MSP.admin', 'bus4MSP.peer', 'bus4MSP.client')"
+  #       Rule: "OR('pub4MSP.admin', 'pub4MSP.peer', 'pub4MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus4MSP.admin', 'bus4MSP.client')"
+  #       Rule: "OR('pub4MSP.admin', 'pub4MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus4MSP.admin')"
+  #       Rule: "OR('pub4MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus4MSP.peer')"
+  #       Rule: "OR('pub4MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus4.promark.com
+  #   - Host: peer0.pub4.promark.com
   #     Port: 2090
 
-  # - &Bus5
-  #   Name: bus5MSP
-  #   ID: bus5MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus5.promark.com/msp
+  # - &Pub5
+  #   Name: pub5MSP
+  #   ID: pub5MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub5.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus5MSP.admin', 'bus5MSP.peer', 'bus5MSP.client')"
+  #       Rule: "OR('pub5MSP.admin', 'pub5MSP.peer', 'pub5MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus5MSP.admin', 'bus5MSP.client')"
+  #       Rule: "OR('pub5MSP.admin', 'pub5MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus5MSP.admin')"
+  #       Rule: "OR('pub5MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus5MSP.peer')"
+  #       Rule: "OR('pub5MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus5.promark.com
+  #   - Host: peer0.pub5.promark.com
   #     Port: 2100
 
-  # - &Bus6
-  #   Name: bus6MSP
-  #   ID: bus6MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus6.promark.com/msp
+  # - &Pub6
+  #   Name: pub6MSP
+  #   ID: pub6MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub6.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus6MSP.admin', 'bus6MSP.peer', 'bus6MSP.client')"
+  #       Rule: "OR('pub6MSP.admin', 'pub6MSP.peer', 'pub6MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus6MSP.admin', 'bus6MSP.client')"
+  #       Rule: "OR('pub6MSP.admin', 'pub6MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus6MSP.admin')"
+  #       Rule: "OR('pub6MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus6MSP.peer')"
+  #       Rule: "OR('pub6MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus6.promark.com
+  #   - Host: peer0.pub6.promark.com
   #     Port: 2110
 
-  # - &Bus7
-  #   Name: bus7MSP
-  #   ID: bus7MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus7.promark.com/msp
+  # - &Pub7
+  #   Name: pub7MSP
+  #   ID: pub7MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub7.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus7MSP.admin', 'bus7MSP.peer', 'bus7MSP.client')"
+  #       Rule: "OR('pub7MSP.admin', 'pub7MSP.peer', 'pub7MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus7MSP.admin', 'bus7MSP.client')"
+  #       Rule: "OR('pub7MSP.admin', 'pub7MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus7MSP.admin')"
+  #       Rule: "OR('pub7MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus7MSP.peer')"
+  #       Rule: "OR('pub7MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus7.promark.com
+  #   - Host: peer0.pub7.promark.com
   #     Port: 2120
 
-  # - &Bus8
-  #   Name: bus8MSP
-  #   ID: bus8MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus8.promark.com/msp
+  # - &Pub8
+  #   Name: pub8MSP
+  #   ID: pub8MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub8.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus8MSP.admin', 'bus8MSP.peer', 'bus8MSP.client')"
+  #       Rule: "OR('pub8MSP.admin', 'pub8MSP.peer', 'pub8MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus8MSP.admin', 'bus8MSP.client')"
+  #       Rule: "OR('pub8MSP.admin', 'pub8MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus8MSP.admin')"
+  #       Rule: "OR('pub8MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus8MSP.peer')"
+  #       Rule: "OR('pub8MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus8.promark.com
+  #   - Host: peer0.pub8.promark.com
   #     Port: 2130
 
-  # - &Bus9
-  #   Name: bus9MSP
-  #   ID: bus9MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus9.promark.com/msp
+  # - &Pub9
+  #   Name: pub9MSP
+  #   ID: pub9MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub9.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus9MSP.admin', 'bus9MSP.peer', 'bus9MSP.client')"
+  #       Rule: "OR('pub9MSP.admin', 'pub9MSP.peer', 'pub9MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus9MSP.admin', 'bus9MSP.client')"
+  #       Rule: "OR('pub9MSP.admin', 'pub9MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus9MSP.admin')"
+  #       Rule: "OR('pub9MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus9MSP.peer')"
+  #       Rule: "OR('pub9MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus9.promark.com
+  #   - Host: peer0.pub9.promark.com
   #     Port: 2140
 
-  # - &Bus10
-  #   Name: bus10MSP
-  #   ID: bus10MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus10.promark.com/msp
+  # - &Pub10
+  #   Name: pub10MSP
+  #   ID: pub10MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub10.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus10MSP.admin', 'bus10MSP.peer', 'bus10MSP.client')"
+  #       Rule: "OR('pub10MSP.admin', 'pub10MSP.peer', 'pub10MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus10MSP.admin', 'bus10MSP.client')"
+  #       Rule: "OR('pub10MSP.admin', 'pub10MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus10MSP.admin')"
+  #       Rule: "OR('pub10MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus10MSP.peer')"
+  #       Rule: "OR('pub10MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus10.promark.com
+  #   - Host: peer0.pub10.promark.com
   #     Port: 2150
 
-  # - &Bus11
-  #   Name: bus11MSP
-  #   ID: bus11MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus11.promark.com/msp
+  # - &Pub11
+  #   Name: pub11MSP
+  #   ID: pub11MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub11.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus11MSP.admin', 'bus11MSP.peer', 'bus11MSP.client')"
+  #       Rule: "OR('pub11MSP.admin', 'pub11MSP.peer', 'pub11MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus11MSP.admin', 'bus11MSP.client')"
+  #       Rule: "OR('pub11MSP.admin', 'pub11MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus11MSP.admin')"
+  #       Rule: "OR('pub11MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus11MSP.peer')"
+  #       Rule: "OR('pub11MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus11.promark.com
+  #   - Host: peer0.pub11.promark.com
   #     Port: 2160
 
-  # - &Bus12
-  #   Name: bus12MSP
-  #   ID: bus12MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus12.promark.com/msp
+  # - &Pub12
+  #   Name: pub12MSP
+  #   ID: pub12MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub12.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus12MSP.admin', 'bus12MSP.peer', 'bus12MSP.client')"
+  #       Rule: "OR('pub12MSP.admin', 'pub12MSP.peer', 'pub12MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus12MSP.admin', 'bus12MSP.client')"
+  #       Rule: "OR('pub12MSP.admin', 'pub12MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus12MSP.admin')"
+  #       Rule: "OR('pub12MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus12MSP.peer')"
+  #       Rule: "OR('pub12MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus12.promark.com
+  #   - Host: peer0.pub12.promark.com
   #     Port: 2170
 
-  # - &Bus13
-  #   Name: bus13MSP
-  #   ID: bus13MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus13.promark.com/msp
+  # - &Pub13
+  #   Name: pub13MSP
+  #   ID: pub13MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub13.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus13MSP.admin', 'bus13MSP.peer', 'bus13MSP.client')"
+  #       Rule: "OR('pub13MSP.admin', 'pub13MSP.peer', 'pub13MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus13MSP.admin', 'bus13MSP.client')"
+  #       Rule: "OR('pub13MSP.admin', 'pub13MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus13MSP.admin')"
+  #       Rule: "OR('pub13MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus13MSP.peer')"
+  #       Rule: "OR('pub13MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus13.promark.com
+  #   - Host: peer0.pub13.promark.com
   #     Port: 2180
 
-  # - &Bus14
-  #   Name: bus14MSP
-  #   ID: bus14MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus14.promark.com/msp
+  # - &Pub14
+  #   Name: pub14MSP
+  #   ID: pub14MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub14.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus14MSP.admin', 'bus14MSP.peer', 'bus14MSP.client')"
+  #       Rule: "OR('pub14MSP.admin', 'pub14MSP.peer', 'pub14MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus14MSP.admin', 'bus14MSP.client')"
+  #       Rule: "OR('pub14MSP.admin', 'pub14MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus14MSP.admin')"
+  #       Rule: "OR('pub14MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus14MSP.peer')"
+  #       Rule: "OR('pub14MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus14.promark.com
+  #   - Host: peer0.pub14.promark.com
   #     Port: 2190
 
-  # - &Bus15
-  #   Name: bus15MSP
-  #   ID: bus15MSP
-  #   MSPDir: ../organizations/peerOrganizations/bus15.promark.com/msp
+  # - &Pub15
+  #   Name: pub15MSP
+  #   ID: pub15MSP
+  #   MSPDir: ../organizations/peerOrganizations/pub15.promark.com/msp
   #   Policies:
   #     Readers:
   #       Type: Signature
-  #       Rule: "OR('bus15MSP.admin', 'bus15MSP.peer', 'bus15MSP.client')"
+  #       Rule: "OR('pub15MSP.admin', 'pub15MSP.peer', 'pub15MSP.client')"
   #     Writers:
   #       Type: Signature
-  #       Rule: "OR('bus15MSP.admin', 'bus15MSP.client')"
+  #       Rule: "OR('pub15MSP.admin', 'pub15MSP.client')"
   #     Admins:
   #       Type: Signature
-  #       Rule: "OR('bus15MSP.admin')"
+  #       Rule: "OR('pub15MSP.admin')"
   #     Endorsement:
   #       Type: Signature
-  #       Rule: "OR('bus15MSP.peer')"
+  #       Rule: "OR('pub15MSP.peer')"
   #   OrdererEndpoints:
   #     - orderer.promark.com:7050
   #   AnchorPeers:
-  #   - Host: peer0.bus15.promark.com
+  #   - Host: peer0.pub15.promark.com
   #     Port: 2200
 
 Capabilities:
@@ -845,37 +845,37 @@ Profiles:
       SampleConsortium:
         Organizations:
           - *Adv0
-          - *Bus0
+          - *Pub0
           - *Adv1
-          - *Bus1
+          - *Pub1
           # - *Adv2
-          # - *Bus2
+          # - *Pub2
           # - *Adv3
-          # - *Bus3
+          # - *Pub3
           # - *Adv4
-          # - *Bus4
+          # - *Pub4
           # - *Adv5
-          # - *Bus5
+          # - *Pub5
           # - *Adv6
-          # - *Bus6
+          # - *Pub6
           # - *Adv7
-          # - *Bus7
+          # - *Pub7
           # - *Adv8
-          # - *Bus8
+          # - *Pub8
           # - *Adv9
-          # - *Bus9
+          # - *Pub9
           # - *Adv10
-          # - *Bus10
+          # - *Pub10
           # - *Adv11
-          # - *Bus11
+          # - *Pub11
           # - *Adv12
-          # - *Bus12
+          # - *Pub12
           # - *Adv13
-          # - *Bus13
+          # - *Pub13
           # - *Adv14
-          # - *Bus14
+          # - *Pub14
           # - *Adv15
-          # - *Bus15                                                       
+          # - *Pub15
 
   TwoOrgsChannel:
     Consortium: SampleConsortium
@@ -884,37 +884,37 @@ Profiles:
       <<: *ApplicationDefaults
       Organizations:
         - *Adv0
-        - *Bus0
+        - *Pub0
         - *Adv1
-        - *Bus1
+        - *Pub1
         # - *Adv2
-        # - *Bus2
+        # - *Pub2
         # - *Adv3
-        # - *Bus3
+        # - *Pub3
         # - *Adv4
-        # - *Bus4
+        # - *Pub4
         # - *Adv5
-        # - *Bus5
+        # - *Pub5
         # - *Adv6
-        # - *Bus6
+        # - *Pub6
         # - *Adv7
-        # - *Bus7
+        # - *Pub7
         # - *Adv8
-        # - *Bus8
+        # - *Pub8
         # - *Adv9
-        # - *Bus9
+        # - *Pub9
         # - *Adv10
-        # - *Bus10
+        # - *Pub10
         # - *Adv11
-        # - *Bus11
+        # - *Pub11
         # - *Adv12
-        # - *Bus12
+        # - *Pub12
         # - *Adv13
-        # - *Bus13
+        # - *Pub13
         # - *Adv14
-        # - *Bus14
+        # - *Pub14
         # - *Adv15
-        # - *Bus15
-      
+        # - *Pub15
+
       Capabilities:
         <<: *ApplicationCapabilities

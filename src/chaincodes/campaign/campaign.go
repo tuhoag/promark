@@ -2,16 +2,24 @@ package main
 
 import (
 	"bufio"
+	"strconv"
+	// "time"
+
 	// b64 "encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 
-	// "github.com/bwesterb/go-ristretto"
+	// ristretto "github.com/bwesterb/go-ristretto"
+	// pedersen "github.com/tuhoag/elliptic-curve-cryptography-go/pedersen"
+	// eutils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
+
 	putils "internal/promark_utils"
 	"io/ioutil"
 	"log"
 
+	// "github.com/hyperledger/fabric-chaincode-go/pkg/attrmgr"
+	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 
 	// "math/big"
@@ -35,7 +43,98 @@ var (
 	cryptoParamsRequestURL     = cryptoServiceURL + "/camp"
 	userCryptoParamsRequestURL = cryptoServiceURL + "/usercamp"
 	logURL                     = "http://logs.promark.com:5003/log"
+	// H                          = eutils.
 )
+
+type ChaincodeData struct {
+	Id        string `json:"id"`
+	MSPId     string `json:"mspID"`
+	Cert      string `json:"cert"`
+	Issuer    string `json:"issuer"`
+	Subject   string `json:"subject"`
+	Signature string `json:"signature"`
+	// Attributes *attrmgr.Attributes `json:"attributes"`
+	CN string `json:"cn"`
+	OU string `json:"ou"`
+}
+
+func (s *CampaignSmartContract) GetChaincodeData(ctx contractapi.TransactionContextInterface) (*ChaincodeData, error) {
+	// stub := ctx.GetStub()
+	sinfo, err := cid.New(ctx.GetStub())
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction invoker's identity from the chaincode stub: %s", err)
+	}
+
+	mspId, err := sinfo.GetMSPID()
+
+	if err != nil {
+		return nil, fmt.Errorf("error %s", err)
+	}
+
+	id, err := sinfo.GetID()
+
+	if err != nil {
+		return nil, fmt.Errorf("error %s", err)
+	}
+
+	cert, err := sinfo.GetX509Certificate()
+
+	if err != nil {
+		return nil, fmt.Errorf("error %s", err)
+	}
+
+	// cn, found, err := sinfo.GetAttributeValue("CN")
+
+	// if err != nil {
+	// 	return nil, fmt.Errorf("error %s", err)
+	// }
+
+	// if !found {
+	// 	return nil, fmt.Errorf("found %s", found)
+	// }
+
+	// ou, found, err := sinfo.GetAttributeValue("OU")
+
+	// if err != nil {
+	// 	return nil, fmt.Errorf("error %s", err)
+	// }
+
+	// if !found {
+	// 	return nil, fmt.Errorf("found %s", found)
+	// }
+
+	// fmt.Println("OU:" + ou)
+	// attrs, err := attrmgr.New().GetAttributesFromCert(cert)
+
+	// if err != nil {
+	// 	return nil, fmt.Errorf("error %s", err)
+	// }
+
+	// sinfo.getAttributesFromIdemix()
+
+	chaincodeData := ChaincodeData{
+		Id:        id,
+		MSPId:     mspId,
+		Issuer:    cert.Issuer.String(),
+		Subject:   cert.Subject.String(),
+		Signature: string(cert.Signature),
+		// CN:        cn,
+		// OU: ou,
+
+		// PublicKey: string(cert.PublicKey),
+	}
+
+	// attrVal, found, err = sinfo.GetAttributeValue("role")
+	// cert, err := cid.GetX509Certificate(stub)
+
+	// err = proto.Unmarshal(creator, sid)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to unmarshal transaction invoker's identity: %s", err)
+	// }
+	return &chaincodeData, nil
+
+}
 
 func (s *CampaignSmartContract) GetAllCampaigns(ctx contractapi.TransactionContextInterface) ([]*putils.Campaign, error) {
 	// range query with empty string for startKey and endKey does an
@@ -66,11 +165,11 @@ func (s *CampaignSmartContract) GetAllCampaigns(ctx contractapi.TransactionConte
 	return campaigns, nil
 }
 
-func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, business string, verifierURLStr string) (*putils.Campaign, error) {
+func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, publisher string, startTimeStr string, endTimeStr string, verifierURLStr string, deviceIdsStr string) (*putils.Campaign, error) {
 	putils.SendLog("campaignId", camId, LOG_MODE)
 	putils.SendLog("campaignName", name, LOG_MODE)
 	putils.SendLog("advertiser", advertiser, LOG_MODE)
-	putils.SendLog("business", business, LOG_MODE)
+	putils.SendLog("publisher", publisher, LOG_MODE)
 
 	putils.SendLog("camId", camId, LOG_MODE)
 
@@ -84,7 +183,18 @@ func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContex
 	}
 
 	verifierURLs := strings.Split(verifierURLStr, ";")
-	campaign, err := CreateCampaignSocket(camId, name, advertiser, business, verifierURLs)
+	deviceIds := strings.Split(deviceIdsStr, ";")
+	startTime, err := strconv.ParseInt(startTimeStr, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	endTime, err := strconv.ParseInt(endTimeStr, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	campaign, err := CreateCampaign(camId, name, advertiser, publisher, startTime, endTime, verifierURLs, deviceIds)
 
 	if err != nil {
 		return nil, err
@@ -106,11 +216,144 @@ func (s *CampaignSmartContract) CreateCampaign(ctx contractapi.TransactionContex
 	return campaign, nil
 }
 
-func CreateCampaignSocket(camId string, name string, advertiser string, business string, verifierURLs []string) (*putils.Campaign, error) {
-	fmt.Println("Call RequestCampaignCryptoParamsSocket")
-	cryptoParams, err := RequestCampaignCryptoParamsSocket(camId)
+func (s *CampaignSmartContract) CreateCampaignAsync(ctx contractapi.TransactionContextInterface, camId string, name string, advertiser string, publisher string, startTimeStr string, endTimeStr string, verifierURLStr string, deviceIdsStr string) (*putils.Campaign, error) {
+	putils.SendLog("campaignId", camId, LOG_MODE)
+	putils.SendLog("campaignName", name, LOG_MODE)
+	putils.SendLog("advertiser", advertiser, LOG_MODE)
+	putils.SendLog("publisher", publisher, LOG_MODE)
+
+	putils.SendLog("camId", camId, LOG_MODE)
+
+	existing, err := ctx.GetStub().GetState(camId)
+	if err != nil {
+		return nil, errors.New("Unable to read the world state")
+	}
+
+	if existing != nil {
+		return nil, fmt.Errorf("Cannot create campaign since its id %s is existed", camId)
+	}
+
+	verifierURLs := strings.Split(verifierURLStr, ";")
+	deviceIds := strings.Split(deviceIdsStr, ";")
+	startTime, err := strconv.ParseInt(startTimeStr, 10, 64)
 	if err != nil {
 		return nil, err
+	}
+
+	endTime, err := strconv.ParseInt(endTimeStr, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	campaign, err := CreateCampaignSocket(camId, name, advertiser, publisher, startTime, endTime, verifierURLs, deviceIds)
+
+	if err != nil {
+		return nil, err
+	}
+
+	campaignJSON, err := json.Marshal(campaign)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ctx.GetStub().PutState(camId, campaignJSON)
+
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("CampaignJSON:" + string(campaignJSON))
+
+	return campaign, nil
+}
+
+func CreateCampaign(camId string, name string, advertiser string, publisher string, startTime int64, endTime int64, verifierURLs []string, deviceIds []string) (*putils.Campaign, error) {
+	fmt.Println("Call RequestCampaignCryptoParamsSocket")
+
+	err := InitializeCampaignCryptoParams(camId, verifierURLs)
+
+	if err != nil {
+		return nil, err
+	}
+
+	campaign := putils.Campaign{
+		Id:           camId,
+		Name:         name,
+		Advertiser:   advertiser,
+		Publisher:    publisher,
+		StartTime:    startTime,
+		EndTime:      endTime,
+		VerifierURLs: verifierURLs,
+		DeviceIds:    deviceIds,
+	}
+
+	// err = InitializeDeviceProofs(campaign, deviceIds)
+
+	fmt.Println("Closing")
+	return &campaign, nil
+}
+
+func CreateCampaignSocket(camId string, name string, advertiser string, publisher string, startTime int64, endTime int64, verifierURLs []string, deviceIds []string) (*putils.Campaign, error) {
+	fmt.Println("Call RequestCampaignCryptoParamsSocket")
+
+	err := InitializeCampaignCryptoParamsAsync(camId, verifierURLs)
+
+	if err != nil {
+		return nil, err
+	}
+
+	campaign := putils.Campaign{
+		Id:           camId,
+		Name:         name,
+		Advertiser:   advertiser,
+		Publisher:    publisher,
+		StartTime:    startTime,
+		EndTime:      endTime,
+		VerifierURLs: verifierURLs,
+		DeviceIds:    deviceIds,
+	}
+
+	// err = InitializeDeviceProofs(campaign, deviceIds)
+
+	fmt.Println("Closing")
+	return &campaign, nil
+}
+
+func InitializeCampaignCryptoParams(camId string, verifierURLs []string) error {
+	cryptoParams, err := RequestCampaignCryptoParamsSocket(camId)
+	if err != nil {
+		return err
+	}
+	// putils.CampaignCryptoParams
+	// cryptoParams := putils.CampaignCryptoParams{
+	// 	CamID: camId,
+	// 	H:     cryptoParams.H,
+	// }
+	// putils.SendLog("cryptoParams.H", cryptoParams.H)
+	fmt.Println("cryptoParams.H:" + cryptoParams.H)
+	numVerifiers := len(verifierURLs)
+
+	for i := 0; i < numVerifiers; i++ {
+		verifierURL := verifierURLs[i]
+		// requestCreateVerifierCryptoURL := verifierURL
+		// putils.SendLog("verifierURL", verifierURL)
+		// putils.SendLog("comURL", requestCreateVerifierCryptoURL)
+
+		fmt.Println("Call RequestToCreateVerifierCampaignCryptoParamsSocket: " + verifierURL)
+		_, err := RequestToCreateVerifierCampaignCryptoParamsSocket(camId, verifierURL, cryptoParams)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func InitializeCampaignCryptoParamsAsync(camId string, verifierURLs []string) error {
+	cryptoParams, err := RequestCampaignCryptoParamsSocket(camId)
+	if err != nil {
+		return err
 	}
 
 	// putils.SendLog("cryptoParams.H", cryptoParams.H)
@@ -141,24 +384,20 @@ func CreateCampaignSocket(camId string, name string, advertiser string, business
 		fmt.Println(result.VerifierCryptoParams)
 
 		if result.Error != nil {
-			return nil, result.Error
+			return result.Error
 		}
 	}
 
 	close(vChannel)
 
-	campaign := putils.Campaign{
-		Id:           camId,
-		Name:         name,
-		Advertiser:   advertiser,
-		Business:     business,
-		CommC:        "",
-		VerifierURLs: verifierURLs,
-	}
-
-	fmt.Println("Closing")
-	return &campaign, nil
+	return nil
 }
+
+// func InitializeDeviceProofs(campaign *putils.Campaign) error {
+// 	for _, deviceId := range campaign.DeviceIds {
+// 		proof, err := putils.GenerateProofFromVerifiersSocket(&campaign, deviceId)
+// 	}
+// }
 
 func RequestCampaignCryptoParamsSocket(camId string) (*putils.CampaignCryptoParams, error) {
 	conn, err := net.Dial("tcp", cryptoServiceSocketURL)
@@ -214,7 +453,7 @@ func RequestToCreateVerifierCampaignCryptoParamsSocket(camId string, url string,
 		// sendLog("Error connecting:", err.Error())
 
 		fmt.Println("Error connecting:" + err.Error())
-		return nil, errors.New("ERROR:" + err.Error())
+		return nil, errors.New("Error connecting:" + err.Error())
 	}
 
 	requestArgs := putils.VerifierCryptoParamsRequest{

@@ -23,12 +23,12 @@ channels:
                 endorsingPeer: true
                 eventSource: true
                 ledgerQuery: true
-            peer0.bus0.promark.com:
+            peer0.pub0.promark.com:
                 chaincodeQuery: true
                 endorsingPeer: true
                 eventSource: true
                 ledgerQuery: true
-            peer0.bus1.promark.com:
+            peer0.pub1.promark.com:
                 chaincodeQuery: true
                 endorsingPeer: true
                 eventSource: true
@@ -63,28 +63,28 @@ clients:
                     path: ../organizations/peerOrganizations/adv1.promark.com/users/Admin@adv1.promark.com/msp
                 path: ../organizations/peerOrganizations/adv1.promark.com/users/Admin@adv1.promark.com/msp/admincerts
             organization: adv1
-    peer0.bus0.promark.com:
+    peer0.pub0.promark.com:
         client:
             clientPrivateKey:
-                path: ../organizations/peerOrganizations/bus0.promark.com/users/Admin@bus0.promark.com/msp/keystore/priv_sk
+                path: ../organizations/peerOrganizations/pub0.promark.com/users/Admin@pub0.promark.com/msp/keystore/priv_sk
             clientSignedCert:
-                path: ../organizations/peerOrganizations/bus0.promark.com/users/Admin@bus0.promark.com/msp/signcerts/Admin@bus0.promark.com-cert.pem
+                path: ../organizations/peerOrganizations/pub0.promark.com/users/Admin@pub0.promark.com/msp/signcerts/Admin@pub0.promark.com-cert.pem
             credentialStore:
                 cryptoStore:
-                    path: ../organizations/peerOrganizations/bus0.promark.com/users/Admin@bus0.promark.com/msp
-                path: ../organizations/peerOrganizations/bus0.promark.com/users/Admin@bus0.promark.com/msp/admincerts
-            organization: bus0
-    peer0.bus1.promark.com:
+                    path: ../organizations/peerOrganizations/pub0.promark.com/users/Admin@pub0.promark.com/msp
+                path: ../organizations/peerOrganizations/pub0.promark.com/users/Admin@pub0.promark.com/msp/admincerts
+            organization: pub0
+    peer0.pub1.promark.com:
         client:
             clientPrivateKey:
-                path: ../organizations/peerOrganizations/bus1.promark.com/users/Admin@bus1.promark.com/msp/keystore/priv_sk
+                path: ../organizations/peerOrganizations/pub1.promark.com/users/Admin@pub1.promark.com/msp/keystore/priv_sk
             clientSignedCert:
-                path: ../organizations/peerOrganizations/bus1.promark.com/users/Admin@bus1.promark.com/msp/signcerts/Admin@bus1.promark.com-cert.pem
+                path: ../organizations/peerOrganizations/pub1.promark.com/users/Admin@pub1.promark.com/msp/signcerts/Admin@pub1.promark.com-cert.pem
             credentialStore:
                 cryptoStore:
-                    path: ../organizations/peerOrganizations/bus1.promark.com/users/Admin@bus1.promark.com/msp
-                path: ../organizations/peerOrganizations/bus1.promark.com/users/Admin@bus1.promark.com/msp/admincerts
-            organization: bus1
+                    path: ../organizations/peerOrganizations/pub1.promark.com/users/Admin@pub1.promark.com/msp
+                path: ../organizations/peerOrganizations/pub1.promark.com/users/Admin@pub1.promark.com/msp/admincerts
+            organization: pub1
 organizations:
     adv0:
         adminPrivateKey:
@@ -102,22 +102,22 @@ organizations:
         - peer0.adv1.promark.com
         signedCert:
             path: ../organizations/peerOrganizations/adv1.promark.com/users/Admin@adv1.promark.com/msp/signcerts/Admin@adv1.promark.com-cert.pem
-    bus0:
+    pub0:
         adminPrivateKey:
-            path: ../organizations/peerOrganizations/bus0.promark.com/users/Admin@bus0.promark.com/msp/keystore/priv_sk
-        mspid: bus0MSP
+            path: ../organizations/peerOrganizations/pub0.promark.com/users/Admin@pub0.promark.com/msp/keystore/priv_sk
+        mspid: pub0MSP
         peers:
-        - peer0.bus0.promark.com
+        - peer0.pub0.promark.com
         signedCert:
-            path: ../organizations/peerOrganizations/bus0.promark.com/users/Admin@bus0.promark.com/msp/signcerts/Admin@bus0.promark.com-cert.pem
-    bus1:
+            path: ../organizations/peerOrganizations/pub0.promark.com/users/Admin@pub0.promark.com/msp/signcerts/Admin@pub0.promark.com-cert.pem
+    pub1:
         adminPrivateKey:
-            path: ../organizations/peerOrganizations/bus1.promark.com/users/Admin@bus1.promark.com/msp/keystore/priv_sk
-        mspid: bus1MSP
+            path: ../organizations/peerOrganizations/pub1.promark.com/users/Admin@pub1.promark.com/msp/keystore/priv_sk
+        mspid: pub1MSP
         peers:
-        - peer0.bus1.promark.com
+        - peer0.pub1.promark.com
         signedCert:
-            path: ../organizations/peerOrganizations/bus1.promark.com/users/Admin@bus1.promark.com/msp/signcerts/Admin@bus1.promark.com-cert.pem
+            path: ../organizations/peerOrganizations/pub1.promark.com/users/Admin@pub1.promark.com/msp/signcerts/Admin@pub1.promark.com-cert.pem
 peers:
     peer0.adv0.promark.com:
         grpcOptions:
@@ -131,15 +131,15 @@ peers:
         tlsCACerts:
             path: ./../organizations/peerOrganizations/adv1.promark.com/tlsca/tlsca.adv1.promark.com-cert.pem
         url: grpcs://0.0.0.0:1060
-    peer0.bus0.promark.com:
+    peer0.pub0.promark.com:
         grpcOptions:
-            ssl-target-name-override: peer0.bus0.promark.com
+            ssl-target-name-override: peer0.pub0.promark.com
         tlsCACerts:
-            path: ./../organizations/peerOrganizations/bus0.promark.com/tlsca/tlsca.bus0.promark.com-cert.pem
+            path: ./../organizations/peerOrganizations/pub0.promark.com/tlsca/tlsca.pub0.promark.com-cert.pem
         url: grpcs://0.0.0.0:2050
-    peer0.bus1.promark.com:
+    peer0.pub1.promark.com:
         grpcOptions:
-            ssl-target-name-override: peer0.bus1.promark.com
+            ssl-target-name-override: peer0.pub1.promark.com
         tlsCACerts:
-            path: ./../organizations/peerOrganizations/bus1.promark.com/tlsca/tlsca.bus1.promark.com-cert.pem
+            path: ./../organizations/peerOrganizations/pub1.promark.com/tlsca/tlsca.pub1.promark.com-cert.pem
         url: grpcs://0.0.0.0:2060

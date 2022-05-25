@@ -32,23 +32,25 @@ class GenerateProofWorkload extends WorkloadModuleBase {
         const args = this.roundArguments;
         this.contractId = args.contractId;
         this.contractVersion = args.contractVersion;
-        const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments;
-
+        // const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments;
+        const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices} = this.roundArguments
         this.campaignIds = []
 
         for (let i = 0; i < args.numCampaigns; i++) {
-            const {camId, name, advertiser, business, verifierURLsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType)
+
+            const {camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices)
             const newCampaignId = "c" + i
             const newCampaignName = "campaign " + i
+
             const transArgs = {
                 contractId: "campaign",
                 contractFunction: 'CreateCampaign',
-                contractArguments: [newCampaignId, newCampaignName, advertiser, business, verifierURLsStr],
+                contractArguments: [newCampaignId, newCampaignName, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
                 readOnly: false
             };
 
             this.campaignIds.push(newCampaignId)
-            await this.sutAdapter.sendRequests(transArgs);
+            return this.sutAdapter.sendRequests(transArgs);
         }
     }
 

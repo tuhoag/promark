@@ -16,10 +16,8 @@ test:
           module: ./workloads/AddProof.js
           arguments:
             contractId: proof
-            numCampaigns: 3
-            numProofs: 2
-            numOrgsPerType: 2
-            numPeersPerOrgs: 1
+            numCampaigns: 1
+            numProofs: 3
             numVerifiersPerType: 1
 
 

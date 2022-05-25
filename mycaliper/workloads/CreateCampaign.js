@@ -32,6 +32,8 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
         const args = this.roundArguments;
         this.contractId = args.contractId;
         this.contractVersion = args.contractVersion;
+
+        this.campaignIds = []
     }
 
     /**
@@ -39,33 +41,35 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
      * @return {Promise<TxStatus[]>}
      */
     async submitTransaction() {
-        // camId string, name string, advertiser string, business string, verifierURLStr string
-        const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments
-        const {camId, name, advertiser, business, verifierURLsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType)
+        // camId string, name string, advertiser string, publisher string, verifierURLStr string
+        const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices} = this.roundArguments
+        const {camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices)
 
         const transArgs = {
             contractId: "campaign",
             contractFunction: 'CreateCampaign',
-            contractArguments: [camId, name, advertiser, business, verifierURLsStr],
+            contractArguments: [camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
             readOnly: true
         };
+
+        this.campaignIds.push(camId);
 
         return this.sutAdapter.sendRequests(transArgs);
     }
 
     async cleanupWorkloadModule() {
-        // for (let i=0; i<this.roundArguments.backups; i++) {
-        //     const backupID = `BACKUP_${this.workerIndex}_${i}`;
-        //     console.log(`Worker ${this.workerIndex}: Deleting backup ${backupID}`);
-        //     const request = {
-        //         contractId: this.roundArguments.contractId,
-        //         contractFunction: 'DeleteBackup',
-        //         invokerIdentity: 'peer0.org1.example.com',
-        //         contractArguments: [backupID],
+        // const args = this.roundArguments;
+
+        // for (let i = 0; i < this.campaignIds.length; i++) {
+        //     const transArgs = {
+        //         contractId: "campaign",
+        //         contractFunction: 'DeleteCampaignById',
+        //         contractArguments: [this.campaignIds[i]],
         //         readOnly: false
         //     };
 
-        //     await this.sutAdapter.sendRequests(request);
+        //     // this.campaignIds.push(newCampaignId)
+        //     await this.sutAdapter.sendRequests(transArgs);
         // }
     }
 }

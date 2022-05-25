@@ -14,11 +14,11 @@ Generate a proof of a campaign c for a user u is as follows:
 1/ All organizations.
 - Safetest
 - Slowest
-- Unrelated advertiers and businesses must validate the proof
+- Unrelated advertiers and publisheres must validate the proof
 - Use default endorsement policy
 - Inconsistency of verifiers' random values.
 
-2/ Only peers of c's advertier and business
+2/ Only peers of c's advertier and publisher
 - Use key-level endorsement policy
 - Can improve performance
 - Inconsistency of verifiers' random values.

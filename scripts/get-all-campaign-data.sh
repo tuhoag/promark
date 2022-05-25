@@ -20,7 +20,7 @@ function parsePeerConnectionParameters() {
     for orgId in $(seq 0 $maxOrgId); do
          infoln $orgId
          for peerId in $(seq 0 $maxPeerId); do
-             for orgType in "adv" "bus"; do
+             for orgType in "adv" "pub"; do
                  local peerName="peer${peerId}.${orgType}${orgId}"
                  infoln "processed $peerName"
                  selectPeer $orgType $orgId $peerId

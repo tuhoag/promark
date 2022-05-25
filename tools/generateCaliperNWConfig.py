@@ -23,7 +23,7 @@ ORDERER_ITEMS = {
 
 # define the list of ports
 ADV_BASE_PORT=1050
-BUS_BASE_PORT=2050
+PUB_BASE_PORT=2050
 PEER_LOCAL_PORT=7051
 
 ORDERER_LOCAL_PORT=7050
@@ -32,9 +32,9 @@ ORDERER_LISTEN_PORT=9443
 LOG_PORT=5003
 EXT_PORT=5000
 ADV_WEB_PORT=8500
-BUS_WEB_PORT=9000
+PUB_WEB_PORT=9000
 ADV_GOSSIP_PORT=55000
-BUS_GOSSIP_PORT=60000
+PUB_GOSSIP_PORT=60000
 LOCAL_GOSSIP_PORT=9443
 REDIS_PORT=6379
 
@@ -110,9 +110,9 @@ def generateClients(org, n):
   entry['credentialStore'] ={'path': path,
                               'cryptoStore': {'path': cryptoPath},
                             }
-  entry['clientPrivateKey']={'path':privateKeyPath,                             
+  entry['clientPrivateKey']={'path':privateKeyPath,
                           }
-  
+
   entry['clientSignedCert']= {'path':clientSignedCertPath}
   return entry
 
@@ -137,8 +137,8 @@ def generatePeer(peerName, peerID, org, orgID):
   orgName = "{0}{1}".format(org, orgID)
   if org == 'adv':
     port = ADV_BASE_PORT + (int(orgID)*10)+ int(peerID)
-  elif org == 'bus':
-    port = BUS_BASE_PORT + (int(orgID)*10)+ int(peerID)
+  elif org == 'pub':
+    port = PUB_BASE_PORT + (int(orgID)*10)+ int(peerID)
   url = "grpcs://0.0.0.0:{}".format(port)
   tlsCACertsPath = "./../organizations/peerOrganizations/{0}.promark.com/tlsca/tlsca.{1}.promark.com-cert.pem".format(orgName, orgName)
 
@@ -150,21 +150,21 @@ def generatePeer(peerName, peerID, org, orgID):
   return entry
 
 # The arguments to run this file is:
-# <number of peer> <org_name1> <num of org> <org_name2> <num of org> 
+# <number of peer> <org_name1> <num of org> <org_name2> <num of org>
 def main():
   # Dictionary Methods
-  orgs = {}.fromkeys(['adv', 'bus'], 0)
+  orgs = {}.fromkeys(['adv', 'pub'], 0)
   peerNumber = sys.argv[1]
 
   if sys.argv[2] == 'adv':
     orgs['adv'] = sys.argv[3]
-  elif sys.argv[2] == 'bus':
-    orgs['bus'] = sys.argv[3]
-  
+  elif sys.argv[2] == 'pub':
+    orgs['pub'] = sys.argv[3]
+
   if sys.argv[4] == 'adv':
     orgs['adv'] = sys.argv[5]
-  elif sys.argv[4] == 'bus':
-    orgs['bus'] = sys.argv[5]
+  elif sys.argv[4] == 'pub':
+    orgs['pub'] = sys.argv[5]
   print(orgs)
 
   # Header
@@ -230,7 +230,7 @@ def main():
       f.write(yaml.dump(ORGANIZATIONS, default_flow_style=False, indent=4))
   with open('networkConfig.yaml', 'a') as f:
       f.write(yaml.dump(PEERS, default_flow_style=False, indent=4))
-  
+
 if __name__ == '__main__':
   print('Generate Caliper networkConfig file')
   main()

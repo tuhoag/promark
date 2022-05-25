@@ -10,6 +10,8 @@ import (
 
 	// "github.com/bwesterb/go-ristretto"
 	// redis "gopkg.in/redis.v4"
+	pedersen "github.com/tuhoag/elliptic-curve-cryptography-go/pedersen"
+	eutils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
 	putils "internal/promark_utils"
 )
 
@@ -65,15 +67,49 @@ func handleConnection(conn net.Conn) {
 	if request.Command == "create" {
 		// fmt.Println("ok:", string(command))
 		CreateCampaignCryptoParamsHandler(conn, request.Data)
-	} else if request.Command == "get" {
+	} else if request.Command == "init-default" {
 		// fmt.Println("ok:", string(buffer))
-		getCampaignCryptoParamsHandler(conn, request.Data)
+		InitDefaultCampaignCryptoParamsHandler(conn, request.Data)
+	} else if request.Command == "get-default" {
+		// fmt.Println("ok:", string(buffer))
+		GetDefaultCampaignCryptoParamsHandler(conn, request.Data)
 	} else {
 		putils.SendResponse(conn, "nocommand", "")
 		conn.Close()
 	}
 
 	conn.Close()
+}
+
+func InitDefaultCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
+	// camId := requestData
+	cryptoParams, err := initCampaignCryptoParams()
+
+	if err != nil {
+		panic(err)
+	}
+
+	param, err := json.Marshal(&cryptoParams)
+
+	fmt.Println("result: " + string(param))
+	putils.SendResponse(conn, "", string(param))
+}
+
+func GetDefaultCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
+	//get param from db
+	cryptoParams, err := GetCampaignCryptoParams("")
+
+	//temporary return
+	param, err := json.Marshal(&cryptoParams)
+
+	// fmt.Println("wrote to file:", n)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("result: " + string(param))
+	putils.SendResponse(conn, "", string(param))
 }
 
 func CreateCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
@@ -97,8 +133,32 @@ func CreateCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
 	putils.SendResponse(conn, "", string(param))
 }
 
-func getCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
+func initCampaignCryptoParams() (*putils.CampaignCryptoParams, error) {
+	client := putils.GetRedisConnection()
 
+	var cryptoParams putils.CampaignCryptoParams
+
+	H := pedersen.GenerateH()
+	hEnc := eutils.ConvertPointToString(H)
+	fmt.Println("hString:.\n", hEnc)
+
+	cryptoParams = putils.CampaignCryptoParams{
+		CamID: "",
+		H:     hEnc,
+	}
+
+	jsonParam, err := json.Marshal(cryptoParams)
+	if err != nil {
+		return nil, err
+	}
+
+	//store to redis db
+	err = client.Set(ctx, "", jsonParam, 0).Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return &cryptoParams, nil
 }
 
 // Campaign function part
@@ -112,8 +172,8 @@ func createCampaignCryptoParams(camId string) (*putils.CampaignCryptoParams, err
 	if err != nil {
 		fmt.Println(err)
 
-		H := putils.GenerateH()
-		hEnc := putils.ConvertPointToString(H)
+		H := pedersen.GenerateH()
+		hEnc := eutils.ConvertPointToString(H)
 		fmt.Println("hString:.\n", hEnc)
 
 		cryptoParams = putils.CampaignCryptoParams{

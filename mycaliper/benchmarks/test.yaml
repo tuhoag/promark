@@ -1,0 +1,87 @@
+test:
+    name: campaign-contract-benchmark
+    description: test benchmark
+    workers:
+      type: local
+      number: 1
+    rounds:
+      - label: CreateCampaign
+        description: CreateCampaign benchmark
+        txNumber: 5000
+        rateControl:
+          type: fixed-rate
+          opts:
+            tps: 100
+        workload:
+          module: ./workloads/CreateCampaign.js
+          arguments:
+            contractId: campaign
+            numOrgsPerType: 1
+            numPeersPerOrgs: 1
+            numVerifiersPerType: 1
+            numDevices: 2
+
+      - label: GenerateProof
+        description: GenerateProof benchmark
+        txNumber: 2
+        rateControl:
+          type: fixed-rate
+          opts:
+            tps: 100
+        workload:
+          module: ./workloads/GenerateProof.js
+          arguments:
+            contractId: proof
+            numCampaigns: 1
+            numOrgsPerType: 1
+            numPeersPerOrgs: 1
+            numVerifiersPerType: 1
+
+
+
+
+    #   - label: queryBackup
+    #     description: Query Backup benchmark
+    #     txNumber: 50000
+    #     rateControl:
+    #       type: fixed-rate
+    #       opts:
+    #         tps: 890
+    #     workload:
+    #       module: ./workloads/queryBackup.js
+    #       arguments:
+    #         backups: 10
+    #         contractId: backup
+
+    #   - label: queryBackup
+    #     description: Query Backup benchmark
+    #     txNumber: 100000
+    #     rateControl:
+    #       type: fixed-rate
+    #       opts:
+    #         tps: 890
+    #     workload:
+    #       module: ./workloads/queryBackup.js
+    #       arguments:
+    #         backups: 10
+    #         contractId: backup
+
+# observer:
+#   type: prometheus
+#   interval: 5
+
+# monitor:
+#   interval: 1
+#   type: ['docker', 'prometheus', 'cadvisor']
+#   docker:
+#     containers: ['all']
+#   prometheus:
+#     url: "http://0.0.0.0:9090"
+#     metrics:
+#       ignore: [prometheus, cadvisor, grafana, node-exporter]
+#       include:
+#         Endorse Time (s):
+#           query: rate(endorser_proposal_duration_sum{chaincode="backup"}[5m])/rate(endorser_proposal_duration_count{chaincode="backup"}[5m])
+#           step: 1
+#           label: instance
+#           statistic: avg

@@ -31,11 +31,11 @@ EXT = {
 
 # define the list of ports
 ADV_BASE_PORT=1050
-BUS_BASE_PORT=2050
+PUB_BASE_PORT=2050
 PEER_LOCAL_PORT=7051
 
 ADV_COUCHDB_PORT=5984
-BUS_COUCHDB_PORT=6484
+PUB_COUCHDB_PORT=6484
 COUCHDB_LOCAL_PORT=5984
 
 ORDERER_LOCAL_PORT=7050
@@ -44,9 +44,9 @@ ORDERER_LISTEN_PORT=9443
 LOG_PORT=5003
 EXT_PORT=5000
 ADV_WEB_PORT=8500
-BUS_WEB_PORT=9000
+PUB_WEB_PORT=9000
 ADV_GOSSIP_PORT=55000
-BUS_GOSSIP_PORT=60000
+PUB_GOSSIP_PORT=60000
 LOCAL_GOSSIP_PORT=9443
 REDIS_PORT=6379
 
@@ -67,13 +67,13 @@ def generateLogService(name, image):
   entry['networks']=['test']
 
   entry['build']= {'context':'.',
-                    'dockerfile': image, 
+                    'dockerfile': image,
                   }
   log_port = "{0}:{1}".format(LOG_PORT, LOG_PORT)
   entry['ports']=[log_port]
   entry['volumes']= ['../services/log:/log']
   entry['command']= '/bin/sh run.sh'
-  
+
   log_env = "LOG_PORT={0}".format(str(LOG_PORT))
   entry['environment']=[log_env]
 
@@ -84,7 +84,7 @@ def generateExtService(name, image):
   entry['networks']=['test']
 
   entry['build']= {'context':'.',
-                  'dockerfile': image, 
+                  'dockerfile': image,
                 }
   ext_port = "{0}:{1}".format(EXT_PORT, EXT_PORT)
   entry['ports']=[ext_port]
@@ -93,7 +93,7 @@ def generateExtService(name, image):
   entry['command']= '/bin/sh run.sh'
   api_port = "API_PORT={0}".format(str(EXT_PORT))
   redis_port = "REDIS_PORT={0}".format(str(REDIS_PORT))
-  entry['environment']=[api_port, 
+  entry['environment']=[api_port,
                         redis_port]
 
   return entry
@@ -101,15 +101,15 @@ def generateExtService(name, image):
 def generateOrderer(name, image):
   entry = {'container_name': name}
   entry['networks']=['test']
-  
+
   # orderer_port=str(ORDERER_LOCAL_PORT)+':'+str(ORDERER_LOCAL_PORT)
   orderer_port="{0}:{1}".format(str(ORDERER_LOCAL_PORT), str(ORDERER_LOCAL_PORT))
   # orderer_listen_map_port='53732'+':'+str(ORDERER_LISTEN_PORT)
   orderer_listen_map_port="53732:{0}".format(str(ORDERER_LISTEN_PORT))
   orderer_listen_port=str(ORDERER_LISTEN_PORT)
-  
+
   entry['extends']= {'file':'docker-compose-base.yml',
-                      'service': image, 
+                      'service': image,
                     }
 
   entry['ports']=[orderer_port,
@@ -134,8 +134,8 @@ def generateCouchDB(name, image, orgname, orgid, peerid):
 
   if orgname == 'adv':
     couchdb_port = ADV_COUCHDB_PORT + (int(orgid)*10)+ int(peerid)
-  elif orgname == 'bus':
-    couchdb_port = BUS_COUCHDB_PORT + (int(orgid)*10)+ int(peerid)
+  elif orgname == 'pub':
+    couchdb_port = PUB_COUCHDB_PORT + (int(orgid)*10)+ int(peerid)
 
   map_couchdb_port = str(couchdb_port)+':'+str(COUCHDB_LOCAL_PORT)
   entry['image'] = image
@@ -156,17 +156,17 @@ def generatePeer (name, image, orgname, orgid, peerid):
     port = ADV_BASE_PORT + (int(orgid)*10)+ int(peerid)
     webPort = ADV_WEB_PORT + (int(orgid)*10)+ int(peerid)
     gossipPort= ADV_GOSSIP_PORT + (int(orgid)*10)+ int(peerid)
-  elif orgname == 'bus':
-    port = BUS_BASE_PORT + (int(orgid)*10)+ int(peerid)
-    webPort = BUS_WEB_PORT + (int(orgid)*10)+ int(peerid)
-    gossipPort= BUS_GOSSIP_PORT + (int(orgid)*10)+ int(peerid)
-  
+  elif orgname == 'pub':
+    port = PUB_BASE_PORT + (int(orgid)*10)+ int(peerid)
+    webPort = PUB_WEB_PORT + (int(orgid)*10)+ int(peerid)
+    gossipPort= PUB_GOSSIP_PORT + (int(orgid)*10)+ int(peerid)
+
   mapPort ="{0}:{1}".format(port, PEER_LOCAL_PORT)
   mapWebPort="{0}:{1}".format(webPort, webPort)
   mapGossipPort="{0}:{1}".format(gossipPort, LOCAL_GOSSIP_PORT)
 
-  entry['extends']= {'file':'docker-compose-base.yml', 
-                      'service': image, 
+  entry['extends']= {'file':'docker-compose-base.yml',
+                      'service': image,
                     }
   entry['ports']=[mapPort,
                   mapWebPort,
@@ -174,16 +174,16 @@ def generatePeer (name, image, orgname, orgid, peerid):
                   ]
 
   # for environment part of each peer
-  # - CORE_PEER_ID=peer0.bus0.${PROJECT_NAME}.com
-  # - CORE_PEER_ADDRESS=peer0.bus0.${PROJECT_NAME}.com:7051
+  # - CORE_PEER_ID=peer0.pub0.${PROJECT_NAME}.com
+  # - CORE_PEER_ADDRESS=peer0.pub0.${PROJECT_NAME}.com:7051
   # - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-  # - CORE_PEER_CHAINCODEADDRESS=peer0.bus0.${PROJECT_NAME}.com:7052
+  # - CORE_PEER_CHAINCODEADDRESS=peer0.pub0.${PROJECT_NAME}.com:7052
   # - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-  # - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.bus0.${PROJECT_NAME}.com:7051
-  # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.bus0.${PROJECT_NAME}.com:7051
-  # - CORE_PEER_LOCALMSPID=bus0MSP
+  # - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.pub0.${PROJECT_NAME}.com:7051
+  # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.pub0.${PROJECT_NAME}.com:7051
+  # - CORE_PEER_LOCALMSPID=pub0MSP
   # - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-  # - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1.bus0.promark.com:5984
+  # - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1.pub0.promark.com:5984
   # - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
   # - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
 
@@ -201,8 +201,8 @@ def generatePeer (name, image, orgname, orgid, peerid):
   coreLedgerStateCouchDBConfigAdd="CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS={0}:{1}".format(couchdbName, COUCHDB_LOCAL_PORT)
   coreLedgerStateCouchDBUsername="CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin"
   coreLedgerStateCoudchDBPassword="CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw"
-  
-  verPort="VER_PORT={0}".format(webPort) 
+
+  verPort="VER_PORT={0}".format(webPort)
   verName="VER_NAME={0}.log".format(name)
 
   entry['environment']=[corePeerId,
@@ -221,20 +221,20 @@ def generatePeer (name, image, orgname, orgid, peerid):
                         verName,
   ]
   # - /var/run/docker.sock:/host/var/run/docker.sock
-  # - ../organizations/peerOrganizations/bus0.${PROJECT_NAME}.com/peers/peer0.bus0.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
-  # - ../organizations/peerOrganizations/bus0.${PROJECT_NAME}.com/peers/peer0.bus0.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
+  # - ../organizations/peerOrganizations/pub0.${PROJECT_NAME}.com/peers/peer0.pub0.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
+  # - ../organizations/peerOrganizations/pub0.${PROJECT_NAME}.com/peers/peer0.pub0.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
 
   volumnSock="/var/run/docker.sock:/host/var/run/docker.sock"
   volumnMsp="../organizations/peerOrganizations/{0}{1}.{2}/peers/{3}/msp:/etc/hyperledger/fabric/msp".format(orgname, orgid, var_suffix, peerName)
   volumnTls="../organizations/peerOrganizations/{0}{1}.{2}/peers/{3}/tls:/etc/hyperledger/fabric/tls".format(orgname, orgid, var_suffix, peerName)
-  
+
   entry['volumes']=[volumnSock,
                     volumnMsp,
                     volumnTls,
   ]
 
   # - orderer.${COMPOSE_PROJECT_NAME}.com
-  # - couchdb1.bus0.promark.com
+  # - couchdb1.pub0.promark.com
   ordererName="orderer.{0}".format(compose_suffix)
 
   entry['depends_on']=[ordererName,
@@ -243,21 +243,21 @@ def generatePeer (name, image, orgname, orgid, peerid):
   return entry
 
 # The arguments to run this file is:
-# <number of peer> <org_name1> <num of org> <org_name2> <num of org> 
+# <number of peer> <org_name1> <num of org> <org_name2> <num of org>
 def main():
   # Dictionary Methods
-  orgs = {}.fromkeys(['adv', 'bus'], 0)
+  orgs = {}.fromkeys(['adv', 'pub'], 0)
   peerNumber = sys.argv[1]
 
   if sys.argv[2] == 'adv':
     orgs['adv'] = sys.argv[3]
-  elif sys.argv[2] == 'bus':
-    orgs['bus'] = sys.argv[3]
-  
+  elif sys.argv[2] == 'pub':
+    orgs['pub'] = sys.argv[3]
+
   if sys.argv[4] == 'adv':
     orgs['adv'] = sys.argv[5]
-  elif sys.argv[4] == 'bus':
-    orgs['bus'] = sys.argv[5]
+  elif sys.argv[4] == 'pub':
+    orgs['pub'] = sys.argv[5]
   print(orgs)
 
   with open('docker-compose.yml', 'w') as f:
@@ -266,7 +266,7 @@ def main():
   for name, image in EXT.items():
     name="{0}.{1}".format(name, org_suffix)
     COMPOSITION['services'][name] = generateExtService(name, image)
-  
+
   for name, image in LOG.items():
     name="{0}.{1}".format(name, org_suffix)
     COMPOSITION['services'][name] = generateLogService(name, image)
@@ -277,7 +277,7 @@ def main():
 
   for org in orgs:
     print(orgs.get(org), org)
-  
+
     for n in range(0, int(orgs.get(org))):
       print(n)
       for i in range (0, int(peerNumber)):

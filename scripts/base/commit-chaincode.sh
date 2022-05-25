@@ -17,6 +17,8 @@ function commitChaincode() {
     local orgNum=$4
     local peerNum=$5
     local sequence=$6
+    # local policy=--signature-policy="OR('adv0MSP.member','pub0MSP.member')"
+    local policy=$7
 
     local chaincode_package_path="$CHAINCODE_PACKAGE_DIR/${chaincodeName}.tar.gz"
 
@@ -31,7 +33,7 @@ function commitChaincode() {
     # peer (if join was successful), let's supply it directly as we know
     # it using the "-o" option
     set -x
-    peer lifecycle chaincode commit -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME  --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName --tls $peerConnectionParams --version $sequence --sequence $sequence
+    peer lifecycle chaincode commit -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME  --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName --tls $peerConnectionParams --version $sequence --sequence $sequence $policy
 
     # peer lifecycle chaincode commit -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA --channelID $channelName --name $chaincodeName $PEER_CONN_PARMS --version $sequence --sequence $sequence >&log.txt
 
@@ -46,9 +48,10 @@ function commitChaincode() {
 
     peer lifecycle chaincode querycommitted --channelID $channelName --name "proof"
     peer lifecycle chaincode querycommitted --channelID $channelName --name "campaign"
+    peer lifecycle chaincode querycommitted --channelID $channelName --name "poc"
 
 
 }
 
 
-commitChaincode $1 $2 $3 $4 $5 $6
+commitChaincode $1 $2 $3 $4 $5 $6 $7

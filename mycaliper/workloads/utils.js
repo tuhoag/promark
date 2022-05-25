@@ -5,28 +5,39 @@ const process = require("process");
 
 const logger = require('@hyperledger/caliper-core').CaliperUtils.getLogger('promark');
 
-const CreateCampaignArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiersPerType) => {
+const CreateCampaignArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices) => {
     const camId = "c" + Math.floor(Math.random()*10000);
     const name = "Campaign " + camId;
     const advertiser = "adv"+Math.floor(Math.random()*10000) % numOrgsPerType;
-    const business = "bus"+Math.floor(Math.random()*10000) % numOrgsPerType;
+    const publisher = "pub"+Math.floor(Math.random()*10000) % numOrgsPerType;
+    const startTimeStr = Math.floor(new Date("2022-05-01").getTime() / 1000);
+    const endTimeStr = Math.floor(new Date("2022-07-01").getTime() / 1000);
 
     var verifierURLs = [];
 
     for (let i = 0; i < numVerifiersPerType; i++) {
         const advertierPeerName = "peer" + Math.floor(Math.random()*10000) % numPeersPerOrgs;
-        const businessPeerName = "peer" + Math.floor(Math.random()*10000) % numPeersPerOrgs;
+        const publisherPeerName = "peer" + Math.floor(Math.random()*10000) % numPeersPerOrgs;
 
         const advPeerURL = advertierPeerName + "."+advertiser + ".promark.com:5000";
-        const busPeerURL = businessPeerName + "."+business + ".promark.com:5000";
+        const pubPeerURL = publisherPeerName + "."+publisher + ".promark.com:5000";
 
         verifierURLs.push(advPeerURL);
-        verifierURLs.push(busPeerURL);
+        verifierURLs.push(pubPeerURL);
     }
 
     const verifierURLsStr = verifierURLs.join(";");
+
+    var deviceIds = [];
+    for (let i = 0; i < numDevices; i ++) {
+        const deviceId = "w" + Math.floor(Math.random()*10000) % numPeersPerOrgs + "." + publisher;
+        deviceIds.push(deviceId);
+    }
+
+    const deviceIdsStr = deviceIds.join(";");
+
     return {
-        camId, name, advertiser, business, verifierURLsStr
+        camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr
     };
 }
 
