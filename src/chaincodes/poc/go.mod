@@ -23,8 +23,7 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
-	golang.org/x/net v0.0.0-20220524220425-1d687d428aca // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/net v0.0.0-20220526153639-5463443f8c37 // indirect
 	google.golang.org/genproto v0.0.0-20220525015930-6ca3db687a9d // indirect
 	internal/promark_utils v0.0.0
 )
