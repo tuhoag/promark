@@ -542,13 +542,13 @@ elif [ $MODE = "eval" ]; then
         fi
     elif [ $SUB_MODE = "proof" ]; then
         if [ $SUB_SUB_MODE = "gen" ]; then
-            evaluate $NO_ORGS $NO_PEERS "GenerateProof"
-        elif [ $SUB_SUB_MODE = "genpoc" ]; then
             evaluate $NO_ORGS $NO_PEERS "GeneratePoC"
         elif [ $SUB_SUB_MODE = "add" ]; then
-            evaluate $NO_ORGS $NO_PEERS "AddProof"
-        elif [ $SUB_SUB_MODE = "verify" ]; then
-            evaluate $NO_ORGS $NO_PEERS "VerifyProof"
+            evaluate $NO_ORGS $NO_PEERS "AddCampaignTokenTransaction"
+        elif [ $SUB_SUB_MODE = "verifypoc" ]; then
+            evaluate $NO_ORGS $NO_PEERS "VerifyPoC"
+        elif [ $SUB_SUB_MODE = "verifytpoc" ]; then
+            evaluate $NO_ORGS $NO_PEERS "VerifyTPoC"
         else
             errorln "Unsupported $MODE $SUB_MODE $SUB_SUB_MODE command."
         fi
