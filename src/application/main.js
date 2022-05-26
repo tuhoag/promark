@@ -45,8 +45,21 @@ const proofCommandHandler = async argv => {
         camId = argv[1];
         const userId = argv[2];
 
-        logger.debug(`generateProofForRandomUser: ${camId}, ${userId}`);
-        return proofClient.generateProofForRandomUser(camId, userId);
+        logger.debug(`generatePoCForRandomUser: ${camId}, ${userId}`);
+        return proofClient.generatePoCForRandomUser(camId, userId);
+    } else if (command == "gentpoc") {
+        camId = argv[1];
+        const userId = argv[2];
+        const numTPoCs = argv[3];
+
+        logger.debug(`generatePoCAndTPoCs: ${camId}, ${userId}`);
+        return proofClient.generatePoCAndTPoCs(camId, userId, numTPoCs);
+    } else if (command == "verifypoc") {
+        camId = argv[1];
+        const userId = argv[2];
+
+        logger.debug(`verifyPoCProof: ${camId}, ${userId}`);
+        return proofClient.verifyPoCProof(camId, comm, rs);
     } else if (command == "add") {
         const comm = argv[1];
         const rsStr = argv[2];
@@ -87,28 +100,59 @@ const testCommandHandler = async argv => {
     logger.info("campaign:" + JSON.stringify(campaign));
     // console.log(campaign);
 
-    sleep(2000);
+    // sleep(2000);
     // generate its proof
     const cusId = "u1";
-    let proof = await proofClient.generateProofForRandomUser(campaign.id, cusId);
-    logger.info("generatedProof:" + JSON.stringify(proof));
+    const numTPoCs = 3;
+    let customerPocAndTPoCs = await proofClient.generatePoCAndTPoCs(campaign.id, cusId, numTPoCs);
+    logger.info("customer PoC & TPoCs:" + JSON.stringify(customerPocAndTPoCs));
 
-    sleep(2000);
-    // add the generated proof
-    const deviceId = campaign.deviceIds[0];
-    logger.info(deviceId)
-    const addedTime = utils.randomDate(new Date(2022, 0, 1), new Date()).toISOString();
-    logger.info(addedTime)
-    try{
-        let addedProof = await proofClient.addProof2(campaign.id, deviceId, cusId, proof.Comm, proof.Rs.join(";"), addedTime.toISOString());
-        logger.info("addedProof:" + JSON.stringify(addedProof));
-    } catch (e) {
-        logger.error(e);
+    // sleep(2000);
+
+    const deviceId = "d1";
+    let devicePocAndTPoCs = await proofClient.generatePoCAndTPoCs(campaign.id, deviceId, numTPoCs);
+    logger.info("device PoC & TPoCs:" + JSON.stringify(devicePocAndTPoCs));
+
+    // sleep(2000);
+
+    // verify pocs
+    let result = await proofClient.verifyPoCProof(campaign.id, customerPocAndTPoCs.poc.comm, customerPocAndTPoCs.poc.rs);
+
+    logger.info(`verification customer poc result-true: ${result}`);
+
+    result = await proofClient.verifyPoCProof(campaign.id, devicePocAndTPoCs.poc.comm, devicePocAndTPoCs.poc.rs);
+
+    logger.info(`verification device poc result-true: ${result}`);
+
+    for (let i = 0; i  < numTPoCs; i++) {
+        let customerTPoC = customerPocAndTPoCs.tpocs[i];
+        let deviceTPoC = devicePocAndTPoCs.tpocs[i];
+
+        logger.debug(`Got customer tpoc ${i}: ${JSON.stringify(customerTPoC)}`);
+        logger.debug(`Got device tpoc ${i}: ${JSON.stringify(deviceTPoC)}`);
+
+        result = await proofClient.verifyTPoCProof(campaign.id, customerTPoC.tComms, customerTPoC.tRs, customerTPoC.hashes, customerTPoC.key);
+        logger.info(`verification customer tpoc ${i} result-true: ${result}`);
+
+        result = await proofClient.verifyTPoCProof(campaign.id, deviceTPoC.tComms, deviceTPoC.tRs, deviceTPoC.hashes, deviceTPoC.key);
+        logger.info(`verification device tpoc ${i} result-true: ${result}`);
     }
 
-    // show all campaigns
+    // add transaction
+    const diff = campaign.endTime - campaign.startTime;
 
-    // show all proofs
+    for (let i = 0; i  < numTPoCs; i++) {
+        let customerTPoC = customerPocAndTPoCs.tpocs[i];
+        let deviceTPoC = devicePocAndTPoCs.tpocs[i];
+        let addedTime = campaign.startTime + Math.floor(Math.random()) % diff;
+
+        let transaction = await proofClient.addProof(campaign.id, deviceId, addedTime, deviceTPoC, customerTPoC);
+
+        logger.info(`added transaction: ${JSON.stringify(transaction)}`);
+    }
+
+    const allAddedTransactions = await proofClient.getAllProofs();
+    logger.info(`all ${len(allAddedTransactions)} added transactions: ${JSON.stringify(allAddedTransactions)}`);
 }
 
 const dataCommandHandler = async argv => {
@@ -145,7 +189,7 @@ const initData = async (numCampaigns, numProofs, numVerifiers) => {
         const camIdx = utils.getId(campaigns.length);
         logger.debug(JSON.stringify(campaigns[camIdx]));
         const userId = `u${utils.getId(10000)}`;
-        let proof = await proofClient.generateProofForRandomUser(campaigns[camIdx].id, userId);
+        let proof = await proofClient.generatePoCForRandomUser(campaigns[camIdx].id, userId);
 
         // camId string, deviceId string, cusId string, cusComm string, cusRsStr string, addedTimeStr string
         proof["camId"] = campaigns[camIdx].id;

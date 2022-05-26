@@ -113,12 +113,6 @@ type ProofCustomerCampaign struct {
 	SubComs []string `json:"subComs"`
 }
 
-type PoCProof struct {
-	Comm    string   `json:"comm"`
-	Rs      []string `json:"rs"`
-	SubComs []string `json:"subComs"`
-}
-
 type CollectedCustomerProof struct {
 	Id            string    `json:"id"`
 	CustomerProof Proof     `json:"customerProof"`
@@ -145,6 +139,31 @@ type VerifierCommitmentChannelResult struct {
 	URL   string
 	Comm  string
 	Error error
+}
+
+type PoCProof struct {
+	Comm string   `json:"comm"`
+	Rs   []string `json:"rs"`
+	// SubComs []string `json:"subComs"`
+}
+
+type TPoCProof struct {
+	TComms []string `json:"tComms"`
+	TRs    []string `json:"tRs"` // encrypted blinding factors
+	Hashes []string `json:"hashes"`
+	Key    string   `json:"key"`
+}
+
+type PoCAndTPoCProofs struct {
+	PoC   PoCProof    `json:"poc"`
+	TPoCs []TPoCProof `json:"tpocs"`
+}
+
+type CustomerCampaignTokenTransaction struct {
+	Id           string    `json:"id"`
+	DeviceTPoC   TPoCProof `json:"deviceTPoC"`
+	CustomerTPoC TPoCProof `json:"customerTPoC"`
+	AddedTime    int64     `json:"addedTime`
 }
 
 var logURL = "http://logs.promark.com:5003/log"
@@ -248,7 +267,7 @@ func GenerateProofFromVerifiers(campaign *Campaign, customerId string) (*PoCProo
 	numVerifiers := len(campaign.VerifierURLs)
 
 	var C ristretto.Point
-	var subComs, randomValues []string
+	var randomValues []string
 
 	C.SetZero()
 	fmt.Printf("Init C: %s\n", C)
@@ -274,20 +293,20 @@ func GenerateProofFromVerifiers(campaign *Campaign, customerId string) (*PoCProo
 		fmt.Printf("Current C: %s after adding %s\n", C, Ci)
 
 		randomValues = append(randomValues, verifierProof.R)
-		subComs = append(subComs, verifierProof.Comm)
+		// subComs = append(subComs, verifierProof.Comm)
 	}
 
 	CommEnc := tecc_utils.ConvertPointToString(&C)
 
 	proof := PoCProof{
-		Comm:    CommEnc,
-		Rs:      randomValues,
-		SubComs: subComs,
+		Comm: CommEnc,
+		Rs:   randomValues,
+		// SubComs: subComs,
 	}
 
 	fmt.Println("proof.Comm: " + proof.Comm)
 	fmt.Printf("proof.Rs: %s\n", proof.Rs)
-	fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
+	// fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
 
 	return &proof, nil
 }
@@ -348,14 +367,14 @@ func GenerateProofFromVerifiersSocketAsync(campaign *Campaign, userId string) (*
 	CommEnc := tecc_utils.ConvertPointToString(&C)
 
 	proof := PoCProof{
-		Comm:    CommEnc,
-		Rs:      randomValues,
-		SubComs: subComs,
+		Comm: CommEnc,
+		Rs:   randomValues,
+		// SubComs: subComs,
 	}
 
 	fmt.Println("proof.Comm: " + proof.Comm)
 	fmt.Printf("proof.Rs: %s\n", proof.Rs)
-	fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
+	// fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
 
 	return &proof, nil
 }

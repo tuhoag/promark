@@ -1,7 +1,7 @@
 const utils = require('./utils');
 const logger = require('./logger')(__filename, "debug");
 
-exports.generateProofForRandomUser = async (camId, entityId) => {
+exports.generatePoCForRandomUser = async (camId, entityId) => {
     logger.debug(`generateProofForRandomUser: ${camId},${entityId}`);
 
     return utils.callChaincodeFn(async network => {
@@ -20,14 +20,14 @@ exports.generateProofForRandomUser = async (camId, entityId) => {
     });
 }
 
-exports.addProof = async (comm, rsStr) => {
-    return utils.callChaincodeFn(async network => {
-        const contract = await network.getContract('proof');
+exports.generatePoCAndTPoCs = async (camId, entityId, numTPoCs) => {
+    logger.debug(`generateTPoCs: ${camId},${entityId}`);
 
-        // randomly generate a user id
-        const proofId = `p${utils.getId(10000)}`;
-        logger.info(`AddCustomerProofCampaign: proofId: ${proofId} - comm: ${comm} - rsStr: ${rsStr}`)
-        return contract.submitTransaction("AddCustomerProofCampaign", proofId, comm, rsStr);
+    return utils.callChaincodeFn(async network => {
+        const contract = await network.getContract('poc');
+
+        logger.info(`GeneratePoCProof: camId:${camId} - entityId:${entityId} - numTPoCs: ${numTPoCs}`);
+        return contract.submitTransaction("GeneratePoCAndTPoCProof", camId, entityId, numTPoCs);
     }, async response => {
         logger.debug(`response:${response}`);
         const resultProof = JSON.parse(response);
@@ -35,14 +35,50 @@ exports.addProof = async (comm, rsStr) => {
     });
 }
 
-exports.addProof2 = async (camId, deviceId, cusId, cusComm, cusRsStr, addedTime) => {
-    logger.info(`addProof2: ${camId},${deviceId},${cusId},${cusComm},${cusRsStr},${addedTime}`);
+exports.verifyPoCProof = async (camId, comm, rs) => {
+    logger.debug(`verifyPoCProof: ${camId},${comm},${rs}`);
+
+    return utils.callChaincodeFn(async network => {
+        const contract = await network.getContract('proof');
+        const rsStr = rs.join(";");
+        logger.info(`VerifyPoCProof: camId:${camId} - comm:${comm} - rsStr: ${rsStr}`);
+        return contract.submitTransaction("VerifyPoCProof", camId, comm, rsStr);
+    }, async response => {
+        logger.debug(`response:${response}`);
+        const resultProof = JSON.parse(response);
+        return resultProof;
+    });
+}
+
+exports.verifyTPoCProof = async (camId, commS, rs, hs, key) => {
+    logger.debug(`verifyTPoCProof: ${camId},${commS},${rs},${hs},${key}`);
+
+    return utils.callChaincodeFn(async network => {
+        const contract = await network.getContract('proof');
+        const rsStr = rs.join(";");
+        const commStr = commS.join(";")
+        const hsStr = hs.join(";")
+
+        logger.info(`verifyTPoCProof: camId:${camId} - commStr:${commStr} - rsStr: ${rsStr} hsStr: ${hsStr} - key: ${key}`);
+        return contract.submitTransaction("VerifyTPoCProof", camId, commStr, rsStr, hsStr, key);
+    }, async response => {
+        logger.debug(`response:${response}`);
+        const resultProof = JSON.parse(response);
+        return resultProof;
+    });
+}
+
+// camId string, deviceId string, addedTimeStr int64, dCsStr string, dRsStr string, dHashesStr string, dKeyStr string, uCsStr string, uRsStr string, uHashesStr string, uKeyStr string
+
+// camId string, deviceId string, addedTimeStr int64, dCsStr string, dRsStr string, dHashesStr string, dKeyStr string, uCsStr string, uRsStr string, uHashesStr string, uKeyStr string
+
+exports.addProof = async (camId, deviceId, addedTime, deviceTPoC, customerTPoC) => {
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
 
-        // camId string, deviceId string, cusId string, cusComm string, cusRsStr string, addedTimeStr string
-        logger.info(`AddCustomerProofCampaign2: camid: ${camId} - deviceId: ${deviceId} - cusId: ${cusId} - cusComm: ${cusComm} - cusRsStr: ${cusRsStr} - addedTimeStr: ${addedTime}`)
-        return contract.submitTransaction("AddCustomerProofCampaign2", camId, deviceId, cusId, cusComm, cusRsStr, addedTime);
+        logger.info(`AddCampaignTokenTransaction: camid: ${camId} - deviceId: ${deviceId} - cusTPoC: ${JSON.stringify(customerTPoC)} - deviceTPoC: ${JSON.stringify(deviceTPoC)} - addedTimeStr: ${addedTime}`);
+
+        return contract.submitTransaction("AddCampaignTokenTransaction", camId, deviceId, addedTime, deviceTPoC.tComms.join(";"), deviceTPoC.tRs.join(";"), deviceTPoC.hashes.join(";"), deviceTPoC.key, customerTPoC.tComms.join(";"), customerTPoC.tRs.join(";"), customerTPoC.hashes.join(";"), customerTPoC.key);
     }, async response => {
         logger.debug(`response:${response}`);
         const resultProof = JSON.parse(response);

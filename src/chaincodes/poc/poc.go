@@ -21,6 +21,7 @@ import (
 	// "github.com/bwesterb/go-ristretto"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 	"github.com/hyperledger/fabric/common/util"
+	eutils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
 )
 
 var LOG_MODE = "test"
@@ -65,4 +66,49 @@ func (s *PoCSmartContract) GeneratePoCProof(ctx contractapi.TransactionContextIn
 	}
 
 	return proof, nil
+}
+
+func (s *PoCSmartContract) GeneratePoCAndTPoCProof(ctx contractapi.TransactionContextInterface, camId string, userId string, numTPoCs int) (*putils.PoCAndTPoCProofs, error) {
+	putils.SendLog("GeneratePoCProof", "", LOG_MODE)
+	putils.SendLog("camId:", camId, LOG_MODE)
+	putils.SendLog("userId", userId, LOG_MODE)
+
+	poc, err := s.GeneratePoCProof(ctx, camId, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	numVerifiers := len(poc.Rs)
+	var tpocs = make([]putils.TPoCProof, numTPoCs)
+
+	for i := 0; i < numTPoCs; i++ {
+		commPoint, err := eutils.ConvertStringToPoint(poc.Comm)
+		if err != nil {
+			return nil, err
+		}
+
+		subComms := eutils.Split(commPoint, numVerifiers)
+
+		var tcomms = make([]string, numVerifiers)
+		var hashes = make([]string, numVerifiers)
+		var key string
+
+		for j := 0; j < numVerifiers; j++ {
+			tcomms[j] = eutils.ConvertPointToString(subComms[j])
+		}
+
+		tpoc := putils.TPoCProof{
+			TComms: tcomms,
+			TRs:    poc.Rs,
+			Hashes: hashes,
+			Key:    key,
+		}
+		tpocs[i] = tpoc
+	}
+
+	result := putils.PoCAndTPoCProofs{
+		PoC:   *poc,
+		TPoCs: tpocs,
+	}
+	return &result, nil
 }
