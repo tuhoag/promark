@@ -2,7 +2,7 @@ Organizations:
   - &OrdererOrg
     Name: ordererMSP
     ID: ordererMSP
-    MSPDir: ../organizations/ordererOrganizations/promark.com/msp
+    MSPDir: ../credentials/ordererOrganizations/promark.com/msp
     Policies:
       Readers:
         Type: Signature
@@ -17,7 +17,7 @@ Organizations:
   - &Adv0
     Name: adv0MSP
     ID: adv0MSP
-    MSPDir: ../organizations/peerOrganizations/adv0.promark.com/msp
+    MSPDir: ../credentials/peerOrganizations/adv0.promark.com/msp
     Policies:
       Readers:
         Type: Signature
@@ -40,7 +40,7 @@ Organizations:
   - &Pub0
     Name: pub0MSP
     ID: pub0MSP
-    MSPDir: ../organizations/peerOrganizations/pub0.promark.com/msp
+    MSPDir: ../credentials/peerOrganizations/pub0.promark.com/msp
     Policies:
       Readers:
         Type: Signature
@@ -63,7 +63,7 @@ Organizations:
     #     - Host: peer0.pub0.promark.com
     #       Port: 2050
 
- Capabilities:
+Capabilities:
   Channel: &ChannelCapabilities
     V2_0: true
   Orderer: &OrdererCapabilities
@@ -101,8 +101,8 @@ Orderer: &OrdererDefaults
     Consenters:
       - Host: orderer.promark.com
         Port: 7050
-        ClientTLSCert: ../organizations/ordererOrganizations/promark.com/orderers/orderer.promark.com/tls/server.crt
-        ServerTLSCert: ../organizations/ordererOrganizations/promark.com/orderers/orderer.promark.com/tls/server.crt
+        ClientTLSCert: ../credentials/ordererOrganizations/promark.com/orderers/orderer.promark.com/tls/server.crt
+        ServerTLSCert: ../credentials/ordererOrganizations/promark.com/orderers/orderer.promark.com/tls/server.crt
 
   BatchTimeout: 2s
   BatchSize:
@@ -143,7 +143,7 @@ Channel: &ChannelDefaults
     <<: *ChannelCapabilities
 
 Profiles:
-  TwoOrgsOrdererGenesis:
+  11OrdererGenesis:
     <<: *ChannelDefaults
     Orderer:
       <<: *OrdererDefaults
@@ -156,7 +156,8 @@ Profiles:
         Organizations:
           - *Adv0
           - *Pub0
-  TwoOrgsChannel:
+
+  11Channel:
     Consortium: SampleConsortium
     <<: *ChannelDefaults
     Application:
@@ -164,5 +165,145 @@ Profiles:
       Organizations:
         - *Adv0
         - *Pub0
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+  13OrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *Adv0
+          - *Pub0
+
+  13Channel:
+    Consortium: SampleConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Adv0
+        - *Pub0
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+  31OrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *Adv0
+          - *Pub0
+          - *Adv1
+          - *Pub1
+          - *Adv2
+          - *Pub2
+
+  31Channel:
+    Consortium: SampleConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Adv0
+        - *Pub0
+        - *Adv1
+        - *Pub1
+        - *Adv2
+        - *Pub2
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+  41OrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *Adv0
+          - *Pub0
+          - *Adv1
+          - *Pub1
+          - *Adv2
+          - *Pub2
+          - *Adv3
+          - *Pub3
+
+  41Channel:
+    Consortium: SampleConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Adv0
+        - *Pub0
+        - *Adv1
+        - *Pub1
+        - *Adv2
+        - *Pub2
+        - *Adv3
+        - *Pub3
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+  51OrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *Adv0
+          - *Pub0
+          - *Adv1
+          - *Pub1
+          - *Adv2
+          - *Pub2
+          - *Adv3
+          - *Pub3
+          - *Adv4
+          - *Pub4
+  51Channel:
+    Consortium: SampleConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Adv0
+        - *Pub0
+        - *Adv1
+        - *Pub1
+        - *Adv2
+        - *Pub2
+        - *Adv3
+        - *Pub3
+        - *Adv4
+        - *Pub4
+
       Capabilities:
         <<: *ApplicationCapabilities

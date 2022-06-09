@@ -139,7 +139,7 @@ function buildExternalService() {
 
     local docker_compose_path="${DOCKER_COMPOSE_DIR_PATH}/docker-compose-${orgNum}-${peerNum}.yml"
 
-    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} build --no-cache 2>&1
+    FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${docker_compose_path} build --no-cache 2>&1
 
     # FABRIC_LOG=$LOG_LEVEL COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION docker-compose -f ${DOCKER_COMPOSE_PATH} build --no-cache verifier1.promark.com 2>&1
 
@@ -383,11 +383,11 @@ if [ $MODE = "restart" ]; then
         sleep 2
         joinChannel $NO_ORGS $NO_PEERS
 
-        sleep 1
+        sleep 2
         deployChaincode $CAMPAIGN_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
-        sleep 1
+        sleep 2
         deployChaincode $PROOF_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
-        sleep 1
+        sleep 2
         deployChaincode $POC_CHAINCODE_NAME $NO_ORGS $NO_PEERS 1
     else
         errorln "Unsupported $MODE $SUB_MODE command."

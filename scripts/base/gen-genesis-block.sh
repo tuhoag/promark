@@ -24,7 +24,7 @@ function generateGenesisBlock() {
 
     infoln "Blockpath: ${blockPath}"
     set -x
-    configtxgen -profile "${orgNum}${peerNum}OrdererGenesis" -channelID system-channel -outputBlock $blockPath -configPath $CONFIG_PATH
+    configtxgen -profile "${orgNum}OrdererGenesis" -channelID system-channel -outputBlock $blockPath -configPath $CONFIG_PATH
     res=$?
     { set +x; } 2>/dev/null
     if [ $res -ne 0 ]; then

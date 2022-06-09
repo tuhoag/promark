@@ -21,21 +21,21 @@ Organizations:
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('adv0MSP.admin', 'adv0MSP.peer', 'adv0MSP.client')"
+        Rule: "OR('adv0MSP.member')"
       Writers:
         Type: Signature
-        Rule: "OR('adv0MSP.admin', 'adv0MSP.client')"
+        Rule: "OR('adv0MSP.member')"
       Admins:
         Type: Signature
         Rule: "OR('adv0MSP.admin')"
       Endorsement:
         Type: Signature
-        Rule: "OR('adv0MSP.peer')"
+        Rule: "OR('adv0MSP.member')"
     OrdererEndpoints:
       - orderer.promark.com:7050
-    # AnchorPeers:
-    #   - Host: peer0.adv0.promark.com
-    #     Port: 1050
+    AnchorPeers:
+      - Host: peer0.adv0.promark.com
+        Port: 5000
 
   - &Adv1
     Name: adv1MSP
@@ -56,6 +56,9 @@ Organizations:
         Rule: "OR('adv1MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.adv1.promark.com
+        Port: 5100
 
   - &Adv2
     Name: adv2MSP
@@ -76,6 +79,9 @@ Organizations:
         Rule: "OR('adv2MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.adv2.promark.com
+        Port: 5200
 
   - &Adv3
     Name: adv3MSP
@@ -96,6 +102,9 @@ Organizations:
         Rule: "OR('adv3MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.adv3.promark.com
+        Port: 5300
 
   - &Adv4
     Name: adv4MSP
@@ -116,6 +125,9 @@ Organizations:
         Rule: "OR('adv4MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.adv4.promark.com
+        Port: 5400
 
   - &Pub0
     Name: pub0MSP
@@ -124,24 +136,24 @@ Organizations:
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('pub0MSP.admin', 'pub0MSP.peer', 'pub0MSP.client')"
+        Rule: "OR('pub0MSP.member')"
       Writers:
         Type: Signature
-        Rule: "OR('pub0MSP.admin', 'pub0MSP.client')"
+        Rule: "OR('pub0MSP.member')"
       Admins:
         Type: Signature
         Rule: "OR('pub0MSP.admin')"
       Endorsement:
         Type: Signature
-        Rule: "OR('pub0MSP.peer')"
+        Rule: "OR('pub0MSP.member')"
     OrdererEndpoints:
       - orderer.promark.com:7050
     # AnchorPeers defines the location of peers which can be used for
         # cross-org gossip communication. Note, this value is only encoded in
         # the genesis block in the Application section context.
-    # AnchorPeers:
-    #     - Host: peer0.pub0.promark.com
-    #       Port: 2050
+    AnchorPeers:
+      - Host: peer0.pub0.promark.com
+        Port: 6000
 
   - &Pub1
     Name: pub1MSP
@@ -162,9 +174,9 @@ Organizations:
         Rule: "OR('pub1MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
-    # AnchorPeers:
-    # - Host: peer0.pub1.promark.com
-    #   Port: 2060
+    AnchorPeers:
+      - Host: peer0.pub1.promark.com
+        Port: 6100
 
   - &Pub2
     Name: pub2MSP
@@ -185,6 +197,9 @@ Organizations:
         Rule: "OR('pub2MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.pub2.promark.com
+        Port: 6200
 
   - &Pub3
     Name: pub3MSP
@@ -205,6 +220,9 @@ Organizations:
         Rule: "OR('pub3MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.pub3.promark.com
+        Port: 6300
 
   - &Pub4
     Name: pub4MSP
@@ -225,6 +243,9 @@ Organizations:
         Rule: "OR('pub4MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
+    AnchorPeers:
+      - Host: peer0.pub4.promark.com
+        Port: 6400
 
 Capabilities:
   Channel: &ChannelCapabilities
@@ -306,7 +327,7 @@ Channel: &ChannelDefaults
     <<: *ChannelCapabilities
 
 Profiles:
-  11OrdererGenesis:
+  1OrdererGenesis:
     <<: *ChannelDefaults
     Orderer:
       <<: *OrdererDefaults
@@ -320,7 +341,7 @@ Profiles:
           - *Adv0
           - *Pub0
 
-  11Channel:
+  1Channel:
     Consortium: SampleConsortium
     <<: *ChannelDefaults
     Application:

@@ -15,7 +15,7 @@ function createChannelTx() {
 	infoln $newConfigPath
 	FABRIC_CFG_PATH=$newConfigPath
 	set -x
-	configtxgen -profile "${orgNum}${peerNum}Channel" -outputCreateChannelTx $channelTxPath -channelID $channelName -configPath $CONFIG_PATH
+	configtxgen -profile "${orgNum}Channel" -outputCreateChannelTx $channelTxPath -channelID $channelName -configPath $CONFIG_PATH
 	res=$?
 	{ set +x; } 2>/dev/null
 

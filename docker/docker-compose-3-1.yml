@@ -38,7 +38,7 @@ services:
   orderer.promark.com:
     container_name: orderer.promark.com
     environment:
-      - CORE_OPERATIONS_LISTENADDRESS=orderer.${PROJECT_NAME}.com:9443
+      - CORE_OPERATIONS_LISTENADDRESS=orderer.${COMPOSE_PROJECT_NAME}.com:9443
     extends:
       file: docker-compose.base.yml
       service: orderer-base
@@ -49,8 +49,8 @@ services:
       # - 53732:9443
     volumes:
       - ../channels/mychannel-genesis-3-1.block:/var/hyperledger/orderer/orderer.genesis.block
-      - ../credentials/ordererOrganizations/${PROJECT_NAME}.com/orderers/orderer.${PROJECT_NAME}.com/msp:/var/hyperledger/orderer/msp
-      - ../credentials/ordererOrganizations/${PROJECT_NAME}.com/orderers/orderer.${PROJECT_NAME}.com/tls/:/var/hyperledger/orderer/tls
+      - ../credentials/ordererOrganizations/${COMPOSE_PROJECT_NAME}.com/orderers/orderer.${COMPOSE_PROJECT_NAME}.com/msp:/var/hyperledger/orderer/msp
+      - ../credentials/ordererOrganizations/${COMPOSE_PROJECT_NAME}.com/orderers/orderer.${COMPOSE_PROJECT_NAME}.com/tls/:/var/hyperledger/orderer/tls
 
   peer0.adv0.promark.com:
     container_name: peer0.adv0.promark.com
@@ -58,13 +58,13 @@ services:
       - orderer.${COMPOSE_PROJECT_NAME}.com
       - couchdb0.adv0.promark.com
     environment:
-      - CORE_PEER_ID=peer0.adv0.${PROJECT_NAME}.com
-      - CORE_PEER_ADDRESS=peer0.adv0.${PROJECT_NAME}.com:7051
+      - CORE_PEER_ID=peer0.adv0.${COMPOSE_PROJECT_NAME}.com
+      - CORE_PEER_ADDRESS=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.adv0.${PROJECT_NAME}.com:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.adv0.${PROJECT_NAME}.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.adv0.${PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LOCALMSPID=adv0MSP
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.adv0.promark.com:5984
@@ -83,8 +83,8 @@ services:
       # - 55000:9443
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
-      - ../credentials/peerOrganizations/adv0.${PROJECT_NAME}.com/peers/peer0.adv0.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
-      - ../credentials/peerOrganizations/adv0.${PROJECT_NAME}.com/peers/peer0.adv0.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
+      - ../credentials/peerOrganizations/adv0.${COMPOSE_PROJECT_NAME}.com/peers/peer0.adv0.${COMPOSE_PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
+      - ../credentials/peerOrganizations/adv0.${COMPOSE_PROJECT_NAME}.com/peers/peer0.adv0.${COMPOSE_PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
 
   peer0.adv1.promark.com:
     container_name: peer0.adv1.promark.com
@@ -92,13 +92,13 @@ services:
       - orderer.${COMPOSE_PROJECT_NAME}.com
       - couchdb0.adv1.promark.com
     environment:
-      - CORE_PEER_ID=peer0.adv1.${PROJECT_NAME}.com
-      - CORE_PEER_ADDRESS=peer0.adv1.${PROJECT_NAME}.com:7051
+      - CORE_PEER_ID=peer0.adv1.${COMPOSE_PROJECT_NAME}.com
+      - CORE_PEER_ADDRESS=peer0.adv1.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.adv1.${PROJECT_NAME}.com:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.adv1.${COMPOSE_PROJECT_NAME}.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.adv1.${PROJECT_NAME}.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.adv1.${PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.adv1.${COMPOSE_PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.adv1.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LOCALMSPID=adv1MSP
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.adv1.promark.com:5984
@@ -117,8 +117,8 @@ services:
       # - 55000:9443
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
-      - ../credentials/peerOrganizations/adv1.${PROJECT_NAME}.com/peers/peer0.adv1.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
-      - ../credentials/peerOrganizations/adv1.${PROJECT_NAME}.com/peers/peer0.adv1.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
+      - ../credentials/peerOrganizations/adv1.${COMPOSE_PROJECT_NAME}.com/peers/peer0.adv1.${COMPOSE_PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
+      - ../credentials/peerOrganizations/adv1.${COMPOSE_PROJECT_NAME}.com/peers/peer0.adv1.${COMPOSE_PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
 
   peer0.adv2.promark.com:
     container_name: peer0.adv2.promark.com
@@ -126,13 +126,13 @@ services:
       - orderer.${COMPOSE_PROJECT_NAME}.com
       - couchdb0.adv2.promark.com
     environment:
-      - CORE_PEER_ID=peer0.adv2.${PROJECT_NAME}.com
-      - CORE_PEER_ADDRESS=peer0.adv2.${PROJECT_NAME}.com:7051
+      - CORE_PEER_ID=peer0.adv2.${COMPOSE_PROJECT_NAME}.com
+      - CORE_PEER_ADDRESS=peer0.adv2.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.adv2.${PROJECT_NAME}.com:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.adv2.${COMPOSE_PROJECT_NAME}.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.adv2.${PROJECT_NAME}.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.adv2.${PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.adv2.${COMPOSE_PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.adv2.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LOCALMSPID=adv2MSP
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.adv2.promark.com:5984
@@ -151,8 +151,8 @@ services:
       # - 55000:9443
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
-      - ../credentials/peerOrganizations/adv2.${PROJECT_NAME}.com/peers/peer0.adv2.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
-      - ../credentials/peerOrganizations/adv2.${PROJECT_NAME}.com/peers/peer0.adv2.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
+      - ../credentials/peerOrganizations/adv2.${COMPOSE_PROJECT_NAME}.com/peers/peer0.adv2.${COMPOSE_PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
+      - ../credentials/peerOrganizations/adv2.${COMPOSE_PROJECT_NAME}.com/peers/peer0.adv2.${COMPOSE_PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
 
   peer0.pub0.promark.com:
     container_name: peer0.pub0.promark.com
@@ -160,13 +160,13 @@ services:
       - orderer.${COMPOSE_PROJECT_NAME}.com
       - couchdb0.pub0.promark.com
     environment:
-      - CORE_PEER_ID=peer0.pub0.${PROJECT_NAME}.com
-      - CORE_PEER_ADDRESS=peer0.pub0.${PROJECT_NAME}.com:7051
+      - CORE_PEER_ID=peer0.pub0.${COMPOSE_PROJECT_NAME}.com
+      - CORE_PEER_ADDRESS=peer0.pub0.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.pub0.${PROJECT_NAME}.com:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.pub0.${COMPOSE_PROJECT_NAME}.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.pub0.${PROJECT_NAME}.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.pub0.${PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.pub0.${COMPOSE_PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.pub0.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LOCALMSPID=pub0MSP
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.pub0.promark.com:5984
@@ -185,8 +185,8 @@ services:
       # - 60000:9443
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
-      - ../credentials/peerOrganizations/pub0.${PROJECT_NAME}.com/peers/peer0.pub0.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
-      - ../credentials/peerOrganizations/pub0.${PROJECT_NAME}.com/peers/peer0.pub0.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
+      - ../credentials/peerOrganizations/pub0.${COMPOSE_PROJECT_NAME}.com/peers/peer0.pub0.${COMPOSE_PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
+      - ../credentials/peerOrganizations/pub0.${COMPOSE_PROJECT_NAME}.com/peers/peer0.pub0.${COMPOSE_PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
 
   peer0.pub1.promark.com:
     container_name: peer0.pub1.promark.com
@@ -194,13 +194,13 @@ services:
       - orderer.${COMPOSE_PROJECT_NAME}.com
       - couchdb0.pub1.promark.com
     environment:
-      - CORE_PEER_ID=peer0.pub1.${PROJECT_NAME}.com
-      - CORE_PEER_ADDRESS=peer0.pub1.${PROJECT_NAME}.com:7051
+      - CORE_PEER_ID=peer0.pub1.${COMPOSE_PROJECT_NAME}.com
+      - CORE_PEER_ADDRESS=peer0.pub1.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.pub1.${PROJECT_NAME}.com:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.pub1.${COMPOSE_PROJECT_NAME}.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.pub1.${PROJECT_NAME}.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.pub1.${PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.pub1.${COMPOSE_PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.pub1.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LOCALMSPID=pub1MSP
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.pub1.promark.com:5984
@@ -219,8 +219,8 @@ services:
       # - 60000:9443
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
-      - ../credentials/peerOrganizations/pub1.${PROJECT_NAME}.com/peers/peer0.pub1.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
-      - ../credentials/peerOrganizations/pub1.${PROJECT_NAME}.com/peers/peer0.pub1.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
+      - ../credentials/peerOrganizations/pub1.${COMPOSE_PROJECT_NAME}.com/peers/peer0.pub1.${COMPOSE_PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
+      - ../credentials/peerOrganizations/pub1.${COMPOSE_PROJECT_NAME}.com/peers/peer0.pub1.${COMPOSE_PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
 
   peer0.pub2.promark.com:
     container_name: peer0.pub2.promark.com
@@ -228,13 +228,13 @@ services:
       - orderer.${COMPOSE_PROJECT_NAME}.com
       - couchdb0.pub2.promark.com
     environment:
-      - CORE_PEER_ID=peer0.pub2.${PROJECT_NAME}.com
-      - CORE_PEER_ADDRESS=peer0.pub2.${PROJECT_NAME}.com:7051
+      - CORE_PEER_ID=peer0.pub2.${COMPOSE_PROJECT_NAME}.com
+      - CORE_PEER_ADDRESS=peer0.pub2.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.pub2.${PROJECT_NAME}.com:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.pub2.${COMPOSE_PROJECT_NAME}.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.pub2.${PROJECT_NAME}.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.pub2.${PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.pub2.${COMPOSE_PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.pub2.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LOCALMSPID=pub2MSP
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.pub2.promark.com:5984
@@ -253,8 +253,8 @@ services:
       # - 60000:9443
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
-      - ../credentials/peerOrganizations/pub2.${PROJECT_NAME}.com/peers/peer0.pub2.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
-      - ../credentials/peerOrganizations/pub2.${PROJECT_NAME}.com/peers/peer0.pub2.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
+      - ../credentials/peerOrganizations/pub2.${COMPOSE_PROJECT_NAME}.com/peers/peer0.pub2.${COMPOSE_PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
+      - ../credentials/peerOrganizations/pub2.${COMPOSE_PROJECT_NAME}.com/peers/peer0.pub2.${COMPOSE_PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
 
   couchdb0.adv0.promark.com:
     container_name: couchdb0.adv0.promark.com
