@@ -49,7 +49,7 @@ services:
       - 7050:7050
       # - 53732:9443
     volumes:
-      - ../channels/mychannel-genesis-1-3.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ../channels/mychannel-genesis-1-2.block:/var/hyperledger/orderer/orderer.genesis.block
       - ../credentials/ordererOrganizations/${COMPOSE_PROJECT_NAME}.com/orderers/orderer.${COMPOSE_PROJECT_NAME}.com/msp:/var/hyperledger/orderer/msp
       - ../credentials/ordererOrganizations/${COMPOSE_PROJECT_NAME}.com/orderers/orderer.${COMPOSE_PROJECT_NAME}.com/tls/:/var/hyperledger/orderer/tls
 
@@ -65,7 +65,7 @@ services:
       - CORE_PEER_CHAINCODEADDRESS=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7051
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LOCALMSPID=adv0MSP
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.adv0.${COMPOSE_PROJECT_NAME}.com:5984
 
@@ -105,7 +105,7 @@ services:
       - CORE_PEER_CHAINCODEADDRESS=peer0.pub0.${COMPOSE_PROJECT_NAME}.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.pub0.${COMPOSE_PROJECT_NAME}.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.pub0.${COMPOSE_PROJECT_NAME}.com:7051
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.pub0.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LOCALMSPID=pub0MSP
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.pub0.${COMPOSE_PROJECT_NAME}.com:5984
     extends:
@@ -143,7 +143,7 @@ services:
       - CORE_PEER_CHAINCODEADDRESS=peer1.adv0.${COMPOSE_PROJECT_NAME}.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.adv0.${COMPOSE_PROJECT_NAME}.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.adv0.${COMPOSE_PROJECT_NAME}.com:7051
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.adv0.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LOCALMSPID=adv0MSP
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1.adv0.${COMPOSE_PROJECT_NAME}.com:5984
     extends:
@@ -181,7 +181,7 @@ services:
       - CORE_PEER_CHAINCODEADDRESS=peer1.pub0.${COMPOSE_PROJECT_NAME}.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.pub0.${COMPOSE_PROJECT_NAME}.com:7051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.pub0.${COMPOSE_PROJECT_NAME}.com:7051
+      # - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.pub0.${COMPOSE_PROJECT_NAME}.com:7051
       - CORE_PEER_LOCALMSPID=pub0MSP
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1.pub0.${COMPOSE_PROJECT_NAME}.com:5984
     extends:

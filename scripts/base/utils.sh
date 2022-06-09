@@ -68,9 +68,9 @@ function selectPeer() {
     export CORE_PEER_TLS_ENABLED=true
     export CORE_PEER_LOCALMSPID="${org_name}MSP"
     export CORE_PEER_ADDRESS=0.0.0.0:${port}
-    export PEER_ORG_CA=${CREDENTIALS_OUTPUTS}/peerOrganizations/$org_domain/peers/$peer_domain/tls/ca.crt
-    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER_ORG_CA
-    export CORE_PEER_MSPCONFIGPATH=${CREDENTIALS_OUTPUTS}/peerOrganizations/$org_domain/users/Admin@$org_domain/msp
+    export PEER_ORG_CA=${CREDENTIALS_OUTPUTS}/peerOrganizations/${org_domain}/peers/${peer_domain}/tls/ca.crt
+    export CORE_PEER_TLS_ROOTCERT_FILE=${PEER_ORG_CA}
+    export CORE_PEER_MSPCONFIGPATH=${CREDENTIALS_OUTPUTS}/peerOrganizations/${org_domain}/users/Admin@${org_domain}/msp
 
     # infoln $PEER_ORG_CA
     # infoln $CORE_PEER_MSPCONFIGPATH

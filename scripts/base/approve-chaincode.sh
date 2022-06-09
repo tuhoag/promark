@@ -20,12 +20,12 @@ function approveForMyOrg() {
 
     for orgType in ${orgTypes[@]}; do
         for orgId in $(seq 0 $maxOrgId); do
-            for peerId in $(seq 0 $maxPeerId); do
+            # for peerId in $(seq 0 $maxPeerId); do
                 local peerName="peer${peerId}.${orgType}${orgId}"
 
                 infoln "Approving chaincode ${chaincodeName} in channel ${channelName} of ${peerName}..."
 
-                selectPeer $orgType $orgId $peerId
+                selectPeer $orgType $orgId 0
 
                 packageName="${chaincodeName}_${sequence}"
                 getPackageId $packageName
@@ -42,7 +42,7 @@ function approveForMyOrg() {
 
                 verifyResult $res "Chaincode definition approved on ${peerName} on channel '$channelName' failed"
                 successln "Chaincode definition approved on ${peerName} on channel '$channelName'"
-            done
+            # done
         done
     done
 }

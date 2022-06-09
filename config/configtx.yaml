@@ -30,7 +30,7 @@ Organizations:
         Rule: "OR('adv0MSP.admin')"
       Endorsement:
         Type: Signature
-        Rule: "OR('adv0MSP.member')"
+        Rule: "OR('adv0MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
     AnchorPeers:
@@ -145,7 +145,7 @@ Organizations:
         Rule: "OR('pub0MSP.admin')"
       Endorsement:
         Type: Signature
-        Rule: "OR('pub0MSP.member')"
+        Rule: "OR('pub0MSP.peer')"
     OrdererEndpoints:
       - orderer.promark.com:7050
     # AnchorPeers defines the location of peers which can be used for

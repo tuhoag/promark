@@ -24,7 +24,7 @@ function commitChaincode() {
 
     infoln "Commiting chaincode $chaincodeName in channel '$channelName'..."
 
-    parsePeerConnectionParameters $orgTypes $orgNum $peerNum
+    parsePeerConnectionParameters $orgTypes $orgNum 1
 
     res=$?
     verifyResult $res "Invoke transaction failed on channel '$channelName' due to uneven number of peer and org parameters "
