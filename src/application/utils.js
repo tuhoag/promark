@@ -8,7 +8,7 @@ const logger = require('./logger')(__filename, "info");
 
 
 const buildCPP = async (numOrgsPerType, numPeersPerOrg) => {
-    const connectionProfileName = `networkConfig-${numOrgsPerType}-${numPeersPerOrg}.yaml`;
+    const connectionProfileName = path.resolve(__dirname, '..', '..', 'config', 'network', `networkConfig-${numOrgsPerType}-${numPeersPerOrg}.yaml`);
     return yaml.safeLoad(fs.readFileSync(connectionProfileName, 'utf8'));
 }
 

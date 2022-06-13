@@ -177,6 +177,19 @@ function getAllCamp() {
     # $SCRIPTS_DIR/get-all-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,pub" $1 $2
 }
 
+function deleteAllCamps() {
+    local orgNum=$1
+    local peerNum=$2
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node main.js $orgNum $peerNum campaign delall
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/get-all-camp.sh $CHANNEL_NAME $CAMPAIGN_CHAINCODE_NAME "adv,pub" $1 $2
+}
+
 function deleteCampById() {
     local orgNum=$1
     local peerNum=$2
@@ -276,15 +289,43 @@ function invokeGetCustomerProofById() {
     # $SCRIPTS_DIR/get-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2 $3
 }
 
-function invokeVerifyProof() {
+function invokeTestAllChaincodes() {
     local orgNum=$1
     local peerNum=$2
-    local camId=$3
-    local proofId=$4
 
     pushd $CLIENT_DIR_PATH
     set -x
-    node main.js $orgNum $peerNum proof verify $camId $proofId
+    node main.js $orgNum $peerNum test
+    { set +x; } 2>/dev/null
+    popd
+}
+
+function invokeVerifyPoCProof() {
+    local orgNum=$1
+    local peerNum=$2
+    local camId=$3
+    local comm=$4
+    local r=$5
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node main.js $orgNum $peerNum proof verifypoc $camId $comm $r
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/verify-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2 $3 $4 $5
+}
+
+function invokeVerifyTPoCProof() {
+    local orgNum=$1
+    local peerNum=$2
+    local camId=$3
+    local comms=$4
+    local rs=$5
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node main.js $orgNum $peerNum proof verifytpoc $camId $comms $rs
     { set +x; } 2>/dev/null
     popd
 
@@ -468,9 +509,12 @@ elif [ $MODE = "campaign" ]; then
     SUB_MODE=$4
 
     if [ $SUB_MODE = "add" ]; then
-        invokeCreateCamp $NO_ORGS $NO_PEERS
+        DEVICES=$5
+        invokeCreateCamp $NO_ORGS $NO_PEERS $DEVICES
     elif [ $SUB_MODE = "all" ]; then
         getAllCamp $NO_ORGS $NO_PEERS
+    elif [ $SUB_MODE = "delall" ]; then
+        deleteAllCamps $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "del" ]; then
         camId=$5
         deleteCampById $NO_ORGS $NO_PEERS $camId
@@ -502,13 +546,21 @@ elif [ $MODE = "proof" ]; then
     elif [ $SUB_MODE = "get" ]; then
         proofId=$5
         invokeGetCustomerProofById $NO_ORGS $NO_PEERS $proofId
-    elif [ $SUB_MODE = "verify" ]; then
+    elif [ $SUB_MODE = "verifypoc" ]; then
         camId=$5
-        proofId=$6
-        invokeVerifyProof $NO_ORGS $NO_PEERS $camId $proofId
+        comm=$6
+        r=$7
+        invokeVerifyPoCProof $NO_ORGS $NO_PEERS $camId $comm $r
+    elif [ $SUB_MODE = "verifytpoc" ]; then
+        camId=$5
+        comm=$6
+        r=$7
+        invokeVerifyTPoCProof $NO_ORGS $NO_PEERS $camId $comm $r
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
+elif [ $MODE = "test" ]; then
+    invokeTestAllChaincodes $NO_ORGS $NO_PEERS
 
 elif [ $MODE = "service" ]; then
     SUB_MODE=$4

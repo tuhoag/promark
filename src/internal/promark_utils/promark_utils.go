@@ -17,7 +17,7 @@ import (
 
 	ristretto "github.com/bwesterb/go-ristretto"
 	redis "github.com/go-redis/redis/v8"
-	tecc_utils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
+	eutils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
 )
 
 type PromarkRequest struct {
@@ -142,14 +142,15 @@ type VerifierCommitmentChannelResult struct {
 }
 
 type PoCProof struct {
-	Comm string   `json:"comm"`
-	Rs   []string `json:"rs"`
+	Comm         string `json:"comm"`
+	R            string `json:"r"`
+	NumVerifiers int    `json:"numVerifiers"`
 	// SubComs []string `json:"subComs"`
 }
 
 type TPoCProof struct {
-	TComms []string `json:"tComms"`
-	TRs    []string `json:"tRs"` // encrypted blinding factors
+	TComms []string `json:"tComms"` // encrypted blinding factors
+	TRs    []string `json:"tRs"`    // encrypted blinding factors
 	Hashes []string `json:"hashes"`
 	Key    string   `json:"key"`
 }
@@ -281,7 +282,7 @@ func GenerateProofFromVerifiers(campaign *Campaign, customerId string) (*PoCProo
 			return nil, err
 		}
 
-		Ci, err := tecc_utils.ConvertStringToPoint(verifierProof.Comm)
+		Ci, err := eutils.ConvertStringToPoint(verifierProof.Comm)
 
 		if err != nil {
 			return nil, err
@@ -296,16 +297,16 @@ func GenerateProofFromVerifiers(campaign *Campaign, customerId string) (*PoCProo
 		// subComs = append(subComs, verifierProof.Comm)
 	}
 
-	CommEnc := tecc_utils.ConvertPointToString(&C)
+	CommEnc := eutils.ConvertPointToString(&C)
 
 	proof := PoCProof{
 		Comm: CommEnc,
-		Rs:   randomValues,
+		// Rs:   randomValues,
 		// SubComs: subComs,
 	}
 
 	fmt.Println("proof.Comm: " + proof.Comm)
-	fmt.Printf("proof.Rs: %s\n", proof.Rs)
+	// fmt.Printf("proof.Rs: %s\n", proof.Rs)
 	// fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
 
 	return &proof, nil
@@ -350,7 +351,7 @@ func GenerateProofFromVerifiersSocketAsync(campaign *Campaign, userId string) (*
 			return nil, result.Error
 		}
 
-		Ci, err := tecc_utils.ConvertStringToPoint(result.Proof.Comm)
+		Ci, err := eutils.ConvertStringToPoint(result.Proof.Comm)
 
 		if err != nil {
 			return nil, err
@@ -364,16 +365,16 @@ func GenerateProofFromVerifiersSocketAsync(campaign *Campaign, userId string) (*
 
 	close(vProofChannel)
 
-	CommEnc := tecc_utils.ConvertPointToString(&C)
+	CommEnc := eutils.ConvertPointToString(&C)
 
 	proof := PoCProof{
 		Comm: CommEnc,
-		Rs:   randomValues,
+		// Rs:   randomValues,
 		// SubComs: subComs,
 	}
 
 	fmt.Println("proof.Comm: " + proof.Comm)
-	fmt.Printf("proof.Rs: %s\n", proof.Rs)
+	// fmt.Printf("proof.Rs: %s\n", proof.Rs)
 	// fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
 
 	return &proof, nil
@@ -401,6 +402,151 @@ func ConcurrentRequestCommitment(camId string, customerId string, url string, re
 		Proof: *verifierProof,
 		Error: err,
 	}
+}
+
+func GeneratePoCProofFromVerifiers(campaign *Campaign) (*PoCProof, error) {
+	// generate a random values for each verifiers
+	numVerifiers := len(campaign.VerifierURLs)
+
+	var C ristretto.Point
+	var r ristretto.Scalar
+
+	C.SetZero()
+	r.SetZero()
+
+	fmt.Printf("Init C: %s\n", C)
+	for i := 0; i < numVerifiers; i++ {
+		verifierURL := campaign.VerifierURLs[i]
+
+		fmt.Println("Call RequestVerifierToGenerateSubPoCProof: " + verifierURL)
+		verifierProof, err := RequestVerifierToGenerateSubPoCProof(verifierURL)
+
+		if err != nil {
+			return nil, err
+		}
+
+		Ci, err := eutils.ConvertStringToPoint(verifierProof.Comm)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ri, err := eutils.ConvertStringToScalar(verifierProof.R)
+
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Printf("Transfer %s to point %s\n", verifierProof.Comm, Ci)
+
+		C.Add(&C, Ci)
+		r.Add(&r, ri)
+		fmt.Printf("Current C: %s after adding %s\n", C, Ci)
+		fmt.Printf("Current r: %s after adding %s\n", r, ri)
+	}
+
+	CommEnc := eutils.ConvertPointToString(&C)
+	rEnc := eutils.ConvertScalarToString(&r)
+
+	proof := PoCProof{
+		Comm:         CommEnc,
+		R:            rEnc,
+		NumVerifiers: numVerifiers,
+	}
+
+	fmt.Println("proof.Comm: " + proof.Comm)
+	fmt.Println("proof.r: " + proof.R)
+	fmt.Printf("proof.numVerifiers: %s\n", proof.NumVerifiers)
+	// fmt.Printf("proof.Rs: %s\n", proof.Rs)
+	// fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
+
+	return &proof, nil
+}
+
+func RequestVerifierToGenerateSubPoCProof(url string) (*PoCProof, error) {
+	// putils.SendLog("RequestCommitment at", url, LOG_MODE)
+	conn, err := net.Dial("tcp", url)
+	if err != nil {
+		// putils.SendLog("Error connecting:", err.Error(), LOG_MODE)
+
+		fmt.Println("Error connecting:" + err.Error())
+		return nil, errors.New("ERROR:" + err.Error())
+	}
+
+	SendRequest(conn, "genpoc", "")
+	responseStr, err := bufio.NewReader(conn).ReadString('\n')
+
+	if err != nil {
+		// sendLog("Error connecting:", err.Error())
+		log.Println("Error generating PoC:", err.Error())
+		return nil, errors.New("Error generate PoC:" + err.Error())
+	}
+
+	fmt.Println("Reiceived From: " + url + "-Response:" + responseStr)
+	// SendLog("Reiceived From: "+url+"-Response:", responseStr, LOG_MODE)
+
+	response, err := ParseResponse(responseStr)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var subPoCProof PoCProof
+	err = json.Unmarshal([]byte(response.Data), &subPoCProof)
+
+	if err != nil {
+		fmt.Printf("Unmarshal error: %v\n", err)
+		return nil, err
+	}
+
+	fmt.Printf("Returned from %s:%s\n", url, subPoCProof)
+
+	return &subPoCProof, nil
+}
+
+func GenerateTPoCs(poc *PoCProof, numTPoCs int) (*PoCAndTPoCProofs, error) {
+	numVerifiers := poc.NumVerifiers
+	var tpocs = make([]TPoCProof, numTPoCs)
+
+	commPoint, err := eutils.ConvertStringToPoint(poc.Comm)
+	if err != nil {
+		return nil, err
+	}
+
+	rScalar, err := eutils.ConvertStringToScalar(poc.R)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < numTPoCs; i++ {
+		subComms := eutils.SplitPoint(commPoint, numVerifiers)
+		subRs := eutils.SplitScalar(rScalar, numVerifiers)
+
+		var tcomms = make([]string, numVerifiers)
+		var trs = make([]string, numVerifiers)
+		var hashes = make([]string, numVerifiers)
+		var key string
+
+		for j := 0; j < numVerifiers; j++ {
+			tcomms[j] = eutils.ConvertPointToString(subComms[j]) // must encrypt comm of verifier j
+			trs[j] = eutils.ConvertScalarToString(subRs[j])
+		}
+
+		tpoc := TPoCProof{
+			TComms: tcomms,
+			TRs:    trs,
+			Hashes: hashes,
+			Key:    key,
+		}
+		tpocs[i] = tpoc
+	}
+
+	result := PoCAndTPoCProofs{
+		PoC:   *poc,
+		TPoCs: tpocs,
+	}
+
+	return &result, nil
 }
 
 func RequestCommitmentNoSave(camId string, customerId string, url string) (*CampaignCustomerVerifierProof, error) {

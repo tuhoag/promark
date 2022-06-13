@@ -56,10 +56,23 @@ const proofCommandHandler = async argv => {
         return proofClient.generatePoCAndTPoCs(camId, userId, numTPoCs);
     } else if (command == "verifypoc") {
         camId = argv[1];
-        const userId = argv[2];
+        const comm = argv[2];
+        const r = argv[3];
 
-        logger.debug(`verifyPoCProof: ${camId}, ${userId}`);
-        return proofClient.verifyPoCProof(camId, comm, rs);
+        logger.debug(`verifyPoCProof: ${camId}, ${comm}, ${r}`);
+        return proofClient.verifyPoCProof(camId, comm, r);
+    } else if (command == "verifytpoc") {
+        camId = argv[1];
+        const csStr = argv[2];
+        const rsStr = argv[3];
+
+        const cs = argv[2].split(';');
+        const rs = argv[3].split(';');
+        const hs = ["h1", "h2"];
+        const key = "";
+
+        logger.debug(`verifytPoCProof: ${camId}, ${cs}, ${rs}`);
+        return proofClient.verifyTPoCProof(camId, cs, rs, hs, key);
     } else if (command == "add") {
         const comm = argv[1];
         const rsStr = argv[2];
@@ -116,11 +129,11 @@ const testCommandHandler = async argv => {
     // sleep(2000);
 
     // verify pocs
-    let result = await proofClient.verifyPoCProof(campaign.id, customerPocAndTPoCs.poc.comm, customerPocAndTPoCs.poc.rs);
+    let result = await proofClient.verifyPoCProof(campaign.id, customerPocAndTPoCs.poc.comm, customerPocAndTPoCs.poc.r);
 
     logger.info(`verification customer poc result-true: ${result}`);
 
-    result = await proofClient.verifyPoCProof(campaign.id, devicePocAndTPoCs.poc.comm, devicePocAndTPoCs.poc.rs);
+    result = await proofClient.verifyPoCProof(campaign.id, devicePocAndTPoCs.poc.comm, devicePocAndTPoCs.poc.r);
 
     logger.info(`verification device poc result-true: ${result}`);
 

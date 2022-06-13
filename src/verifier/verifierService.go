@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	// "crypto/rsa"
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
@@ -10,26 +11,42 @@ import (
 	// "errors"
 	"fmt"
 	// "log"
+	"io/ioutil"
 	"net"
 	"os"
 
+	putils "internal/promark_utils"
+
 	pedersen "github.com/tuhoag/elliptic-curve-cryptography-go/pedersen"
 	eutils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
-	putils "internal/promark_utils"
 
 	ristretto "github.com/bwesterb/go-ristretto"
 	redis "github.com/go-redis/redis/v8"
+
 	// "strings"
 	// "log"
+	"path/filepath"
 )
 
 var ctx = context.Background()
 var LOG_MODE = "debug"
+var secretFileName string
+var H ristretto.Point
+var HEnc string
+var s ristretto.Scalar
+var SEnc string
+var cryptoServiceSocketURL = "external.promark.com:5000"
 
 func main() {
 	port := os.Getenv("API_PORT")
 	name := os.Getenv("CORE_PEER_ID")
-	// port := "5002"
+	secretFileName = filepath.Join("certs", fmt.Sprintf("%s.mycert", name))
+
+	err := initialize()
+	if err != nil {
+		fmt.Printf("Cannot generate secret number and get H:%s\n", err)
+	}
+	fmt.Printf("verifier:%s - H:%s - s:%s\n", name, H, s)
 
 	fmt.Println("Starting 'tcp' server on " + name + ":" + port)
 	l, err := net.Listen("tcp", "0.0.0.0:"+port)
@@ -54,7 +71,95 @@ func main() {
 	}
 }
 
+func getHFromCryptoService() (*putils.CampaignCryptoParams, error) {
+	conn, err := net.Dial("tcp", cryptoServiceSocketURL)
+	if err != nil {
+		// sendLog("Error connecting:", err.Error())
+
+		fmt.Println("Error connecting:" + err.Error())
+		return nil, errors.New("Error connecting:" + err.Error())
+	}
+
+	putils.SendRequest(conn, "get", "")
+	responseStr, err := bufio.NewReader(conn).ReadString('\n')
+
+	if err != nil {
+		// sendLog("Error connecting:", err.Error())
+		fmt.Println("Error in getting H:", err.Error())
+		return nil, errors.New("Error in getting H:" + err.Error())
+	}
+	fmt.Println("Reiceived From: " + cryptoServiceSocketURL + "-Response:" + responseStr)
+
+	response, err := putils.ParseResponse(responseStr)
+
+	if err != nil {
+		return nil, err
+	}
+	var cryptoParams putils.CampaignCryptoParams
+	err = json.Unmarshal([]byte(response.Data), &cryptoParams)
+
+	if err != nil {
+		return nil, err
+	}
+	return &cryptoParams, nil
+}
+
+func initialize() error {
+	// check if the file storing H is existed
+	data, err := ioutil.ReadFile(secretFileName)
+	if err != nil {
+		// generate  and store in a file
+		// var s ristretto.Scalar
+		s.Rand()
+		sBytes := s.Bytes()
+		sEnc := b64.StdEncoding.EncodeToString(sBytes)
+
+		f, err := os.Create(secretFileName)
+		if err != nil {
+			return err
+		}
+
+		f.WriteString(sEnc)
+		f.Close()
+	} else {
+
+		sp, err := eutils.ConvertStringToScalar(string(data))
+		if err != nil {
+			return err
+		}
+		s = *sp
+	}
+
+	// contact cryptoService for H
+	for {
+		cryptoParams, err := getHFromCryptoService()
+
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		HEnc = cryptoParams.H
+		Hp, err := eutils.ConvertStringToPoint(HEnc)
+
+		if err != nil {
+			return err
+		}
+
+		H = *Hp
+		break
+	}
+
+	return nil
+}
+
 func handleConnection(conn net.Conn) {
+	defer func() {
+		if r := recover(); r != nil {
+			putils.SendResponse(conn, fmt.Sprintf("%s", r), "")
+		}
+	}()
+
 	buffer, err := bufio.NewReader(conn).ReadString('\n')
 
 	if err != nil {
@@ -87,6 +192,10 @@ func handleConnection(conn net.Conn) {
 		CalculateCommitmentHandler(conn, request.Data)
 	} else if request.Command == "commit-nosave" {
 		CalculateCommitmentNoSaveHandler(conn, request.Data)
+	} else if request.Command == "genpoc" {
+		GenerateSubPoCProof(conn, request.Data)
+	} else if request.Command == "commit-nocam" {
+		CalculateCommitmentNoCamHandler(conn, request.Data)
 	} else if request.Command == "verify" {
 		VerifyCommitmentHandler(conn, request.Data)
 	} else {
@@ -238,6 +347,56 @@ func CalculateCommitmentHandler(conn net.Conn, requestData string) {
 	putils.SendResponse(conn, "", string(responseData))
 }
 
+func GenerateSubPoCProof(conn net.Conn, requestData string) {
+	// calculate commitment
+	subPoCProof, err := GeneratePoCProof()
+
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	fmt.Printf("Calculated Proof - Comm:%s", subPoCProof.Comm)
+	// response := putils.CampaignCustomerVerifierProof{}
+	responseData, err := json.Marshal(subPoCProof)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	putils.SendResponse(conn, "", string(responseData))
+}
+
+func CalculateCommitmentNoCamHandler(conn net.Conn, requestData string) {
+	// calculate commitment
+	var paramsRequest putils.VerificationRequest
+	err := json.Unmarshal([]byte(requestData), &paramsRequest)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	fmt.Printf("Got - paramsRequest.CamId:%s\n", paramsRequest.CamId)
+
+	commEnc, err := CalculateCommitment(paramsRequest.R)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+		return
+	}
+
+	fmt.Printf("Calculated Proof - Comm:%s", commEnc)
+	response := putils.VerificationResponse{
+		CamId: paramsRequest.CamId,
+		S:     SEnc,
+		R:     paramsRequest.R,
+		Comm:  commEnc,
+		H:     HEnc,
+	}
+	responseData, err := json.Marshal(response)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	putils.SendResponse(conn, "", string(responseData))
+}
+
 func CalculateCommitmentNoSaveHandler(conn net.Conn, requestData string) {
 	// calculate commitment
 	var paramsRequest putils.ProofGenerationRequest
@@ -262,7 +421,7 @@ func CalculateCommitmentNoSaveHandler(conn net.Conn, requestData string) {
 	fmt.Println("Got - vCryptoParams.H:" + vCryptoParams.H)
 	fmt.Println("Got - vCryptoParams.S:" + vCryptoParams.S)
 
-	subProof, err := CalculateCommitment(paramsRequest.CamId, paramsRequest.CustomerId, vCryptoParams)
+	subProof, err := GenerateRAndCalculateCommitment(paramsRequest.CamId, paramsRequest.CustomerId, vCryptoParams)
 	// err = SetCustomerCampaignProofTransaction(paramsRequest.CamId, paramsRequest.CustomerId, *vCryptoParams)
 
 	// if err != nil {
@@ -302,7 +461,40 @@ func GetCustomerCampaignProof(camId string, userId string) (*putils.CampaignCust
 	return &subProof, nil
 }
 
-func CalculateCommitment(camId string, userId string, vCryptoParams *putils.VerifierCryptoParams) (*putils.CampaignCustomerVerifierProof, error) {
+func GeneratePoCProof() (*putils.PoCProof, error) {
+	// generate r
+	var rScalar ristretto.Scalar
+	rScalar.Rand()
+	fmt.Printf("Generated R: %s\n", rScalar)
+
+	// calculate commitment
+	comm := pedersen.CommitTo(&H, &rScalar, &s)
+	fmt.Printf("Calculated comm: %s\n", comm)
+
+	commEnc := eutils.ConvertPointToString(comm)
+	rEnc := eutils.ConvertScalarToString(&rScalar)
+
+	poc := putils.PoCProof{
+		Comm: commEnc,
+		R:    rEnc,
+	}
+
+	return &poc, nil
+}
+
+func CalculateCommitment(rEnc string) (string, error) {
+	r, err := eutils.ConvertStringToScalar(rEnc)
+	if err != nil {
+		return "", err
+	}
+
+	comm := pedersen.CommitTo(&H, r, &s)
+	cEnc := eutils.ConvertPointToString(comm)
+
+	return cEnc, nil
+}
+
+func GenerateRAndCalculateCommitment(camId string, userId string, vCryptoParams *putils.VerifierCryptoParams) (*putils.CampaignCustomerVerifierProof, error) {
 	var rScalar ristretto.Scalar
 	rScalar.Rand()
 	fmt.Printf("Generated R: %s\n", rScalar)
@@ -362,7 +554,7 @@ func SetCustomerCampaignProofTransaction(camId string, userId string, vCryptoPar
 
 		// Actual operation (local in optimistic lock).
 		if err == redis.Nil {
-			subProof, err := CalculateCommitment(camId, userId, vCryptoParams)
+			subProof, err := GenerateRAndCalculateCommitment(camId, userId, vCryptoParams)
 			// var rScalar ristretto.Scalar
 			// rScalar.Rand()
 			// fmt.Println("Generated random scalar")

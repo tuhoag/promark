@@ -49,7 +49,7 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
             contractId: "campaign",
             contractFunction: 'CreateCampaign',
             contractArguments: [camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
-            readOnly: true
+            readOnly: false
         };
 
         this.campaignIds.push(camId);

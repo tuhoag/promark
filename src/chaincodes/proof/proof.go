@@ -22,6 +22,7 @@ import (
 	ristretto "github.com/bwesterb/go-ristretto"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 	"github.com/hyperledger/fabric/common/util"
+	// eutils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
 )
 
 var LOG_MODE = "test"
@@ -36,40 +37,6 @@ var (
 	userCryptoParamsRequestURL = cryptoServiceURL + "/usercamp"
 	logURL                     = "http://logs.promark.com:5003/log"
 )
-
-func (s *ProofSmartContract) GenerateCustomerCampaignProof(ctx contractapi.TransactionContextInterface, camId string, userId string) (*putils.PoCProof, error) {
-	putils.SendLog("GenerateCustomerCampaignProof", "", LOG_MODE)
-	putils.SendLog("camId:", camId, LOG_MODE)
-	putils.SendLog("userId", userId, LOG_MODE)
-
-	campaignChaincodeArgs := util.ToChaincodeArgs("GetCampaignById", camId)
-	response := ctx.GetStub().InvokeChaincode("campaign", campaignChaincodeArgs, "mychannel")
-
-	putils.SendLog("response.Payload", string(response.Payload), LOG_MODE)
-	putils.SendLog("response.Status", string(response.Status), LOG_MODE)
-	putils.SendLog("response.message", string(response.Message), LOG_MODE)
-	// putils.SendLog("response.error", string(response.Error))
-	// putils.SendLog("response.message is nil", strconv.FormatBool(response.Message == ""))
-
-	if response.Message != "" {
-		return nil, fmt.Errorf(response.Message)
-	}
-
-	var campaign putils.Campaign
-
-	err := json.Unmarshal([]byte(response.Payload), &campaign)
-	if err != nil {
-		return nil, err
-	}
-
-	proof, err := putils.GenerateProofFromVerifiersSocketAsync(&campaign, userId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return proof, nil
-}
 
 func (s *ProofSmartContract) GetAllProofs(ctx contractapi.TransactionContextInterface) ([]*putils.CustomerCampaignTokenTransaction, error) {
 	// range query with empty string for startKey and endKey does an
@@ -194,7 +161,7 @@ func (s *ProofSmartContract) DeleteProofById(ctx contractapi.TransactionContextI
 	return true, err
 }
 
-func (s *ProofSmartContract) VerifyPoCProof(ctx contractapi.TransactionContextInterface, camId string, cStr string, rsStr string) (bool, error) {
+func (s *ProofSmartContract) VerifyPoCProof(ctx contractapi.TransactionContextInterface, camId string, cStr string, rStr string) (bool, error) {
 	putils.SendLog("VerifyPoCProof", "", LOG_MODE)
 	putils.SendLog("camId", camId, LOG_MODE)
 
@@ -204,26 +171,26 @@ func (s *ProofSmartContract) VerifyPoCProof(ctx contractapi.TransactionContextIn
 		return false, err
 	}
 
+	// if numVerifiers != len(campaign.VerifierURLs) {
+	// 	return false, fmt.Errorf("Input number of verifiers (%s) is different with campaign num verifiers (%s)", numVerifiers, len(campaign.VerifierURLs))
+	// }
+
+	numVerifiers := len(campaign.VerifierURLs)
 	putils.SendLog("campaign.Id", campaign.Id, LOG_MODE)
 	putils.SendLog("campaign.Name", campaign.Name, LOG_MODE)
-	putils.SendLog("campaign.VerifierURLs", string(len(campaign.VerifierURLs)), LOG_MODE)
+	putils.SendLog("campaign.VerifierURLs", string(numVerifiers), LOG_MODE)
 
 	if err != nil {
 		return false, err
 	}
 
-	rs := strings.Split(rsStr, ";")
-
-	if len(rs) != len(campaign.VerifierURLs) {
-		return false, fmt.Errorf("rs has different length (%d) to the number of verifiers (%d)", len(rs), len(campaign.VerifierURLs))
-	}
-
 	proof := putils.PoCProof{
-		Comm: cStr,
-		Rs:   rs,
+		Comm:         cStr,
+		R:            rStr,
+		NumVerifiers: numVerifiers,
 	}
 
-	verificationResult, err := VerifyPoCSocket(campaign, &proof)
+	verificationResult, err := putils.VerifyPoCSocket(campaign, &proof)
 
 	return verificationResult, err
 }
@@ -261,7 +228,7 @@ func (s *ProofSmartContract) VerifyTPoCProof(ctx contractapi.TransactionContextI
 		Key:    keyStr,
 	}
 
-	verificationResult, err := VerifyTPoCSocket(campaign, &proof)
+	verificationResult, err := putils.VerifyTPoCSocket(campaign, &proof)
 
 	return verificationResult, err
 }
@@ -353,76 +320,6 @@ func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionCont
 	verificationResult, err := VerifyCommitmentSocketAsync(campaign, &proof.CustomerProof)
 
 	return verificationResult, err
-}
-
-func VerifyPoCSocket(campaign *putils.Campaign, proof *putils.PoCProof) (bool, error) {
-	fmt.Printf("proof.Rs: %s\n", proof.Rs)
-
-	var C ristretto.Point
-	C.SetZero()
-
-	for i, verifierURL := range campaign.VerifierURLs {
-		// call verifier to compute sub commitment
-		CiStr, err := RequestVerification(campaign.Id, proof.Rs[i], verifierURL)
-		if err != nil {
-			return false, err
-		}
-
-		Ci, err := tecc_utils.ConvertStringToPoint(*CiStr)
-		if err != nil {
-			return false, err
-		}
-
-		C.Add(&C, Ci)
-	}
-
-	comm, err := tecc_utils.ConvertStringToPoint(proof.Comm)
-	if err != nil {
-		return false, err
-	}
-
-	// putils.SendLog("proof.Com", proof.Comm, LOG_MODE)
-	// putils.SendLog("calculated Com", b64.StdEncoding.EncodeToString(C.Bytes()), LOG_MODE)
-	if C.Equals(comm) {
-		return true, nil
-	} else {
-		return false, nil
-	}
-}
-
-func VerifyTPoCSocket(campaign *putils.Campaign, proof *putils.TPoCProof) (bool, error) {
-	fmt.Printf("proof.TRs: %s\n", proof.TRs)
-
-	var C, C2 ristretto.Point
-	C.SetZero()
-	C2.SetZero()
-
-	for i, verifierURL := range campaign.VerifierURLs {
-		// call verifier to compute sub commitment
-		CiStr, err := RequestVerification(campaign.Id, proof.TRs[i], verifierURL)
-		if err != nil {
-			return false, err
-		}
-
-		Ci, err := tecc_utils.ConvertStringToPoint(*CiStr)
-		if err != nil {
-			return false, err
-		}
-
-		C2i, err := tecc_utils.ConvertStringToPoint(proof.TComms[i])
-		if err != nil {
-			return false, err
-		}
-
-		C.Add(&C, Ci)
-		C2.Add(&C2, C2i)
-	}
-
-	if C.Equals(&C2) {
-		return true, nil
-	} else {
-		return false, nil
-	}
 }
 
 func VerifyCommitmentSocketAsync(campaign *putils.Campaign, proof *putils.Proof) (bool, error) {

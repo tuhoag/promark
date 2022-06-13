@@ -19,3 +19,5 @@ require (
 )
 
 replace internal/promark_utils => ../internal/promark_utils
+
+replace github.com/tuhoag/elliptic-curve-cryptography-go => ../internal/elliptic-curve-cryptography-go

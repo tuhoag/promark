@@ -5,7 +5,7 @@ const process = require("process");
 
 const logger = require('@hyperledger/caliper-core').CaliperUtils.getLogger('promark');
 
-const CreateCampaignArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices) => {
+exports.CreateCampaignArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices) => {
     const camId = "c" + Math.floor(Math.random()*10000);
     const name = "Campaign " + camId;
     const advertiser = "adv"+Math.floor(Math.random()*10000) % numOrgsPerType;
@@ -41,7 +41,7 @@ const CreateCampaignArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiersPerType
     };
 }
 
-const loadInitData = (numCampaigns, numProofs, numVerifiersPerType) => {
+exports.loadInitData = (numCampaigns, numProofs, numVerifiersPerType) => {
     const path = `./data/initData-${numCampaigns}-${numProofs}-${numVerifiersPerType}.json`;
     // throw new Error(process.cwd());
     try {
@@ -55,4 +55,4 @@ const loadInitData = (numCampaigns, numProofs, numVerifiersPerType) => {
     }
 }
 
-module.exports = { CreateCampaignArgs, loadInitData };
+// module.exports = { CreateCampaignArgs, loadInitData };

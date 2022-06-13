@@ -56,7 +56,8 @@ services:
     container_name: peer0.adv0.promark.com
     depends_on:
       - orderer.${COMPOSE_PROJECT_NAME}.com
-      - couchdb0.adv0.promark.com
+      - couchdb0.adv0.${COMPOSE_PROJECT_NAME}.com
+      - external.${COMPOSE_PROJECT_NAME}.com
     environment:
       - CORE_PEER_ID=peer0.adv0.${COMPOSE_PROJECT_NAME}.com
       - CORE_PEER_ADDRESS=peer0.adv0.${COMPOSE_PROJECT_NAME}.com:7051
@@ -85,7 +86,8 @@ services:
     container_name: peer0.pub0.promark.com
     depends_on:
       - orderer.${COMPOSE_PROJECT_NAME}.com
-      - couchdb0.pub0.promark.com
+      - couchdb0.pub0.${COMPOSE_PROJECT_NAME}.com
+      - external.${COMPOSE_PROJECT_NAME}.com
     environment:
       - CORE_PEER_ID=peer0.pub0.${COMPOSE_PROJECT_NAME}.com
       - CORE_PEER_ADDRESS=peer0.pub0.${COMPOSE_PROJECT_NAME}.com:7051

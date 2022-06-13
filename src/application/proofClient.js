@@ -35,14 +35,13 @@ exports.generatePoCAndTPoCs = async (camId, entityId, numTPoCs) => {
     });
 }
 
-exports.verifyPoCProof = async (camId, comm, rs) => {
-    logger.debug(`verifyPoCProof: ${camId},${comm},${rs}`);
+exports.verifyPoCProof = async (camId, comm, r) => {
+    logger.debug(`verifyPoCProof: ${camId},${comm},${r}`);
 
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
-        const rsStr = rs.join(";");
-        logger.info(`VerifyPoCProof: camId:${camId} - comm:${comm} - rsStr: ${rsStr}`);
-        return contract.submitTransaction("VerifyPoCProof", camId, comm, rsStr);
+        logger.info(`VerifyPoCProof: camId:${camId} - comm:${comm} - r: ${r}`);
+        return contract.submitTransaction("VerifyPoCProof", camId, comm, r);
     }, async response => {
         logger.debug(`response:${response}`);
         const resultProof = JSON.parse(response);

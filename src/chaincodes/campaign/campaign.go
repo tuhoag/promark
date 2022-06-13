@@ -2,31 +2,21 @@ package main
 
 import (
 	"bufio"
-	"strconv"
-	// "time"
-
-	// b64 "encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-
-	// ristretto "github.com/bwesterb/go-ristretto"
-	// pedersen "github.com/tuhoag/elliptic-curve-cryptography-go/pedersen"
-	// eutils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
+	"strconv"
 
 	putils "internal/promark_utils"
 	"io/ioutil"
 	"log"
 
-	// "github.com/hyperledger/fabric-chaincode-go/pkg/attrmgr"
 	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 
-	// "math/big"
 	"net"
 	"net/http"
 
-	// "os"
 	"strings"
 	"sync"
 )
@@ -270,11 +260,11 @@ func (s *CampaignSmartContract) CreateCampaignAsync(ctx contractapi.TransactionC
 func CreateCampaign(camId string, name string, advertiser string, publisher string, startTime int64, endTime int64, verifierURLs []string, deviceIds []string) (*putils.Campaign, error) {
 	fmt.Println("Call RequestCampaignCryptoParamsSocket")
 
-	err := InitializeCampaignCryptoParams(camId, verifierURLs)
+	// err := InitializeCampaignCryptoParams(camId, verifierURLs)
 
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	campaign := putils.Campaign{
 		Id:           camId,
@@ -319,36 +309,36 @@ func CreateCampaignSocket(camId string, name string, advertiser string, publishe
 	return &campaign, nil
 }
 
-func InitializeCampaignCryptoParams(camId string, verifierURLs []string) error {
-	cryptoParams, err := RequestCampaignCryptoParamsSocket(camId)
-	if err != nil {
-		return err
-	}
-	// putils.CampaignCryptoParams
-	// cryptoParams := putils.CampaignCryptoParams{
-	// 	CamID: camId,
-	// 	H:     cryptoParams.H,
-	// }
-	// putils.SendLog("cryptoParams.H", cryptoParams.H)
-	fmt.Println("cryptoParams.H:" + cryptoParams.H)
-	numVerifiers := len(verifierURLs)
+// func InitializeCampaignCryptoParams(camId string, verifierURLs []string) error {
+// 	cryptoParams, err := RequestCampaignCryptoParamsSocket(camId)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	// putils.CampaignCryptoParams
+// 	// cryptoParams := putils.CampaignCryptoParams{
+// 	// 	CamID: camId,
+// 	// 	H:     cryptoParams.H,
+// 	// }
+// 	// putils.SendLog("cryptoParams.H", cryptoParams.H)
+// 	fmt.Println("cryptoParams.H:" + cryptoParams.H)
+// 	// numVerifiers := len(verifierURLs)
 
-	for i := 0; i < numVerifiers; i++ {
-		verifierURL := verifierURLs[i]
-		// requestCreateVerifierCryptoURL := verifierURL
-		// putils.SendLog("verifierURL", verifierURL)
-		// putils.SendLog("comURL", requestCreateVerifierCryptoURL)
+// 	// for i := 0; i < numVerifiers; i++ {
+// 	// 	verifierURL := verifierURLs[i]
+// 	// 	// requestCreateVerifierCryptoURL := verifierURL
+// 	// 	// putils.SendLog("verifierURL", verifierURL)
+// 	// 	// putils.SendLog("comURL", requestCreateVerifierCryptoURL)
 
-		fmt.Println("Call RequestToCreateVerifierCampaignCryptoParamsSocket: " + verifierURL)
-		_, err := RequestToCreateVerifierCampaignCryptoParamsSocket(camId, verifierURL, cryptoParams)
+// 	// 	fmt.Println("Call RequestToCreateVerifierCampaignCryptoParamsSocket: " + verifierURL)
+// 	// 	_, err := RequestToCreateVerifierCampaignCryptoParamsSocket(camId, verifierURL, cryptoParams)
 
-		if err != nil {
-			return err
-		}
-	}
+// 	// 	if err != nil {
+// 	// 		return err
+// 	// 	}
+// 	// }
 
-	return nil
-}
+// 	return nil
+// }
 
 func InitializeCampaignCryptoParamsAsync(camId string, verifierURLs []string) error {
 	cryptoParams, err := RequestCampaignCryptoParamsSocket(camId)

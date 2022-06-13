@@ -31,3 +31,4 @@ src/application/wallet
 /src/applications/package-lock.json
 /credentials
 /scenarios
+*.mycert

@@ -5,10 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	// "io"
+	"io/ioutil"
 	"net"
 	"os"
+	"path/filepath"
 
-	// "github.com/bwesterb/go-ristretto"
+	ristretto "github.com/bwesterb/go-ristretto"
 	// redis "gopkg.in/redis.v4"
 	pedersen "github.com/tuhoag/elliptic-curve-cryptography-go/pedersen"
 	eutils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
@@ -18,6 +21,15 @@ import (
 var ctx = context.Background()
 
 func main() {
+	err := initialize()
+
+	if err != nil {
+		fmt.Printf("Cannot start 'tcp' server on external.promark.com because of error: %s", err)
+		return
+	}
+
+	fmt.Printf("Using H: %s\n", H)
+
 	port := os.Getenv("API_PORT")
 	// port := "5001"
 
@@ -43,7 +55,48 @@ func main() {
 	}
 }
 
+var secretFileName = "secret.mycert"
+var H ristretto.Point
+var HEnc string
+
+func initialize() error {
+	// check if the file storing H is existed
+	secretFilePath := filepath.Join(".", "certs", secretFileName)
+	os.MkdirAll("certs", 0700)
+
+	fmt.Println(secretFilePath)
+	data, err := ioutil.ReadFile(secretFilePath)
+	if err != nil {
+		// generate  and store in a file
+		H = *pedersen.GenerateH()
+		HEnc = eutils.ConvertPointToString(&H)
+
+		f, err := os.Create(secretFilePath)
+		if err != nil {
+			return err
+		}
+
+		f.WriteString(HEnc)
+		f.Close()
+	} else {
+		HEnc = string(data)
+		Hp, err := eutils.ConvertStringToPoint(HEnc)
+		if err != nil {
+			return err
+		}
+		H = *Hp
+	}
+
+	return nil
+}
+
 func handleConnection(conn net.Conn) {
+	defer func() {
+		if r := recover(); r != nil {
+			putils.SendResponse(conn, fmt.Sprintf("%s", r), "")
+		}
+	}()
+
 	buffer, err := bufio.NewReader(conn).ReadString('\n')
 
 	if err != nil {
@@ -64,14 +117,7 @@ func handleConnection(conn net.Conn) {
 	fmt.Println("command:" + request.Command)
 	fmt.Println("requestData:" + request.Data)
 
-	if request.Command == "create" {
-		// fmt.Println("ok:", string(command))
-		CreateCampaignCryptoParamsHandler(conn, request.Data)
-	} else if request.Command == "init-default" {
-		// fmt.Println("ok:", string(buffer))
-		InitDefaultCampaignCryptoParamsHandler(conn, request.Data)
-	} else if request.Command == "get-default" {
-		// fmt.Println("ok:", string(buffer))
+	if request.Command == "get" {
 		GetDefaultCampaignCryptoParamsHandler(conn, request.Data)
 	} else {
 		putils.SendResponse(conn, "nocommand", "")
@@ -97,10 +143,14 @@ func InitDefaultCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
 
 func GetDefaultCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
 	//get param from db
-	cryptoParams, err := GetCampaignCryptoParams("")
+	// cryptoParams, err := GetCampaignCryptoParams("")
+	cryptoParams := putils.CampaignCryptoParams{
+		CamID: "",
+		H:     HEnc,
+	}
 
 	//temporary return
-	param, err := json.Marshal(&cryptoParams)
+	param, err := json.Marshal(cryptoParams)
 
 	// fmt.Println("wrote to file:", n)
 
@@ -133,9 +183,7 @@ func CreateCampaignCryptoParamsHandler(conn net.Conn, requestData string) {
 	putils.SendResponse(conn, "", string(param))
 }
 
-func initCampaignCryptoParams() (*putils.CampaignCryptoParams, error) {
-	client := putils.GetRedisConnection()
-
+func generateCryptoParams() (*putils.CampaignCryptoParams, error) {
 	var cryptoParams putils.CampaignCryptoParams
 
 	H := pedersen.GenerateH()
@@ -147,7 +195,18 @@ func initCampaignCryptoParams() (*putils.CampaignCryptoParams, error) {
 		H:     hEnc,
 	}
 
-	jsonParam, err := json.Marshal(cryptoParams)
+	return &cryptoParams, nil
+}
+
+func initCampaignCryptoParams() (*putils.CampaignCryptoParams, error) {
+	client := putils.GetRedisConnection()
+
+	cryptoParams, err := generateCryptoParams()
+	if err != nil {
+		return nil, err
+	}
+
+	jsonParam, err := json.Marshal(*cryptoParams)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +217,7 @@ func initCampaignCryptoParams() (*putils.CampaignCryptoParams, error) {
 		return nil, err
 	}
 
-	return &cryptoParams, nil
+	return cryptoParams, nil
 }
 
 // Campaign function part
