@@ -580,7 +580,7 @@ elif [ $MODE = "service" ]; then
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi
-elif [ $MODE = "eval" ]; then
+elif [ $MODE = "evaluate" ]; then
     SUB_MODE=$4
     SUB_SUB_MODE=$5
 

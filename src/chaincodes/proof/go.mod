@@ -11,7 +11,7 @@ require (
 	github.com/hyperledger/fabric v2.1.1+incompatible
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20220131132609-1476cf1d3206 // indirect
 	github.com/hyperledger/fabric-contract-api-go v1.1.1
-	github.com/hyperledger/fabric-protos-go v0.0.0-20220516090339-9685156fada6 // indirect
+	github.com/hyperledger/fabric-protos-go v0.0.0-20220613214546-bf864f01d75e // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -23,9 +23,9 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
-	golang.org/x/net v0.0.0-20220607020251-c690dde0001d // indirect
-	golang.org/x/sys v0.0.0-20220610221304-9f5ed59c137d // indirect
-	google.golang.org/genproto v0.0.0-20220608133413-ed9918b62aac // indirect
+	golang.org/x/net v0.0.0-20220615171555-694bf12d69de // indirect
+	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect
+	google.golang.org/genproto v0.0.0-20220616135557-88e70c0c3a90 // indirect
 	internal/promark_utils v0.0.0
 )
 

@@ -34,6 +34,7 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
         this.contractVersion = args.contractVersion;
 
         this.campaignIds = []
+        this.txIndex = 0;
     }
 
     /**
@@ -45,16 +46,22 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
         const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices} = this.roundArguments
         const {camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices)
 
+        const newCamId = `c${this.txIndex}`;
+        const newCamName = `Campaign${this.txIndex}`;
+
         const transArgs = {
             contractId: "campaign",
             contractFunction: 'CreateCampaign',
-            contractArguments: [camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
-            readOnly: false
+            contractArguments: [newCamId, newCamName, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
+            // invokerIdentity: 'peer0.adv0.promark.com',
+            timeout: 300,
+            // readOnly: false
         };
 
         this.campaignIds.push(camId);
 
-        return this.sutAdapter.sendRequests(transArgs);
+        this.txIndex = this.txIndex + 1;
+        await this.sutAdapter.sendRequests(transArgs);
     }
 
     async cleanupWorkloadModule() {
