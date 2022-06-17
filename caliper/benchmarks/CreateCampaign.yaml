@@ -7,12 +7,12 @@ test:
     rounds:
       - label: CreateCampaign(tps:200)
         description: CreateCampaign benchmark
-        txNumber: 500
+        txNumber: 5000
         rateControl:
-          type: fixed-feedback-rate
+          type: fixed-rate
           opts:
-            transactionLoad: 100
-            tps: 50
+            # transactionLoad: 100
+            tps: 300
         workload:
           module: ./workloads/CreateCampaign.js
           arguments:

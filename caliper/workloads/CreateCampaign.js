@@ -65,7 +65,13 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
     }
 
     async cleanupWorkloadModule() {
-        // const args = this.roundArguments;
+        const transArgs = {
+            contractId: "campaign",
+            contractFunction: 'DeleteAllCampaigns',
+            contractArguments: [this.campaignIds[i]],
+            readOnly: false
+        };
+        await this.sutAdapter.sendRequests(transArgs);
 
         // for (let i = 0; i < this.campaignIds.length; i++) {
         //     const transArgs = {
