@@ -12,7 +12,7 @@ function clear() {
     local logLevel=$3
     local docker_compose_path="${DOCKER_COMPOSE_DIR_PATH}/docker-compose-${orgNum}-${peerNum}.yml"
 
-    infoln $docker_compose_path
+    # infoln $docker_compose_path
 
     $BASE_SCRIPTS_DIR/stop.sh $orgNum $peerNum $logLevel
 

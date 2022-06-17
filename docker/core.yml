@@ -1,0 +1,54 @@
+version: '2'
+networks:
+  test: null
+
+services:
+  external.promark.com:
+    build:
+      context: .
+      dockerfile: external-service.dockerfile
+    command: /bin/sh /src/ext/run.sh
+    container_name: external.promark.com
+    environment:
+      - API_PORT=5000
+      - REDIS_PORT=6379
+    networks:
+      - test
+    expose:
+      - 5000
+    ports:
+      - 3002:5000
+    volumes:
+      - ../src/ext:/src/ext
+      - ../src/internal:/src/internal
+  logs.promark.com:
+    build:
+      context: .
+      dockerfile: logs.dockerfile
+    command: /bin/sh run.sh
+    container_name: logs.promark.com
+    environment:
+      - LOG_PORT=5003
+    networks:
+      - test
+    ports:
+      - 3001:5003
+    volumes:
+      - ../src/log:/log
+
+  orderer.promark.com:
+    container_name: orderer.promark.com
+    environment:
+      - CORE_OPERATIONS_LISTENADDRESS=orderer.${COMPOSE_PROJECT_NAME}.com:9443
+    extends:
+      file: docker-compose.base.yml
+      service: orderer-base
+    networks:
+      - test
+    ports:
+      - 7050:7050
+      # - 53732:9443
+    volumes:
+      - ../channels/mychannel-genesis-${NUM_ORGS}-${NUM_PEERS}.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ../credentials/ordererOrganizations/${COMPOSE_PROJECT_NAME}.com/orderers/orderer.${COMPOSE_PROJECT_NAME}.com/msp:/var/hyperledger/orderer/msp
+      - ../credentials/ordererOrganizations/${COMPOSE_PROJECT_NAME}.com/orderers/orderer.${COMPOSE_PROJECT_NAME}.com/tls/:/var/hyperledger/orderer/tls

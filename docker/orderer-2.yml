@@ -1,0 +1,21 @@
+version: '2'
+networks:
+  test: null
+
+services:
+  orderer.promark.com:
+    container_name: orderer.promark.com
+    environment:
+      - CORE_OPERATIONS_LISTENADDRESS=orderer.${COMPOSE_PROJECT_NAME}.com:9443
+    extends:
+      file: docker-compose.base.yml
+      service: orderer-base
+    networks:
+      - test
+    ports:
+      - 7050:7050
+      # - 53732:9443
+    volumes:
+      - ../channels/mychannel-genesis-1-1.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ../credentials/ordererOrganizations/${COMPOSE_PROJECT_NAME}.com/orderers/orderer.${COMPOSE_PROJECT_NAME}.com/msp:/var/hyperledger/orderer/msp
+      - ../credentials/ordererOrganizations/${COMPOSE_PROJECT_NAME}.com/orderers/orderer.${COMPOSE_PROJECT_NAME}.com/tls/:/var/hyperledger/orderer/tls

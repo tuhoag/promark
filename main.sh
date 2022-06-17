@@ -29,13 +29,13 @@ function joinChannel() {
 }
 
 function networkUp() {
-    $BASE_SCRIPTS_DIR/start.sh $1 $2 $LOG_LEVEL
+    $BASE_SCRIPTS_DIR/start.sh "adv,pub" $1 $2 $LOG_LEVEL
 }
 
 function networkDown() {
     # docker rm -f logspout
 
-    $BASE_SCRIPTS_DIR/stop.sh $1 $2 $LOG_LEVEL
+    $BASE_SCRIPTS_DIR/stop.sh "adv,pub" $1 $2 $LOG_LEVEL
 }
 
 function clear() {

@@ -44,10 +44,10 @@ Organizations:
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('adv1MSP.admin', 'adv1MSP.peer', 'adv1MSP.client')"
+        Rule: "OR('adv1MSP.member')"
       Writers:
         Type: Signature
-        Rule: "OR('adv1MSP.admin', 'adv1MSP.client')"
+        Rule: "OR('adv1MSP.member')"
       Admins:
         Type: Signature
         Rule: "OR('adv1MSP.admin')"
@@ -162,10 +162,10 @@ Organizations:
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('pub1MSP.admin', 'pub1MSP.peer', 'pub1MSP.client')"
+        Rule: "OR('pub1MSP.member')"
       Writers:
         Type: Signature
-        Rule: "OR('pub1MSP.admin', 'pub1MSP.client')"
+        Rule: "OR('pub1MSP.member')"
       Admins:
         Type: Signature
         Rule: "OR('pub1MSP.admin')"
@@ -349,6 +349,36 @@ Profiles:
       Organizations:
         - *Adv0
         - *Pub0
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+  2OrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *Adv0
+          - *Pub0
+          - *Adv1
+          - *Pub1
+
+  2Channel:
+    Consortium: SampleConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Adv0
+        - *Pub0
+        - *Adv1
+        - *Pub1
 
       Capabilities:
         <<: *ApplicationCapabilities

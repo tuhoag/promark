@@ -24,13 +24,13 @@ test:
 
       - label: CreateCampaign(max-rate)
         description: CreateCampaign benchmark
-        txNumber: 5000
+        txNumber: 10000
         rateControl:
           type: maximum-rate
           opts:
             # transactionLoad: 100
-            tps: 400
-            step: 50
+            tps: 350
+            step: 10
             sampleInterval: 20
             includeFailed: true
         workload:
