@@ -1,6 +1,7 @@
+version: '2'
 networks:
   test: null
-version: '2'
+
 services:
   external.promark.com:
     build:
@@ -131,3 +132,48 @@ services:
       - test
     ports:
       - 6001:5984
+
+  prometheus.promark.com:
+    container_name: prometheus.promark.com
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+        - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+        - test
+    depends_on:
+       - cadvisor.promark.com
+       - orderer.promark.com
+       - peer0.adv0.promark.com
+       - peer0.pub0.promark.com
+
+  cadvisor.promark.com:
+    image: gcr.io/cadvisor/cadvisor
+    container_name: cadvisor.promark.com
+    ports:
+      - 8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - test
+    depends_on:
+      - orderer.promark.com
+      - peer0.adv0.promark.com
+      - peer0.pub0.promark.com
+
+
+  grafana.promark.com:
+    container_name: grafana.promark.com
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    networks:
+      - test
+    depends_on:
+      - prometheus.promark.com

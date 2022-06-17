@@ -68,7 +68,7 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
         const transArgs = {
             contractId: "campaign",
             contractFunction: 'DeleteAllCampaigns',
-            contractArguments: [this.campaignIds[i]],
+            contractArguments: [],
             readOnly: false
         };
         await this.sutAdapter.sendRequests(transArgs);

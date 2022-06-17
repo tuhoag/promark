@@ -5,14 +5,34 @@ test:
       type: local
       number: 1
     rounds:
-      - label: CreateCampaign(tps:200)
+      # - label: CreateCampaign(fixed-rate)
+      #   description: CreateCampaign benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       # transactionLoad: 100
+      #       tps: 500
+      #   workload:
+      #     module: ./workloads/CreateCampaign.js
+      #     arguments:
+      #       contractId: campaign
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 1
+      #       numVerifiersPerType: 1
+      #       numDevices: 2
+
+      - label: CreateCampaign(max-rate)
         description: CreateCampaign benchmark
         txNumber: 5000
         rateControl:
-          type: fixed-rate
+          type: maximum-rate
           opts:
             # transactionLoad: 100
-            tps: 300
+            tps: 400
+            step: 50
+            sampleInterval: 20
+            includeFailed: true
         workload:
           module: ./workloads/CreateCampaign.js
           arguments:
@@ -22,162 +42,22 @@ test:
             numVerifiersPerType: 1
             numDevices: 2
 
-#       - label: CreateCampaign(tps:300)
-#         description: CreateCampaign benchmark
-#         txNumber: 5000
-#         rateControl:
-#           type: fixed-rate
-#           opts:
-#             tps: 300
-#         workload:
-#           module: ./workloads/CreateCampaign.js
-#           arguments:
-#             contractId: campaign
-#             numOrgsPerType: 1
-#             numPeersPerOrgs: 1
-#             numVerifiersPerType: 1
-#             numDevices: 2
+observer:
+  type: prometheus
+  interval: 5
 
-#       - label: CreateCampaign(tps:325)
-#         description: CreateCampaign benchmark
-#         txNumber: 5000
-#         rateControl:
-#           type: fixed-rate
-#           opts:
-#             tps: 325
-#         workload:
-#           module: ./workloads/CreateCampaign.js
-#           arguments:
-#             contractId: campaign
-#             numOrgsPerType: 1
-#             numPeersPerOrgs: 1
-#             numVerifiersPerType: 1
-#             numDevices: 2
-
-#       - label: CreateCampaign(tps:335)
-#         description: CreateCampaign benchmark
-#         txNumber: 5000
-#         rateControl:
-#           type: fixed-rate
-#           opts:
-#             tps: 335
-#         workload:
-#           module: ./workloads/CreateCampaign.js
-#           arguments:
-#             contractId: campaign
-#             numOrgsPerType: 1
-#             numPeersPerOrgs: 1
-#             numVerifiersPerType: 1
-#             numDevices: 2
-
-#       - label: CreateCampaign(tps:340)
-#         description: CreateCampaign benchmark
-#         txNumber: 5000
-#         rateControl:
-#           type: fixed-rate
-#           opts:
-#             tps: 335
-#         workload:
-#           module: ./workloads/CreateCampaign.js
-#           arguments:
-#             contractId: campaign
-#             numOrgsPerType: 1
-#             numPeersPerOrgs: 1
-#             numVerifiersPerType: 1
-#             numDevices: 2
-
-#       - label: CreateCampaign(tps:345)
-#         description: CreateCampaign benchmark
-#         txNumber: 5000
-#         rateControl:
-#           type: fixed-rate
-#           opts:
-#             tps: 335
-#         workload:
-#           module: ./workloads/CreateCampaign.js
-#           arguments:
-#             contractId: campaign
-#             numOrgsPerType: 1
-#             numPeersPerOrgs: 1
-#             numVerifiersPerType: 1
-#             numDevices: 2
-
-#       - label: CreateCampaign(tps:350)
-#         description: CreateCampaign benchmark
-#         txNumber: 5000
-#         rateControl:
-#           type: fixed-rate
-#           opts:
-#             tps: 350
-#         workload:
-#           module: ./workloads/CreateCampaign.js
-#           arguments:
-#             contractId: campaign
-#             numOrgsPerType: 1
-#             numPeersPerOrgs: 1
-#             numVerifiersPerType: 1
-#             numDevices: 2
-
-#       - label: CreateCampaign(tps:375)
-#         description: CreateCampaign benchmark
-#         txNumber: 5000
-#         rateControl:
-#           type: fixed-rate
-#           opts:
-#             tps: 375
-#         workload:
-#           module: ./workloads/CreateCampaign.js
-#           arguments:
-#             contractId: campaign
-#             numOrgsPerType: 1
-#             numPeersPerOrgs: 1
-#             numVerifiersPerType: 1
-#             numDevices: 2
-
-
-
-#     #   - label: queryBackup
-#     #     description: Query Backup benchmark
-#     #     txNumber: 50000
-#     #     rateControl:
-#     #       type: fixed-rate
-#     #       opts:
-#     #         tps: 890
-#     #     workload:
-#     #       module: ./workloads/queryBackup.js
-#     #       arguments:
-#     #         backups: 10
-#     #         contractId: backup
-
-#     #   - label: queryBackup
-#     #     description: Query Backup benchmark
-#     #     txNumber: 100000
-#     #     rateControl:
-#     #       type: fixed-rate
-#     #       opts:
-#     #         tps: 890
-#     #     workload:
-#     #       module: ./workloads/queryBackup.js
-#     #       arguments:
-#     #         backups: 10
-#     #         contractId: backup
-
-# # observer:
-# #   type: prometheus
-# #   interval: 5
-
-# # monitor:
-# #   interval: 1
-# #   type: ['docker', 'prometheus', 'cadvisor']
-# #   docker:
-# #     containers: ['all']
-# #   prometheus:
-# #     url: "http://0.0.0.0:9090"
-# #     metrics:
-# #       ignore: [prometheus, cadvisor, grafana, node-exporter]
-# #       include:
-# #         Endorse Time (s):
-# #           query: rate(endorser_proposal_duration_sum{chaincode="backup"}[5m])/rate(endorser_proposal_duration_count{chaincode="backup"}[5m])
-# #           step: 1
-# #           label: instance
-# #           statistic: avg
+monitor:
+  interval: 1
+  type: ['docker', 'prometheus', 'cadvisor']
+  docker:
+    containers: ['all']
+  prometheus:
+    url: "http://0.0.0.0:9090"
+    metrics:
+      ignore: [prometheus, cadvisor, grafana, node-exporter]
+      include:
+        Endorse Time (s):
+          query: rate(endorser_proposal_duration_sum{chaincode="campaign"}[5m])/rate(endorser_proposal_duration_count{chaincode="campaign"}[5m])
+          step: 1
+          label: instance
+          statistic: avg

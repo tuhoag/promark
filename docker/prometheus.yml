@@ -12,10 +12,10 @@ scrape_configs:
   - targets: [
     'peer0.adv0.promark.com:9443',
     'peer0.pub0.promark.com:9443',
-    'orderer.example.com:9443'
+    'orderer.promark.com:9443'
   ]
 
 - job_name: 'cadvisor'
   scrape_interval: 5m
   static_configs:
-  - targets: ['cadvisor.example.com:8080']
+  - targets: ['cadvisor.promark.com:8080']
