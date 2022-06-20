@@ -1,6 +1,8 @@
 version: '2'
 networks:
-  test: null
+  promarknet:
+    name: promarknet
+    driver: bridge
 
 services:
   external.promark.com:
@@ -13,7 +15,7 @@ services:
       - API_PORT=5000
       - REDIS_PORT=6379
     networks:
-      - test
+      - promarknet
     expose:
       - 5000
     ports:
@@ -30,7 +32,7 @@ services:
     environment:
       - LOG_PORT=5003
     networks:
-      - test
+      - promarknet
     ports:
       - 3001:5003
     volumes:
@@ -44,7 +46,7 @@ services:
       file: docker-compose.base.yml
       service: orderer-base
     networks:
-      - test
+      - promarknet
     ports:
       - 7050:7050
       # - 53732:9443

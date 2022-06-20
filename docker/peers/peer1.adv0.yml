@@ -1,0 +1,44 @@
+version: '2'
+networks:
+  test: null
+
+services:
+  peer1.adv0.promark.com:
+    container_name: peer1.adv0.promark.com
+    depends_on:
+      - orderer.${COMPOSE_PROJECT_NAME}.com
+      - couchdb0.adv0.${COMPOSE_PROJECT_NAME}.com
+      - external.${COMPOSE_PROJECT_NAME}.com
+    environment:
+      - CORE_PEER_ID=peer1.adv0.${COMPOSE_PROJECT_NAME}.com
+      - CORE_PEER_ADDRESS=peer1.adv0.${COMPOSE_PROJECT_NAME}.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer1.adv0.${COMPOSE_PROJECT_NAME}.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.adv0.${COMPOSE_PROJECT_NAME}.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.adv0.${COMPOSE_PROJECT_NAME}.com:7051
+      - CORE_PEER_LOCALMSPID=adv0MSP
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.adv0.${COMPOSE_PROJECT_NAME}.com:5984
+    extends:
+      file: docker-compose.base.yml
+      service: peer-verifier-base
+    networks:
+      - test
+    ports:
+      - 5010:7051
+      - 5012:5000
+      # - 55000:9443
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ../credentials/peerOrganizations/adv0.${COMPOSE_PROJECT_NAME}.com/peers/peer1.adv0.${COMPOSE_PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
+      - ../credentials/peerOrganizations/adv0.${COMPOSE_PROJECT_NAME}.com/peers/peer1.adv0.${COMPOSE_PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
+
+  couchdb0.adv0.promark.com:
+    container_name: couchdb0.adv0.promark.com
+    extends:
+      file: docker-compose.base.yml
+      service: couchdb-base
+    networks:
+      - test
+    ports:
+      - 5011:5984

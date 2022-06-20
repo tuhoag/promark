@@ -19,7 +19,7 @@ export CLIENT_DIR_PATH=$PROJECT_DIR/src/application
 export FABRIC_VERSION=2.2
 export PROJECT_NAME=promark
 
-export NETWORK_NAME=${PROJECT_NAME}_test
+export NETWORK_NAME="${PROJECT_NAME}net"
 export LOGSPOUT_PORT=3004
 export ADV_BASE_PORT=5000
 export PUB_BASE_PORT=6000

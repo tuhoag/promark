@@ -14,7 +14,7 @@ function clear() {
 
     # infoln $docker_compose_path
 
-    $BASE_SCRIPTS_DIR/stop.sh $orgNum $peerNum $logLevel
+    # $BASE_SCRIPTS_DIR/stop.sh $orgNum $peerNum $logLevel
 
     # remove organizations
     rm -rf $CREDENTIALS_OUTPUTS

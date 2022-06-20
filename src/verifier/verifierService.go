@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"context"
+	"path"
+
 	// "crypto/rsa"
 	b64 "encoding/base64"
 	"encoding/json"
@@ -113,6 +115,11 @@ func initialize() error {
 		s.Rand()
 		sBytes := s.Bytes()
 		sEnc := b64.StdEncoding.EncodeToString(sBytes)
+		dirPath := path.Dir(secretFileName)
+
+		if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+			os.MkdirAll(dirPath, 0700) // Create your file
+		}
 
 		f, err := os.Create(secretFileName)
 		if err != nil {
