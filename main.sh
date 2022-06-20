@@ -367,9 +367,11 @@ function evaluate {
     local peerNum=$2
     local benchmarkName=$3
 
-    local networkConfigPath="${CALIPER_DIR_PATH}/config/networkConfig-${orgNum}-${peerNum}.yaml"
+    # local networkConfigPath="${CALIPER_DIR_PATH}/config/networkConfig-${orgNum}-${peerNum}.yaml"
+    local networkConfigPath="${CONFIG_PATH}/network/networkConfig-${orgNum}-${peerNum}.yaml"
     local benchmarksPath="${CALIPER_DIR_PATH}/benchmarks/${benchmarkName}.yaml"
 
+    infoln $networkConfigPath
 
     pushd $CALIPER_DIR_PATH
     set -x

@@ -11,6 +11,7 @@ function stopNetwork() {
     local logLevel=$4
 
     local maxOrgId=$(($orgNum - 1))
+    local maxPeerId=$(($peerNum - 1))
 
     infoln "Stopping the network"
     # local docker_compose_path="${DOCKER_COMPOSE_DIR_PATH}/docker-compose-${orgNum}-${peerNum}.yml"
@@ -34,7 +35,7 @@ function stopNetwork() {
     orgPortStep=100
     for orgType in ${orgTypes[@]}; do
         for orgId in $(seq 0 $maxOrgId); do
-            for peerId in $(seq 0 $maxOrgId); do
+            for peerId in $(seq 0 $maxPeerId); do
                 filepath="-f ${DOCKER_COMPOSE_DIR_PATH}/peer.yml"
                 orgName="${orgType}${orgId}"
                 if [ $orgType = "adv" ]; then
