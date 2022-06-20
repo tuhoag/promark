@@ -371,8 +371,6 @@ function evaluate {
     local networkConfigPath="${CONFIG_PATH}/network/networkConfig-${orgNum}-${peerNum}.yaml"
     local benchmarksPath="${CALIPER_DIR_PATH}/benchmarks/${benchmarkName}.yaml"
 
-    infoln $networkConfigPath
-
     pushd $CALIPER_DIR_PATH
     set -x
     npx caliper launch manager --caliper-workspace $CALIPER_DIR_PATH --caliper-networkconfig $networkConfigPath --caliper-benchconfig $benchmarksPath  --caliper-fabric-gateway-enabled --caliper-flow-only-test
