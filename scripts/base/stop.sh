@@ -4,6 +4,25 @@
 
 infoln "Stopping the network"
 
+function stopNetworkOld() {
+    IFS=',' read -r -a orgTypes <<< $1
+    local orgNum=$2
+    local peerNum=$3
+    local logLevel=$4
+
+    local maxOrgId=$(($orgNum - 1))
+    local maxPeerId=$(($peerNum - 1))
+
+    infoln "Stopping the network"
+    local docker_compose_path="-f ${DOCKER_COMPOSE_DIR_PATH}/docker-compose-${orgNum}-${peerNum}.yml"
+    set -x
+    local coreServicesPath="-f ${DOCKER_COMPOSE_DIR_PATH}/core.yml"
+    FABRIC_LOG=$logLevel COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION NUM_ORGS=$orgNum NUM_PEERS=$peerNum docker-compose $docker_compose_path down -v 2>&1
+    { set +x; } 2>/dev/null
+
+    docker ps
+}
+
 function stopNetwork() {
     IFS=',' read -r -a orgTypes <<< $1
     local orgNum=$2
@@ -39,9 +58,9 @@ function stopNetwork() {
                 filepath="-f ${DOCKER_COMPOSE_DIR_PATH}/peer.yml"
                 orgName="${orgType}${orgId}"
                 if [ $orgType = "adv" ]; then
-                    peerPort=$((baseAdvPort+peerPortStep*peerId))
+                    peerPort=$((baseAdvPort + orgId * orgPortStep + peerPortStep * peerId))
                 else
-                    peerPort=$((basePubPort+peerPortStep*peerId))
+                    peerPort=$((basePubPort + orgId * orgPortStep + peerPortStep * peerId))
                 fi
                 dbPort=$((peerPort+2))
                 apiPort=$((peerPort+1))
