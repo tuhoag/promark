@@ -55,11 +55,76 @@ const generateCampaignArgs = (numOrgsPerType, numPeersPerOrg, numVerifiers, devi
     return result
 }
 
-const createRandomCampaign = async (numVerifiers, deviceIdsStr) => {
+const CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices) => {
+    const camId = "c" + Math.floor(Math.random()*10000);
+    const name = "Campaign " + camId;
+    const advName = "adv"+Math.floor(Math.random()*10000) % numOrgsPerType;
+    const pubName = "pub"+Math.floor(Math.random()*10000) % numOrgsPerType;
+    const startTimeStr = Math.floor(new Date("2022-05-01").getTime() / 1000);
+    const endTimeStr = Math.floor(new Date("2022-07-01").getTime() / 1000);
+
+
+
+    var allVerifiersUrls = [];
+
+    logger.debug(`orgs: ${numOrgsPerType} - peers: ${numPeersPerOrgs}`)
+
+    for (let peerId = 0; peerId < numPeersPerOrgs; peerId++) {
+        const advPeerURL = `peer${peerId}.${advName}.promark.com:5000`;
+        const pubPeerURL = `peer${peerId}.${pubName}.promark.com:5000`;
+
+        allVerifiersUrls.push(advPeerURL);
+        allVerifiersUrls.push(pubPeerURL);
+    }
+
+    logger.debug(`all verifiers: ${JSON.stringify(allVerifiersUrls)}`);
+
+    var verifierURLs = [];
+    for (let i = 0; i < numVerifiers; i++) {
+        // randomly select a peer to be verifier
+        let verifierUrlIdx = Math.floor(Math.random()*10000) % allVerifiersUrls.length;
+        let verifierUrl = allVerifiersUrls[verifierUrlIdx];
+
+        allVerifiersUrls.pop(verifierUrlIdx);
+        verifierURLs.push(verifierUrl);
+
+        logger.debug(`selected verifiers: ${JSON.stringify(verifierURLs)}`);
+    }
+
+    const verifierURLsStr = verifierURLs.join(";");
+
+    var deviceIds = [];
+    for (let i = 0; i < numDevices; i ++) {
+        const deviceId = "w" + Math.floor(Math.random()*10000) % numPeersPerOrgs + "." + pubName;
+        deviceIds.push(deviceId);
+    }
+
+    const deviceIdsStr = deviceIds.join(";");
+
+    const result = {
+        id: camId,
+        name: `Campaign ${camId}`,
+        advertiser: advName,
+        publisher: pubName,
+        startTimeStr,
+        endTimeStr,
+        verifierURLs,
+        deviceIds,
+    }
+
+    logger.debug(result)
+
+    return result
+}
+
+exports.createRandomCampaign = async (numVerifiers, deviceIdsStr) => {
     return utils.callChaincodeFn(async network => {
 
         const contract = await network.getContract('campaign');
-        const campaign = generateCampaignArgs(global.numOrgsPerType, global.numPeersPerOrg, numVerifiers, deviceIdsStr);
+
+        const campaign = CreateCampaignUnequalVerifiersArgs(global.numOrgsPerType, global.numPeersPerOrg, numVerifiers, deviceIdsStr);
+        logger.info(`Create Campaign: ${JSON.stringify(campaign)}`);
+
         const verifierAddressesStr = campaign.verifierURLs.join(";")
 
         logger.info(`Create Campaign: ${JSON.stringify(campaign)} and ${verifierAddressesStr} - devices: ${campaign.deviceIds.join(";")}`);
@@ -73,7 +138,7 @@ const createRandomCampaign = async (numVerifiers, deviceIdsStr) => {
 }
 
 
-const getCampaignById = async (camId) => {
+exports.getCampaignById = async (camId) => {
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('campaign');
         logger.info(`Get Campaign: ${camId}`);
@@ -86,7 +151,7 @@ const getCampaignById = async (camId) => {
 }
 
 
-const getAllCampaigns = async () => {
+exports.getAllCampaigns = async () => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("campaign");
         logger.info("GetAllCampaigns");
@@ -105,7 +170,7 @@ const getAllCampaigns = async () => {
 }
 
 
-const deleteCampaignById = async (camId) => {
+exports.deleteCampaignById = async (camId) => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("campaign");
         logger.info("DeleteCampaignById");
@@ -116,7 +181,7 @@ const deleteCampaignById = async (camId) => {
     });
 }
 
-const deleteAllCampaigns = async () => {
+exports.deleteAllCampaigns = async () => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("campaign");
         logger.info("DeleteAllCampaigns");
@@ -127,7 +192,7 @@ const deleteAllCampaigns = async () => {
     });
 }
 
-const getChaincodeData = async () => {
+exports.getChaincodeData = async () => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("campaign");
         logger.info("GetChaincodeData");
@@ -138,11 +203,47 @@ const getChaincodeData = async () => {
     });
 }
 
-module.exports = {
-    createRandomCampaign,
-    getCampaignById,
-    getAllCampaigns,
-    deleteCampaignById,
-    deleteAllCampaigns,
-    getChaincodeData,
+exports.CreateCampaignUnequalVerifiersArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices) => {
+    const camId = "c" + Math.floor(Math.random()*10000);
+    const name = "Campaign " + camId;
+    const advertiser = "adv"+Math.floor(Math.random()*10000) % numOrgsPerType;
+    const publisher = "pub"+Math.floor(Math.random()*10000) % numOrgsPerType;
+    const startTimeStr = Math.floor(new Date("2022-05-01").getTime() / 1000);
+    const endTimeStr = Math.floor(new Date("2022-07-01").getTime() / 1000);
+
+    var verifierURLs = [];
+
+    var allVerifiersUrls = new Set();
+
+    for (let orgId = 0; orgId < numOrgsPerType; orgId++) {
+        for (let peerId = 0; peerId < numPeersPerOrgs; peerId++) {
+            const advPeerURL = `peer${peerId}.adv${orgId}.promark.com:5000`;
+            const pubPeerURL = `peer${peerId}.pub${orgId}.promark.com:5000`;
+
+            allVerifiersUrls.add(advPeerURL);
+            allVerifiersUrls.add(pubPeerURL);
+        }
+    }
+
+    for (let i = 0; i < numVerifiers; i++) {
+        // randomly select a peer to be verifier
+        let verifierUrl = Math.floor(Math.random()*10000) % allVerifiersUrls.length;
+
+        allVerifiersUrls.delete(verifierUrl);
+        verifierURLs.push(verifierUrl);
+    }
+
+    const verifierURLsStr = verifierURLs.join(";");
+
+    var deviceIds = [];
+    for (let i = 0; i < numDevices; i ++) {
+        const deviceId = "w" + Math.floor(Math.random()*10000) % numPeersPerOrgs + "." + publisher;
+        deviceIds.push(deviceId);
+    }
+
+    const deviceIdsStr = deviceIds.join(";");
+
+    return {
+        camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr
+    };
 }

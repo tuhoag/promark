@@ -1,6 +1,6 @@
 module campaign
 
-go 1.13
+go 1.16
 
 require (
 	github.com/go-openapi/spec v0.20.6 // indirect
@@ -13,9 +13,9 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
-	golang.org/x/net v0.0.0-20220617184016-355a448f1bc9 // indirect
-	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect
-	google.golang.org/genproto v0.0.0-20220617124728-180714bec0ad // indirect
+	golang.org/x/net v0.0.0-20220622184535-263ec571b305 // indirect
+	golang.org/x/sys v0.0.0-20220622161953-175b2fd9d664 // indirect
+	google.golang.org/genproto v0.0.0-20220624142145-8cd45d7dbd1f // indirect
 	internal/promark_utils v0.0.0
 )
 

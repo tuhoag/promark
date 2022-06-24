@@ -152,8 +152,8 @@ function buildExternalService() {
 function invokeCreateCamp() {
     local orgNum=$1
     local peerNum=$2
-    local numVerifiers=1
-    local deviceIdsStr=$3
+    local numVerifiers=$3
+    local deviceIdsStr="w1,w2"
 
     pushd $CLIENT_DIR_PATH
     set -x
@@ -509,8 +509,8 @@ elif [ $MODE = "campaign" ]; then
     SUB_MODE=$4
 
     if [ $SUB_MODE = "add" ]; then
-        DEVICES=$5
-        invokeCreateCamp $NO_ORGS $NO_PEERS $DEVICES
+        NUM_VERIFIERS=$5
+        invokeCreateCamp $NO_ORGS $NO_PEERS $NUM_VERIFIERS
     elif [ $SUB_MODE = "all" ]; then
         getAllCamp $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "delall" ]; then

@@ -16,7 +16,7 @@ function stopNetworkOld() {
     infoln "Stopping the network"
     local docker_compose_path="-f ${DOCKER_COMPOSE_DIR_PATH}/docker-compose-${orgNum}-${peerNum}.yml"
     set -x
-    local coreServicesPath="-f ${DOCKER_COMPOSE_DIR_PATH}/core.yml"
+    local coreServicesPath="-f ${DOCKER_COMPOSE_DIR_PATH}/core-services.yml"
     FABRIC_LOG=$logLevel COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION NUM_ORGS=$orgNum NUM_PEERS=$peerNum docker-compose $docker_compose_path down -v 2>&1
     { set +x; } 2>/dev/null
 
@@ -35,7 +35,7 @@ function stopNetwork() {
     infoln "Stopping the network"
     # local docker_compose_path="${DOCKER_COMPOSE_DIR_PATH}/docker-compose-${orgNum}-${peerNum}.yml"
     set -x
-    local coreServicesPath="-f ${DOCKER_COMPOSE_DIR_PATH}/core.yml"
+    local coreServicesPath="-f ${DOCKER_COMPOSE_DIR_PATH}/core-services.yml"
     FABRIC_LOG=$logLevel COMPOSE_PROJECT_NAME=$PROJECT_NAME PROJECT_NAME=$PROJECT_NAME IMAGE_TAG=$FABRIC_VERSION NUM_ORGS=$orgNum NUM_PEERS=$peerNum docker-compose $coreServicesPath down -v 2>&1
     { set +x; } 2>/dev/null
 

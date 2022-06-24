@@ -1,2 +1,9 @@
-numOrgs,numVerifiers,maxLatency,minLatency,avgLatency,tps
-2,1,60,0.03,0.03,0.02
+numOrgs,numPeers,numVerifiers,controller,sendRate,maxLatency,minLatency,avgLatency,tps
+2,3,2,fix-rate#800,309.1,0.03,0.01,0.01,309.0
+2,3,3,fix-rate#800,295.4,0.03,0.01,0.01,295.3
+2,3,4,fix-rate#700,287.4,0.03,0.01,0.02,287.3
+2,3,5,fix-rate#700,282.8,0.23,0.01,0.02,282.7
+2,3,6,fix-rate#600,275.4,0.04,0.01,0.02,275.3
+10,3,2,
+
+

@@ -5,46 +5,46 @@ test:
       type: local
       number: 1
     rounds:
-      - label: CreateCampaign2(fixed-rate)
-        description: CreateCampaign benchmark
-        txNumber: 5000
-        rateControl:
-          type: fixed-rate
-          opts:
-            # transactionLoad: 100
-            tps: 400
-        workload:
-          module: ./workloads/CreateCampaign2.js
-          arguments:
-            numCampaigns: 1
-            contractId: campaign
-            numOrgsPerType: 1
-            numPeersPerOrgs: 1
-            numVerifiersPerType: 1
-            numDevices: 2
+      # - label: CreateCampaign2(fixed-rate)
+      #   description: CreateCampaign benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       # transactionLoad: 100
+      #       tps: 400
+      #   workload:
+      #     module: ./workloads/CreateCampaign2.js
+      #     arguments:
+      #       numCampaigns: 1
+      #       contractId: campaign
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 2
+      #       numVerifiersPerType: 1
+      #       numDevices: 2
 
-      - label: CreateCampaign2(max-rate)
-        description: CreateCampaign benchmark
-        txNumber: 5000
-        rateControl:
-          type: maximum-rate
-          opts:
-            # transactionLoad: 100
-            tps: 400
-            step: 5
-            sampleInterval: 20
-            includeFailed: true
-        workload:
-          module: ./workloads/CreateCampaign2.js
-          arguments:
-            numCampaigns: 1
-            contractId: campaign
-            numOrgsPerType: 1
-            numPeersPerOrgs: 1
-            numVerifiersPerType: 1
-            numDevices: 2
+      # - label: CreateCampaign2(max-rate)
+      #   description: CreateCampaign benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: maximum-rate
+      #     opts:
+      #       # transactionLoad: 100
+      #       tps: 400
+      #       step: 5
+      #       sampleInterval: 20
+      #       includeFailed: true
+      #   workload:
+      #     module: ./workloads/CreateCampaign2.js
+      #     arguments:
+      #       numCampaigns: 1
+      #       contractId: campaign
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 2
+      #       numVerifiersPerType: 1
+      #       numDevices: 2
 
-      - label: CreateCampaign(fixed-rate)
+      - label: CreateCampaign(fixed-rate:300)
         description: CreateCampaign benchmark
         txNumber: 5000
         rateControl:
@@ -59,29 +59,117 @@ test:
             contractId: campaign
             numOrgsPerType: 1
             numPeersPerOrgs: 1
-            numVerifiersPerType: 1
+            numVerifiers: 1
             numDevices: 2
 
-      - label: CreateCampaign(max-rate)
-        description: CreateCampaign benchmark
-        txNumber: 5000
-        rateControl:
-          type: maximum-rate
-          opts:
-            # transactionLoad: 100
-            tps: 400
-            step: 5
-            sampleInterval: 20
-            includeFailed: true
-        workload:
-          module: ./workloads/CreateCampaign.js
-          arguments:
-            numCampaigns: 1
-            contractId: campaign
-            numOrgsPerType: 1
-            numPeersPerOrgs: 1
-            numVerifiersPerType: 1
-            numDevices: 2
+      # - label: CreateCampaign(fixed-rate:350)
+      #   description: CreateCampaign benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       # transactionLoad: 100
+      #       tps: 350
+      #   workload:
+      #     module: ./workloads/CreateCampaign.js
+      #     arguments:
+      #       numCampaigns: 1
+      #       contractId: campaign
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 2
+      #       numVerifiersPerType: 1
+      #       numDevices: 2
+
+      # - label: CreateCampaign(fixed-rate:400)
+      #   description: CreateCampaign benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       # transactionLoad: 100
+      #       tps: 400
+      #   workload:
+      #     module: ./workloads/CreateCampaign.js
+      #     arguments:
+      #       numCampaigns: 1
+      #       contractId: campaign
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 2
+      #       numVerifiersPerType: 1
+      #       numDevices: 2
+
+      # - label: CreateCampaign(fixed-rate:450)
+      #   description: CreateCampaign benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       # transactionLoad: 100
+      #       tps: 450
+      #   workload:
+      #     module: ./workloads/CreateCampaign.js
+      #     arguments:
+      #       numCampaigns: 1
+      #       contractId: campaign
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 2
+      #       numVerifiersPerType: 1
+      #       numDevices: 2
+
+      # - label: CreateCampaign(fixed-rate:475)
+      #   description: CreateCampaign benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       # transactionLoad: 100
+      #       tps: 475
+      #   workload:
+      #     module: ./workloads/CreateCampaign.js
+      #     arguments:
+      #       numCampaigns: 1
+      #       contractId: campaign
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 2
+      #       numVerifiersPerType: 1
+      #       numDevices: 2
+
+      # - label: CreateCampaign(fixed-rate:490)
+      #   description: CreateCampaign benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       # transactionLoad: 100
+      #       tps: 490
+      #   workload:
+      #     module: ./workloads/CreateCampaign.js
+      #     arguments:
+      #       numCampaigns: 1
+      #       contractId: campaign
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 2
+      #       numVerifiersPerType: 1
+      #       numDevices: 2
+
+      # - label: CreateCampaign(fixed-rate:500)
+      #   description: CreateCampaign benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       # transactionLoad: 100
+      #       tps: 500
+      #   workload:
+      #     module: ./workloads/CreateCampaign.js
+      #     arguments:
+      #       numCampaigns: 1
+      #       contractId: campaign
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 2
+      #       numVerifiersPerType: 1
+      #       numDevices: 2
+
 observer:
   type: prometheus
   interval: 5

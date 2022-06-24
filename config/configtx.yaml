@@ -67,10 +67,10 @@ Organizations:
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('adv2MSP.admin', 'adv2MSP.peer', 'adv2MSP.client')"
+        Rule: "OR('adv2MSP.member')"
       Writers:
         Type: Signature
-        Rule: "OR('adv2MSP.admin', 'adv2MSP.client')"
+        Rule: "OR('adv2MSP.member')"
       Admins:
         Type: Signature
         Rule: "OR('adv2MSP.admin')"
@@ -90,10 +90,10 @@ Organizations:
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('adv3MSP.admin', 'adv3MSP.peer', 'adv3MSP.client')"
+        Rule: "OR('adv3MSP.member')"
       Writers:
         Type: Signature
-        Rule: "OR('adv3MSP.admin', 'adv3MSP.client')"
+        Rule: "OR('adv3MSP.member')"
       Admins:
         Type: Signature
         Rule: "OR('adv3MSP.admin')"
@@ -113,10 +113,10 @@ Organizations:
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('adv4MSP.admin', 'adv4MSP.peer', 'adv4MSP.client')"
+        Rule: "OR('adv4MSP.member')"
       Writers:
         Type: Signature
-        Rule: "OR('adv4MSP.admin', 'adv4MSP.client')"
+        Rule: "OR('adv4MSP.member')"
       Admins:
         Type: Signature
         Rule: "OR('adv4MSP.admin')"
@@ -185,10 +185,10 @@ Organizations:
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('pub2MSP.admin', 'pub2MSP.peer', 'pub2MSP.client')"
+        Rule: "OR('pub2MSP.member')"
       Writers:
         Type: Signature
-        Rule: "OR('pub2MSP.admin', 'pub2MSP.client')"
+        Rule: "OR('pub2MSP.member')"
       Admins:
         Type: Signature
         Rule: "OR('pub2MSP.admin')"
@@ -208,10 +208,10 @@ Organizations:
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('pub3MSP.admin', 'pub3MSP.peer', 'pub3MSP.client')"
+        Rule: "OR('pub3MSP.member')"
       Writers:
         Type: Signature
-        Rule: "OR('pub3MSP.admin', 'pub3MSP.client')"
+        Rule: "OR('pub3MSP.member')"
       Admins:
         Type: Signature
         Rule: "OR('pub3MSP.admin')"
@@ -231,10 +231,10 @@ Organizations:
     Policies:
       Readers:
         Type: Signature
-        Rule: "OR('pub4MSP.admin', 'pub4MSP.peer', 'pub4MSP.client')"
+        Rule: "OR('pub4MSP.member')"
       Writers:
         Type: Signature
-        Rule: "OR('pub4MSP.admin', 'pub4MSP.client')"
+        Rule: "OR('pub4MSP.member')"
       Admins:
         Type: Signature
         Rule: "OR('pub4MSP.admin')"
@@ -383,37 +383,7 @@ Profiles:
       Capabilities:
         <<: *ApplicationCapabilities
 
-  21OrdererGenesis:
-    <<: *ChannelDefaults
-    Orderer:
-      <<: *OrdererDefaults
-      Organizations:
-        - *OrdererOrg
-      Capabilities:
-        <<: *OrdererCapabilities
-    Consortiums:
-      SampleConsortium:
-        Organizations:
-          - *Adv0
-          - *Pub0
-          - *Adv1
-          - *Pub1
-
-  21Channel:
-    Consortium: SampleConsortium
-    <<: *ChannelDefaults
-    Application:
-      <<: *ApplicationDefaults
-      Organizations:
-        - *Adv0
-        - *Pub0
-        - *Adv1
-        - *Pub1
-
-      Capabilities:
-        <<: *ApplicationCapabilities
-
-  31OrdererGenesis:
+  3OrdererGenesis:
     <<: *ChannelDefaults
     Orderer:
       <<: *OrdererDefaults
@@ -431,7 +401,7 @@ Profiles:
           - *Adv2
           - *Pub2
 
-  31Channel:
+  3Channel:
     Consortium: SampleConsortium
     <<: *ChannelDefaults
     Application:
@@ -447,7 +417,7 @@ Profiles:
       Capabilities:
         <<: *ApplicationCapabilities
 
-  41OrdererGenesis:
+  4OrdererGenesis:
     <<: *ChannelDefaults
     Orderer:
       <<: *OrdererDefaults
@@ -467,7 +437,7 @@ Profiles:
           - *Adv3
           - *Pub3
 
-  41Channel:
+  4Channel:
     Consortium: SampleConsortium
     <<: *ChannelDefaults
     Application:
@@ -485,7 +455,7 @@ Profiles:
       Capabilities:
         <<: *ApplicationCapabilities
 
-  51OrdererGenesis:
+  5OrdererGenesis:
     <<: *ChannelDefaults
     Orderer:
       <<: *OrdererDefaults
@@ -506,7 +476,8 @@ Profiles:
           - *Pub3
           - *Adv4
           - *Pub4
-  51Channel:
+
+  5Channel:
     Consortium: SampleConsortium
     <<: *ChannelDefaults
     Application:

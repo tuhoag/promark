@@ -33,24 +33,27 @@ class GenerateProofWorkload extends WorkloadModuleBase {
         this.contractId = args.contractId;
         this.contractVersion = args.contractVersion;
         // const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType} = this.roundArguments;
-        const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices} = this.roundArguments
-        this.campaignIds = []
+        const {numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices} = this.roundArguments;
+        this.campaignIds = [];
+        this.txIndex = 0;
 
         for (let i = 0; i < args.numCampaigns; i++) {
 
-            const {camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices)
+            const {camId, name, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignUnequalVerifiersArgs(numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices)
+
+            // throw Error(advertiser)
             const newCampaignId = "c" + i
             const newCampaignName = "campaign " + i
 
             const transArgs = {
                 contractId: "campaign",
                 contractFunction: 'CreateCampaign',
-                contractArguments: [newCampaignId, newCampaignName, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
+                contractArguments: [newCampaignId, newCampaignName, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
                 readOnly: false
             };
 
             this.campaignIds.push(newCampaignId)
-            return this.sutAdapter.sendRequests(transArgs);
+            await this.sutAdapter.sendRequests(transArgs);
         }
     }
 
@@ -76,19 +79,13 @@ class GenerateProofWorkload extends WorkloadModuleBase {
     }
 
     async cleanupWorkloadModule() {
-        const args = this.roundArguments;
-
-        for (let i = 0; i < this.campaignIds.length; i++) {
-            const transArgs = {
-                contractId: "campaign",
-                contractFunction: 'DeleteCampaignById',
-                contractArguments: [this.campaignIds[i]],
-                readOnly: false
-            };
-
-            // this.campaignIds.push(newCampaignId)
-            await this.sutAdapter.sendRequests(transArgs);
-        }
+        const transArgs = {
+            contractId: "campaign",
+            contractFunction: 'DeleteAllCampaigns',
+            contractArguments: [],
+            readOnly: false
+        };
+        await this.sutAdapter.sendRequests(transArgs);
     }
 }
 
