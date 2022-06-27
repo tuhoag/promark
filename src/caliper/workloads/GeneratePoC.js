@@ -72,6 +72,7 @@ class GenerateProofWorkload extends WorkloadModuleBase {
             contractId: "poc",
             contractFunction: "GeneratePoCProof",
             contractArguments: [camId, userId],
+            invokerIdentity: 'peer0.adv0.promark.com',
             readOnly: true
         };
 

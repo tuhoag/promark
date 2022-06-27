@@ -21,6 +21,7 @@ function approveForMyOrg() {
     for orgType in ${orgTypes[@]}; do
         for orgId in $(seq 0 $maxOrgId); do
             # for peerId in $(seq 0 $maxPeerId); do
+                local peerId=0
                 local peerName="peer${peerId}.${orgType}${orgId}"
 
                 infoln "Approving chaincode ${chaincodeName} in channel ${channelName} of ${peerName}..."

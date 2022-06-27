@@ -17,7 +17,7 @@ test:
           arguments:
             contractId: poc
             numCampaigns: 1
-            numOrgsPerType: 4
-            numPeersPerOrgs: 3
+            numOrgsPerType: 2
+            numPeersPerOrgs: 2
             numVerifiers: 2
             numDevices: 1

@@ -37,11 +37,13 @@ class GenerateProofWorkload extends WorkloadModuleBase {
         this.contractVersion = args.contractVersion;
         const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices} = this.roundArguments
 
-        const {camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices)
+        let {camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices)
+
+        camId = "c0";
         const cTransArgs = {
             contractId: "campaign",
             contractFunction: 'CreateCampaign',
-            contractArguments: [camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
+            contractArguments: [camId, "campaign 0", advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
             readOnly: false
         };
 
