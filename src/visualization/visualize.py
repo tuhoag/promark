@@ -96,6 +96,8 @@ def get_title(name):
     name_dict = {
         "tps": "Throughput (Txs/second)",
         "avgLatency": "Average Latency (seconds)",
+        "numOrgs": "Number of Organizations",
+        "numPeers": "Number of Peers per Organization"
     }
 
     return name_dict[name]
