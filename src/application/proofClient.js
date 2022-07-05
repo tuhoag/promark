@@ -5,14 +5,14 @@ exports.generatePoCForRandomUser = async (camId, entityId) => {
     logger.debug(`generateProofForRandomUser: ${camId},${entityId}`);
 
     return utils.callChaincodeFn(async network => {
-        const contract = await network.getContract('poc');
+        const contract = await network.getContract('proof');
 
         // randomly generate a user id
         if (entityId === undefined) {
             entityId = `u${utils.getId(10000)}`;
         }
         logger.info(`GeneratePoCProof: camId:${camId} - entityId:${entityId}`);
-        return contract.submitTransaction("GeneratePoCProof", camId, entityId);
+        return contract.submitTransaction("GeneratePoCProof2", camId, entityId);
     }, async response => {
         logger.debug(`response:${response}`);
         const resultProof = JSON.parse(response);

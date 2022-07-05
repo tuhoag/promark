@@ -201,6 +201,8 @@ func handleConnection(conn net.Conn) {
 		CalculateCommitmentNoSaveHandler(conn, request.Data)
 	} else if request.Command == "genpoc" {
 		GenerateSubPoCProof(conn, request.Data)
+	} else if request.Command == "genpoc-save" {
+		GenerateSubPoCProofSaveHandler(conn, request.Data)
 	} else if request.Command == "commit-nocam" {
 		CalculateCommitmentNoCamHandler(conn, request.Data)
 	} else if request.Command == "verify" {
@@ -352,6 +354,34 @@ func CalculateCommitmentHandler(conn net.Conn, requestData string) {
 	}
 
 	putils.SendResponse(conn, "", string(responseData))
+}
+
+func GenerateSubPoCProofSaveHandler(conn net.Conn, requestData string) {
+	// calculate commitment
+	var paramsRequest putils.PoCGenerationRequest
+	err := json.Unmarshal([]byte(requestData), &paramsRequest)
+
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	fmt.Printf("paramsRequest:%s\n", paramsRequest)
+
+	pocProof, err := GenerateOrGetPoC(paramsRequest.CamId, paramsRequest.UserId)
+
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	// response := putils.CampaignCustomerVerifierProof{}
+	responseData, err := json.Marshal(pocProof)
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	responseStr := string(responseData)
+	fmt.Printf("pocResponse:%s\n", responseStr)
+	putils.SendResponse(conn, "", responseStr)
 }
 
 func GenerateSubPoCProof(conn net.Conn, requestData string) {
@@ -839,4 +869,78 @@ func VerifyCommitmentHandler(conn net.Conn, requestData string) {
 	}
 
 	putils.SendResponse(conn, "", string(responseJSON))
+}
+
+func GenerateOrGetPoC(camId string, userId string) (*putils.PoCProof, error) {
+	// watch key
+	key := fmt.Sprintf("%s:%s", camId, userId)
+	fmt.Printf("GenerateOrGetPoC: %s\n", key)
+
+	// get from the database
+
+	var pocProof putils.PoCProof
+
+	txf := func(tx *redis.Tx) error {
+		value, err := tx.Get(ctx, key).Result()
+		if err != nil && err != redis.Nil {
+			return err
+		}
+
+		fmt.Printf("Got from Redis with Key (%s): %s", key, value)
+
+		if err == redis.Nil {
+			// generate R and store
+			var r ristretto.Scalar
+			r.Rand()
+			C := pedersen.CommitTo(&H, &r, &s)
+
+			rStr := eutils.ConvertScalarToString(&r)
+			CStr := eutils.ConvertPointToString(C)
+
+			pocProof.R = rStr
+			pocProof.Comm = CStr
+
+			jsonParam, err := json.Marshal(pocProof)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("Converted subproof to JSON:" + string(jsonParam))
+
+			// Operation is commited only if the watched keys remain unchanged.
+			_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+				pipe.Set(ctx, key, jsonParam, 0)
+
+				fmt.Println("Added subproof to db")
+				return nil
+			})
+
+			return err
+		}
+
+		err = json.Unmarshal([]byte(value), &pocProof)
+
+		return err
+	}
+
+	rdb := putils.GetRedisConnection()
+	maxRetries := 1000
+	for i := 0; i < maxRetries; i++ {
+		fmt.Printf("Tried: %s times\n", i)
+		err := rdb.Watch(ctx, txf, key)
+		if err == nil {
+			// success
+			break
+
+		}
+
+		if err == redis.TxFailedErr {
+			fmt.Println("There are some modifications on subproof")
+			continue
+		}
+
+		return nil, err
+	}
+
+	return &pocProof, nil
 }

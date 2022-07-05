@@ -44,52 +44,52 @@ channels:
         ledgerQuery: true
 
       peer1.adv0.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
+        chaincodeQuery: false
+        endorsingPeer: false
+        eventSource: false
+        ledgerQuery: false
 
       peer1.pub0.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
+        chaincodeQuery: false
+        endorsingPeer: false
+        eventSource: false
+        ledgerQuery: false
 
       peer1.adv1.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
+        chaincodeQuery: false
+        endorsingPeer: false
+        eventSource: false
+        ledgerQuery: false
 
       peer1.pub1.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
+        chaincodeQuery: false
+        endorsingPeer: false
+        eventSource: false
+        ledgerQuery: false
 
       peer2.adv0.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
+        chaincodeQuery: false
+        endorsingPeer: false
+        eventSource: false
+        ledgerQuery: false
 
       peer2.pub0.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
+        chaincodeQuery: false
+        endorsingPeer: false
+        eventSource: false
+        ledgerQuery: false
 
       peer2.adv1.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
+        chaincodeQuery: false
+        endorsingPeer: false
+        eventSource: false
+        ledgerQuery: false
 
       peer2.pub1.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
+        chaincodeQuery: false
+        endorsingPeer: false
+        eventSource: false
+        ledgerQuery: false
 orderers:
   orderer.promark.com:
     grpcOptions:

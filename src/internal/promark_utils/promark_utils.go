@@ -100,6 +100,11 @@ type CampaignCustomerVerifierProof struct {
 	Comm   string `json:"comm"`
 }
 
+type PoCGenerationRequest struct {
+	CamId  string `json:"camId"`
+	UserId string `json:"userId"`
+}
+
 type CampaignCustomerProof struct {
 	CamId  string   `json:"camId"`
 	UserId string   `json:"userId`
@@ -461,6 +466,113 @@ func GeneratePoCProofFromVerifiers(campaign *Campaign) (*PoCProof, error) {
 	// fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
 
 	return &proof, nil
+}
+
+func GeneratePoCProofFromVerifiers2(campaign *Campaign, userId string) (*PoCProof, error) {
+	// generate a random values for each verifiers
+	numVerifiers := len(campaign.VerifierURLs)
+
+	var C ristretto.Point
+	var r ristretto.Scalar
+
+	C.SetZero()
+	r.SetZero()
+
+	fmt.Printf("Init C: %s\n", C)
+	for i := 0; i < numVerifiers; i++ {
+		verifierURL := campaign.VerifierURLs[i]
+
+		fmt.Println("Call RequestVerifierToGenerateSubPoCProof: " + verifierURL)
+		verifierProof, err := RequestVerifierToGenerateSubPoCProof2(verifierURL, campaign.Id, userId)
+
+		if err != nil {
+			return nil, err
+		}
+
+		Ci, err := eutils.ConvertStringToPoint(verifierProof.Comm)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ri, err := eutils.ConvertStringToScalar(verifierProof.R)
+
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Printf("Transfer %s to point %s\n", verifierProof.Comm, Ci)
+
+		C.Add(&C, Ci)
+		r.Add(&r, ri)
+		fmt.Printf("Current C: %s after adding %s\n", C, Ci)
+		fmt.Printf("Current r: %s after adding %s\n", r, ri)
+	}
+
+	CommEnc := eutils.ConvertPointToString(&C)
+	rEnc := eutils.ConvertScalarToString(&r)
+
+	proof := PoCProof{
+		Comm:         CommEnc,
+		R:            rEnc,
+		NumVerifiers: numVerifiers,
+	}
+
+	fmt.Println("proof.Comm: " + proof.Comm)
+	fmt.Println("proof.r: " + proof.R)
+	fmt.Printf("proof.numVerifiers: %s\n", proof.NumVerifiers)
+	// fmt.Printf("proof.Rs: %s\n", proof.Rs)
+	// fmt.Printf("proof.SubComs: %s\n", proof.SubComs)
+
+	return &proof, nil
+}
+
+func RequestVerifierToGenerateSubPoCProof2(url string, camId string, userId string) (*PoCProof, error) {
+	// putils.SendLog("RequestCommitment at", url, LOG_MODE)
+	conn, err := net.Dial("tcp", url)
+	if err != nil {
+		// putils.SendLog("Error connecting:", err.Error(), LOG_MODE)
+
+		fmt.Println("Error connecting:" + err.Error())
+		return nil, errors.New("ERROR:" + err.Error())
+	}
+
+	requestArgs := PoCGenerationRequest{
+		CamId:  camId,
+		UserId: userId,
+	}
+
+	jsonArgs, err := json.Marshal(requestArgs)
+
+	SendRequest(conn, "genpoc-save", string(jsonArgs))
+	responseStr, err := bufio.NewReader(conn).ReadString('\n')
+
+	if err != nil {
+		// sendLog("Error connecting:", err.Error())
+		log.Println("Error generating PoC:", err.Error())
+		return nil, errors.New("Error generate PoC:" + err.Error())
+	}
+
+	fmt.Println("Reiceived From: " + url + "-Response:" + responseStr)
+	// SendLog("Reiceived From: "+url+"-Response:", responseStr, LOG_MODE)
+
+	response, err := ParseResponse(responseStr)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var subPoCProof PoCProof
+	err = json.Unmarshal([]byte(response.Data), &subPoCProof)
+
+	if err != nil {
+		fmt.Printf("Unmarshal error: %v\n", err)
+		return nil, err
+	}
+
+	fmt.Printf("Returned from %s:%s\n", url, subPoCProof)
+
+	return &subPoCProof, nil
 }
 
 func RequestVerifierToGenerateSubPoCProof(url string) (*PoCProof, error) {

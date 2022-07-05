@@ -18,6 +18,6 @@ test:
             contractId: poc
             numCampaigns: 1
             numOrgsPerType: 2
-            numPeersPerOrgs: 2
+            numPeersPerOrgs: 3
             numVerifiers: 2
             numDevices: 1
