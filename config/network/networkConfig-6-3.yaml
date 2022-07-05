@@ -79,6 +79,18 @@ channels:
         eventSource: true
         ledgerQuery: true
 
+      peer0.adv5.promark.com:
+        chaincodeQuery: true
+        endorsingPeer: true
+        eventSource: true
+        ledgerQuery: true
+
+      peer0.pub5.promark.com:
+        chaincodeQuery: true
+        endorsingPeer: true
+        eventSource: true
+        ledgerQuery: true
+
 
 
 orderers:
@@ -210,6 +222,30 @@ clients:
         path: ../../credentials/peerOrganizations/pub4.promark.com/users/Admin@pub4.promark.com/msp/admincerts
       organization: pub4
 
+  peer0.adv5.promark.com:
+    client:
+      clientPrivateKey:
+        path: ../../credentials/peerOrganizations/adv5.promark.com/users/Admin@adv5.promark.com/msp/keystore/priv_sk
+      clientSignedCert:
+        path: ../../credentials/peerOrganizations/adv5.promark.com/users/Admin@adv5.promark.com/msp/signcerts/Admin@adv5.promark.com-cert.pem
+      credentialStore:
+        cryptoStore:
+          path: ../../credentials/peerOrganizations/adv5.promark.com/users/Admin@adv5.promark.com/msp
+        path: ../../credentials/peerOrganizations/adv5.promark.com/users/Admin@adv5.promark.com/msp/admincerts
+      organization: adv5
+
+  peer0.pub5.promark.com:
+    client:
+      clientPrivateKey:
+        path: ../../credentials/peerOrganizations/pub5.promark.com/users/Admin@pub5.promark.com/msp/keystore/priv_sk
+      clientSignedCert:
+        path: ../../credentials/peerOrganizations/pub5.promark.com/users/Admin@pub5.promark.com/msp/signcerts/Admin@pub5.promark.com-cert.pem
+      credentialStore:
+        cryptoStore:
+          path: ../../credentials/peerOrganizations/pub5.promark.com/users/Admin@pub5.promark.com/msp
+        path: ../../credentials/peerOrganizations/pub5.promark.com/users/Admin@pub5.promark.com/msp/admincerts
+      organization: pub5
+
 organizations:
   adv0:
     adminPrivateKey:
@@ -218,6 +254,7 @@ organizations:
     peers:
       - peer0.adv0.promark.com
       - peer1.adv0.promark.com
+      - peer2.adv0.promark.com
     signedCert:
       path: ../../credentials/peerOrganizations/adv0.promark.com/users/Admin@adv0.promark.com/msp/signcerts/Admin@adv0.promark.com-cert.pem
 
@@ -228,6 +265,7 @@ organizations:
     peers:
       - peer0.pub0.promark.com
       - peer1.pub0.promark.com
+      - peer2.pub0.promark.com
     signedCert:
       path: ../../credentials/peerOrganizations/pub0.promark.com/users/Admin@pub0.promark.com/msp/signcerts/Admin@pub0.promark.com-cert.pem
 
@@ -238,6 +276,7 @@ organizations:
     peers:
       - peer0.adv1.promark.com
       - peer1.adv1.promark.com
+      - peer2.adv1.promark.com
     signedCert:
       path: ../../credentials/peerOrganizations/adv1.promark.com/users/Admin@adv1.promark.com/msp/signcerts/Admin@adv1.promark.com-cert.pem
 
@@ -248,6 +287,7 @@ organizations:
     peers:
       - peer0.pub1.promark.com
       - peer1.pub1.promark.com
+      - peer2.pub1.promark.com
     signedCert:
       path: ../../credentials/peerOrganizations/pub1.promark.com/users/Admin@pub1.promark.com/msp/signcerts/Admin@pub1.promark.com-cert.pem
 
@@ -258,6 +298,7 @@ organizations:
     peers:
       - peer0.adv2.promark.com
       - peer1.adv2.promark.com
+      - peer2.adv2.promark.com
     signedCert:
       path: ../../credentials/peerOrganizations/adv2.promark.com/users/Admin@adv2.promark.com/msp/signcerts/Admin@adv2.promark.com-cert.pem
 
@@ -268,6 +309,7 @@ organizations:
     peers:
       - peer0.pub2.promark.com
       - peer1.pub2.promark.com
+      - peer2.pub2.promark.com
     signedCert:
       path: ../../credentials/peerOrganizations/pub2.promark.com/users/Admin@pub2.promark.com/msp/signcerts/Admin@pub2.promark.com-cert.pem
 
@@ -278,6 +320,7 @@ organizations:
     peers:
       - peer0.adv3.promark.com
       - peer1.adv3.promark.com
+      - peer2.adv3.promark.com
     signedCert:
       path: ../../credentials/peerOrganizations/adv3.promark.com/users/Admin@adv3.promark.com/msp/signcerts/Admin@adv3.promark.com-cert.pem
 
@@ -288,6 +331,7 @@ organizations:
     peers:
       - peer0.pub3.promark.com
       - peer1.pub3.promark.com
+      - peer2.pub3.promark.com
     signedCert:
       path: ../../credentials/peerOrganizations/pub3.promark.com/users/Admin@pub3.promark.com/msp/signcerts/Admin@pub3.promark.com-cert.pem
 
@@ -298,6 +342,7 @@ organizations:
     peers:
       - peer0.adv4.promark.com
       - peer1.adv4.promark.com
+      - peer2.adv4.promark.com
     signedCert:
       path: ../../credentials/peerOrganizations/adv4.promark.com/users/Admin@adv4.promark.com/msp/signcerts/Admin@adv4.promark.com-cert.pem
 
@@ -308,8 +353,31 @@ organizations:
     peers:
       - peer0.pub4.promark.com
       - peer1.pub4.promark.com
+      - peer2.pub4.promark.com
     signedCert:
       path: ../../credentials/peerOrganizations/pub4.promark.com/users/Admin@pub4.promark.com/msp/signcerts/Admin@pub4.promark.com-cert.pem
+
+  adv5:
+    adminPrivateKey:
+      path: ../../credentials/peerOrganizations/adv5.promark.com/users/Admin@adv5.promark.com/msp/keystore/priv_sk
+    mspid: adv5MSP
+    peers:
+      - peer0.adv5.promark.com
+      - peer1.adv5.promark.com
+      - peer2.adv5.promark.com
+    signedCert:
+      path: ../../credentials/peerOrganizations/adv5.promark.com/users/Admin@adv5.promark.com/msp/signcerts/Admin@adv5.promark.com-cert.pem
+
+  pub5:
+    adminPrivateKey:
+      path: ../../credentials/peerOrganizations/pub5.promark.com/users/Admin@pub5.promark.com/msp/keystore/priv_sk
+    mspid: pub5MSP
+    peers:
+      - peer0.pub5.promark.com
+      - peer1.pub5.promark.com
+      - peer2.pub5.promark.com
+    signedCert:
+      path: ../../credentials/peerOrganizations/pub5.promark.com/users/Admin@pub5.promark.com/msp/signcerts/Admin@pub5.promark.com-cert.pem
 
 peers:
   peer0.adv0.promark.com:
@@ -382,6 +450,20 @@ peers:
       path: ../../credentials/peerOrganizations/pub4.promark.com/tlsca/tlsca.pub4.promark.com-cert.pem
     url: grpcs://0.0.0.0:6400
 
+  peer0.adv5.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer0.adv5.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/adv5.promark.com/tlsca/tlsca.adv5.promark.com-cert.pem
+    url: grpcs://0.0.0.0:5500
+
+  peer0.pub5.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer0.pub5.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/pub5.promark.com/tlsca/tlsca.pub5.promark.com-cert.pem
+    url: grpcs://0.0.0.0:6500
+
   peer1.adv0.promark.com:
     grpcOptions:
       ssl-target-name-override: peer1.adv0.promark.com
@@ -451,3 +533,101 @@ peers:
     tlsCACerts:
       path: ../../credentials/peerOrganizations/pub4.promark.com/tlsca/tlsca.pub4.promark.com-cert.pem
     url: grpcs://0.0.0.0:6410
+
+  peer1.adv5.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer1.adv5.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/adv5.promark.com/tlsca/tlsca.adv5.promark.com-cert.pem
+    url: grpcs://0.0.0.0:5510
+
+  peer1.pub5.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer1.pub5.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/pub5.promark.com/tlsca/tlsca.pub5.promark.com-cert.pem
+    url: grpcs://0.0.0.0:6510
+
+  peer2.adv0.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.adv0.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/adv0.promark.com/tlsca/tlsca.adv0.promark.com-cert.pem
+    url: grpcs://0.0.0.0:5020
+
+  peer2.pub0.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.pub0.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/pub0.promark.com/tlsca/tlsca.pub0.promark.com-cert.pem
+    url: grpcs://0.0.0.0:6020
+
+  peer2.adv1.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.adv1.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/adv1.promark.com/tlsca/tlsca.adv1.promark.com-cert.pem
+    url: grpcs://0.0.0.0:5120
+
+  peer2.pub1.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.pub1.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/pub1.promark.com/tlsca/tlsca.pub1.promark.com-cert.pem
+    url: grpcs://0.0.0.0:6120
+
+  peer2.adv2.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.adv2.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/adv2.promark.com/tlsca/tlsca.adv2.promark.com-cert.pem
+    url: grpcs://0.0.0.0:5220
+
+  peer2.pub2.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.pub2.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/pub2.promark.com/tlsca/tlsca.pub2.promark.com-cert.pem
+    url: grpcs://0.0.0.0:6220
+
+  peer2.adv3.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.adv3.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/adv3.promark.com/tlsca/tlsca.adv3.promark.com-cert.pem
+    url: grpcs://0.0.0.0:5320
+
+  peer2.pub3.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.pub3.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/pub3.promark.com/tlsca/tlsca.pub3.promark.com-cert.pem
+    url: grpcs://0.0.0.0:6320
+
+  peer2.adv4.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.adv4.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/adv4.promark.com/tlsca/tlsca.adv4.promark.com-cert.pem
+    url: grpcs://0.0.0.0:5420
+
+  peer2.pub4.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.pub4.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/pub4.promark.com/tlsca/tlsca.pub4.promark.com-cert.pem
+    url: grpcs://0.0.0.0:6420
+
+  peer2.adv5.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.adv5.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/adv5.promark.com/tlsca/tlsca.adv5.promark.com-cert.pem
+    url: grpcs://0.0.0.0:5520
+
+  peer2.pub5.promark.com:
+    grpcOptions:
+      ssl-target-name-override: peer2.pub5.promark.com
+    tlsCACerts:
+      path: ../../credentials/peerOrganizations/pub5.promark.com/tlsca/tlsca.pub5.promark.com-cert.pem
+    url: grpcs://0.0.0.0:6520

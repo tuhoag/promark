@@ -5,19 +5,87 @@ test:
       type: local
       number: 1
     rounds:
-      - label: GeneratePoC(tps:200)
+      - label: GeneratePoC(nc:2)
         description: GeneratePoC benchmark
-        txNumber: 10000
+        txNumber: 5000
         rateControl:
           type: fixed-rate
           opts:
-            tps: 600
+            tps: 700
         workload:
           module: ./workloads/GeneratePoC.js
           arguments:
             contractId: poc
             numCampaigns: 1
-            numOrgsPerType: 2
+            numOrgsPerType: 3
             numPeersPerOrgs: 3
             numVerifiers: 2
+            numDevices: 1
+
+      - label: GeneratePoC(nc:3)
+        description: GeneratePoC benchmark
+        txNumber: 5000
+        rateControl:
+          type: fixed-rate
+          opts:
+            tps: 700
+        workload:
+          module: ./workloads/GeneratePoC.js
+          arguments:
+            contractId: poc
+            numCampaigns: 1
+            numOrgsPerType: 3
+            numPeersPerOrgs: 3
+            numVerifiers: 3
+            numDevices: 1
+
+      - label: GeneratePoC(nc:4)
+        description: GeneratePoC benchmark
+        txNumber: 5000
+        rateControl:
+          type: fixed-rate
+          opts:
+            tps: 700
+        workload:
+          module: ./workloads/GeneratePoC.js
+          arguments:
+            contractId: poc
+            numCampaigns: 1
+            numOrgsPerType: 3
+            numPeersPerOrgs: 3
+            numVerifiers: 4
+            numDevices: 1
+
+      - label: GeneratePoC(nc:5)
+        description: GeneratePoC benchmark
+        txNumber: 5000
+        rateControl:
+          type: fixed-rate
+          opts:
+            tps: 700
+        workload:
+          module: ./workloads/GeneratePoC.js
+          arguments:
+            contractId: poc
+            numCampaigns: 1
+            numOrgsPerType: 3
+            numPeersPerOrgs: 3
+            numVerifiers: 5
+            numDevices: 1
+
+      - label: GeneratePoC(nc:6)
+        description: GeneratePoC benchmark
+        txNumber: 5000
+        rateControl:
+          type: fixed-rate
+          opts:
+            tps: 700
+        workload:
+          module: ./workloads/GeneratePoC.js
+          arguments:
+            contractId: poc
+            numCampaigns: 1
+            numOrgsPerType: 3
+            numPeersPerOrgs: 3
+            numVerifiers: 6
             numDevices: 1

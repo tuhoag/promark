@@ -57,9 +57,9 @@ test:
           arguments:
             numCampaigns: 1
             contractId: campaign
-            numOrgsPerType: 1
-            numPeersPerOrgs: 1
-            numVerifiers: 1
+            numOrgsPerType: 2
+            numPeersPerOrgs: 2
+            numVerifiers: 2
             numDevices: 2
 
       # - label: CreateCampaign(fixed-rate:350)

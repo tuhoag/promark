@@ -134,7 +134,7 @@
             <ul>
                 <h3>&nbspBenchmark results</h3>
                 <li><a href="#benchmarksummary">Summary</a></li>
-                    <li><a href="#CreateCampaign(fixed-rate:300)">CreateCampaign(fixed-rate:300)</a></li>
+                    <li><a href="#VerifyTPoC(nc:2)">VerifyTPoC(nc:2)</a></li>
             </ul>
             <ul>
                 <h3>&nbspSystem under test</h3>
@@ -152,28 +152,28 @@
                     </tr>
 
                     <tr>
-                         <td>CreateCampaign(fixed-rate:300)</td> <td>5000</td> <td>0</td> <td>105.3</td> <td>1.08</td> <td>0.09</td> <td>0.29</td> <td>105.0</td>
+                         <td>VerifyTPoC(nc:2)</td> <td>5000</td> <td>0</td> <td>299.0</td> <td>0.03</td> <td>0.01</td> <td>0.01</td> <td>298.8</td>
                     </tr>
                 </table>
             </div>
-            <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;" id="CreateCampaign(fixed-rate:300)">
-                <h2>Benchmark round: CreateCampaign(fixed-rate:300)</h2>
-                <p>CreateCampaign benchmark</p>
+            <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;" id="VerifyTPoC(nc:2)">
+                <h2>Benchmark round: VerifyTPoC(nc:2)</h2>
+                <p>VerifyTPoC benchmark</p>
                 <pre style="overflow: visible;white-space: pre-wrap;max-height:100%;">rateControl:
   type: fixed-rate
   opts:
-    tps: 400
+    tps: 700
 </pre>
-                        <h3>Performance metrics for CreateCampaign(fixed-rate:300)</h3>
+                        <h3>Performance metrics for VerifyTPoC(nc:2)</h3>
                             <table style="min-width: 100%;">
                                 <tr>
                                      <th>Name</th> <th>Succ</th> <th>Fail</th> <th>Send Rate (TPS)</th> <th>Max Latency (s)</th> <th>Min Latency (s)</th> <th>Avg Latency (s)</th> <th>Throughput (TPS)</th>
                                 </tr>
                                 <tr>
-                                     <td>CreateCampaign(fixed-rate:300)</td> <td>5000</td> <td>0</td> <td>105.3</td> <td>1.08</td> <td>0.09</td> <td>0.29</td> <td>105.0</td>
+                                     <td>VerifyTPoC(nc:2)</td> <td>5000</td> <td>0</td> <td>299.0</td> <td>0.03</td> <td>0.01</td> <td>0.01</td> <td>298.8</td>
                                 </tr>
                             </table>
-                        <h3>Resource utilization for CreateCampaign(fixed-rate:300)</h3>
+                        <h3>Resource utilization for VerifyTPoC(nc:2)</h3>
             </div>
 
             <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;">
@@ -185,22 +185,21 @@ workers:
   type: local
   number: 1
 rounds:
-  - label: &#39;CreateCampaign(fixed-rate:300)&#39;
-    description: CreateCampaign benchmark
+  - label: &#39;VerifyTPoC(nc:2)&#39;
+    description: VerifyTPoC benchmark
     txNumber: 5000
     rateControl:
       type: fixed-rate
       opts:
-        tps: 400
+        tps: 700
     workload:
-      module: .&#x2F;workloads&#x2F;CreateCampaign.js
+      module: .&#x2F;workloads&#x2F;VerifyTPoC.js
       arguments:
-        numCampaigns: 1
-        contractId: campaign
+        contractId: poc
         numOrgsPerType: 1
-        numPeersPerOrgs: 1
-        numVerifiers: 1
-        numDevices: 2
+        numPeersPerOrgs: 3
+        numVerifiers: 3
+        numDevices: 1
 </pre>
                 <h3>SUT</h3>
                 <pre id="sutdetails">not provided</pre>

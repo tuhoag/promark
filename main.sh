@@ -233,6 +233,22 @@ function invokeGenerateCustomerProof() {
     # $SCRIPTS_DIR/generate-customer-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2
 }
 
+function invokeGenerateTPoCCustomerProof() {
+    local orgNum=$1
+    local peerNum=$2
+    local camId=$3
+    local userId=$4
+    local numTPoCs=$5
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node main.js $orgNum $peerNum proof gentpocs $camId $userId $numTPoCs
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/generate-customer-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2
+}
+
 function invokeAddCustomerProof() {
     local orgNum=$1
     local peerNum=$2
@@ -533,6 +549,11 @@ elif [ $MODE = "proof" ]; then
         camId=$5
         userId=$6
         invokeGenerateCustomerProof $NO_ORGS $NO_PEERS $camId $userId
+    elif [ $SUB_MODE = "gentpocs" ]; then
+        camId=$5
+        userId=$6
+        numTPoCs=$7
+        invokeGenerateTPoCCustomerProof $NO_ORGS $NO_PEERS $camId $userId $numTPoCs
     elif [ $SUB_MODE = "add" ]; then
         proofId=$5
         comm=$6

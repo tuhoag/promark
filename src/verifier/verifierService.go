@@ -207,6 +207,8 @@ func handleConnection(conn net.Conn) {
 		CalculateCommitmentNoCamHandler(conn, request.Data)
 	} else if request.Command == "verify" {
 		VerifyCommitmentHandler(conn, request.Data)
+	} else if request.Command == "clear" {
+		ClearDataHandler(conn, request.Data)
 	} else {
 		putils.SendResponse(conn, "nocommand", "")
 		conn.Close()
@@ -924,6 +926,8 @@ func GenerateOrGetPoC(camId string, userId string) (*putils.PoCProof, error) {
 	}
 
 	rdb := putils.GetRedisConnection()
+	defer rdb.Close()
+
 	maxRetries := 1000
 	for i := 0; i < maxRetries; i++ {
 		fmt.Printf("Tried: %s times\n", i)
@@ -943,4 +947,42 @@ func GenerateOrGetPoC(camId string, userId string) (*putils.PoCProof, error) {
 	}
 
 	return &pocProof, nil
+}
+
+func ClearDataHandler(conn net.Conn, requestData string) {
+	camId := requestData
+
+	var cursor uint64
+	rdb := putils.GetRedisConnection()
+	defer rdb.Close()
+	count := 0
+
+	for {
+		var keys []string
+		var err error
+
+		keys, cursor, err = rdb.Scan(ctx, cursor, fmt.Sprintf("%s:*", camId), 0).Result()
+
+		if err != nil {
+			putils.SendResponse(conn, err.Error(), "")
+		}
+
+		count += len(keys)
+
+		// fmt.Printf("Got %s keys\n", len(keys))
+
+		for _, key := range keys {
+			err = rdb.Del(ctx, key).Err()
+
+			if err != nil {
+				putils.SendResponse(conn, err.Error(), "")
+			}
+		}
+
+		if cursor == 0 {
+			break
+		}
+	}
+	fmt.Printf("Removed %s keys\n", count)
+	putils.SendResponse(conn, "", string(count))
 }

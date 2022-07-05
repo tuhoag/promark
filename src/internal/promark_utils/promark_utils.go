@@ -262,7 +262,7 @@ func GetRedisConnection() *redis.Client {
 		Addr:     "127.0.0.1:6379",
 		Password: "",
 		DB:       0,
-		PoolSize: 10000,
+		PoolSize: 20000,
 	})
 
 	return client
@@ -629,6 +629,8 @@ func GenerateTPoCs(poc *PoCProof, numTPoCs int) (*PoCAndTPoCProofs, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Printf("numVerifiers: %d - numTPoCS: %d\n", numVerifiers, numTPoCs)
 
 	for i := 0; i < numTPoCs; i++ {
 		subComms := eutils.SplitPoint(commPoint, numVerifiers)

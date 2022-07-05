@@ -16,8 +16,8 @@ function installChaincode() {
 
     for orgType in ${orgTypes[@]}; do
         for orgId in $(seq 0 $maxOrgId); do
-            # for peerId in $(seq 0 $maxPeerId); do
-                local peerId=0
+            for peerId in $(seq 0 $maxPeerId); do
+                # local peerId=0
                 local peerName="peer${peerId}.${orgType}${orgId}"
                 # infoln "[${orgType}.${orgId}.${peerId}] Install chaincode ${chaincodeName}"
                 infoln "Installing chaincode ${chaincodeName} in channel ${channelName} of ${peerName}..."
@@ -31,7 +31,7 @@ function installChaincode() {
                 cat log.txt
                 verifyResult $res "Chaincode installation on ${peerName} has failed"
                 successln "Chaincode is installed on ${peerName}"
-            # done
+            done
         done
     done
 }

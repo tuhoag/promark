@@ -55,41 +55,6 @@ channels:
         eventSource: true
         ledgerQuery: true
 
-      peer1.adv0.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
-
-      peer1.pub0.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
-
-      peer1.adv1.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
-
-      peer1.pub1.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
-
-      peer1.adv2.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
-
-      peer1.pub2.promark.com:
-        chaincodeQuery: true
-        endorsingPeer: true
-        eventSource: true
-        ledgerQuery: true
 
 orderers:
   orderer.promark.com:

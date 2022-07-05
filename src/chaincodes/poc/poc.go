@@ -85,3 +85,22 @@ func (s *PoCSmartContract) GeneratePoCAndTPoCProof(ctx contractapi.TransactionCo
 
 	return result, nil
 }
+
+func (s *PoCSmartContract) GenerateTPoCProofs(ctx contractapi.TransactionContextInterface, camId string, CStr string, rStr string, numVerifiers int, numTPoCs int) (*putils.PoCAndTPoCProofs, error) {
+	putils.SendLog("GeneratePoCProof", "", LOG_MODE)
+	putils.SendLog("camId:", camId, LOG_MODE)
+	fmt.Printf("camId:%s - C:%s - r:%s - numV:%d - numT:%d\n", camId, CStr, rStr, numVerifiers, numTPoCs)
+
+	poc := putils.PoCProof{
+		Comm:         CStr,
+		R:            rStr,
+		NumVerifiers: numVerifiers,
+	}
+
+	result, err := putils.GenerateTPoCs(&poc, numTPoCs)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

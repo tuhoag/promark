@@ -1,8 +1,8 @@
 const utils = require('./utils');
 const logger = require('./logger')(__filename, "debug");
 
-exports.generatePoCForRandomUser = async (camId, entityId) => {
-    logger.debug(`generateProofForRandomUser: ${camId},${entityId}`);
+exports.generatePoC = async (camId, entityId) => {
+    logger.debug(`generatePoC: ${camId},${entityId}`);
 
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
@@ -13,6 +13,21 @@ exports.generatePoCForRandomUser = async (camId, entityId) => {
         }
         logger.info(`GeneratePoCProof: camId:${camId} - entityId:${entityId}`);
         return contract.submitTransaction("GeneratePoCProof2", camId, entityId);
+    }, async response => {
+        logger.debug(`response:${response}`);
+        const resultProof = JSON.parse(response);
+        return resultProof;
+    });
+}
+
+exports.generateTPoCs = async (camId, cStr, rStr, numVerifiers, numTPoCs) => {
+    logger.debug(`generateTPoCs: ${camId},${cStr},${rStr},${numVerifiers},${numTPoCs}`);
+
+    return utils.callChaincodeFn(async network => {
+        const contract = await network.getContract('poc');
+
+        logger.info(`GenerateTPoCProofs: camId:${camId} - c:${cStr} - r:${rStr} - numTPoCs:${numTPoCs}`);
+        return contract.submitTransaction("GenerateTPoCProofs", camId, cStr, rStr, numVerifiers,numTPoCs);
     }, async response => {
         logger.debug(`response:${response}`);
         const resultProof = JSON.parse(response);

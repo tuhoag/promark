@@ -129,3 +129,51 @@ PeerOrgs:
         - "0.0.0.0"
     Users:
       Count: 1
+
+  - Name: adv5
+    Domain: adv5.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 3
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
+
+  - Name: pub5
+    Domain: pub5.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 3
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
+
+  - Name: adv6
+    Domain: adv6.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 3
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
+
+  - Name: pub6
+    Domain: pub6.promark.com
+    EnableNodeOUs: true
+    Template:
+      Count: 3
+      SANS:
+        - "localhost"
+        - "127.0.0.1"
+        - "0.0.0.0"
+    Users:
+      Count: 1
