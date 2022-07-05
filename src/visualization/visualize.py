@@ -71,7 +71,7 @@ def visualize_line_chart(df, x_name, y_name, cat_name, path):
 
     logger.debug("x: {} - values: {}".format(x_name, x_values))
     logger.debug("cat: {} - values: {}".format(cat_name, cat_values))
-
+    sns.color_palette("hls", 8)
     figure = sns.lineplot(data=df, y=y_name, x=x_name, hue=cat_name, markers=True).get_figure()
 
     plt.ylabel(get_title(y_name))
