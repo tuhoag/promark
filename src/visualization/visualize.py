@@ -1,3 +1,4 @@
+from distutils.sysconfig import customize_compiler
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -71,8 +72,12 @@ def visualize_line_chart(df, x_name, y_name, cat_name, path):
 
     logger.debug("x: {} - values: {}".format(x_name, x_values))
     logger.debug("cat: {} - values: {}".format(cat_name, cat_values))
-    sns.color_palette("hls", 8)
-    figure = sns.lineplot(data=df, y=y_name, x=x_name, hue=cat_name, markers=True).get_figure()
+
+    # sns.set_palette("pastel")
+    custom_palette = sns.color_palette("bright", len(cat_values))
+    sns.set_palette(custom_palette)
+    # sns.palplot(custom_palette)
+    figure = sns.lineplot(data=df, y=y_name, x=x_name, hue=cat_name, style=cat_name, palette=custom_palette, markers=True).get_figure()
 
     plt.ylabel(get_title(y_name))
     plt.xlabel(get_title(x_name))
@@ -103,8 +108,12 @@ def get_title(name):
     return name_dict[name]
 
 def visualize_campaign_init(df):
-    figure_path = os.path.join("..","..","exp_data","caminit.pdf")
-    visualize_line_chart(df, "numOrgs", "tps", "numPeers", figure_path)
+    tps_figure_path = os.path.join("..","..","exp_data","caminit-tps.pdf")
+    latency_figure_path = os.path.join("..","..","exp_data","caminit-latency.pdf")
+    logger.debug(df.columns)
+
+    visualize_line_chart(df, "numOrgs", "tps", "numPeers", tps_figure_path)
+    visualize_line_chart(df, "numOrgs", "avgLatency", "numPeers", latency_figure_path)
 
 def load_exp_data(exp_name):
     load_data_dict = {

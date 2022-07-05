@@ -1,0 +1,6 @@
+numOrgs,numPeers,numVerifiers,controller,sendRate,maxLatency,minLatency,avgLatency,tps
+2,3,2,fix-rate#700,308.7,0.03,0.01,0.01,308.5
+2,3,3,fix-rate#700,298.1,0.03,0.01,0.01,297.9
+2,3,4,fix-rate#700,299.0,0.03,0.01,0.01,298.8
+2,3,5,fix-rate#700,294.1,0.03,0.01,0.01,293.9
+2,3,6,fix-rate#700,291.0,0.03,0.01,0.02,290.8
