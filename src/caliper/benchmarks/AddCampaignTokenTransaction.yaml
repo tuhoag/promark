@@ -5,106 +5,81 @@ test:
       type: local
       number: 1
     rounds:
-      - label: AddCampaignTokenTransaction(orgs:1-verifiers:1-camp:1-tps:200)
+      - label: AddCampaignTokenTransaction(nc:2)
         description: AddCampaignTokenTransaction benchmark
         txNumber: 5000
         rateControl:
           type: fixed-rate
           opts:
-            tps: 200
+            tps: 400
         workload:
           module: ./workloads/AddCampaignTokenTransaction.js
           arguments:
-            contractId: poc
             numOrgsPerType: 2
             numPeersPerOrgs: 2
             numVerifiersPerType: 1
             numDevices: 1
 
-      # - label: AddCampaignTokenTransaction(orgs:1-verifiers:1-camp:1-tps:300)
+      # - label: AddCampaignTokenTransaction(nc:3)
       #   description: AddCampaignTokenTransaction benchmark
       #   txNumber: 5000
       #   rateControl:
       #     type: fixed-rate
       #     opts:
-      #       tps: 300
+      #       tps:
       #   workload:
       #     module: ./workloads/AddCampaignTokenTransaction.js
       #     arguments:
       #       contractId: poc
-      #       numCampaigns: 1
-      #       numOrgsPerType: 1
-      #       numPeersPerOrgs: 1
+      #       numOrgsPerType: 2
+      #       numPeersPerOrgs: 2
       #       numVerifiersPerType: 1
       #       numDevices: 1
 
-
-      # - label: AddCampaignTokenTransaction(orgs:1-verifiers:1-camp:1-tps:325)
+      # - label: AddCampaignTokenTransaction(nc:2)
       #   description: AddCampaignTokenTransaction benchmark
       #   txNumber: 5000
       #   rateControl:
       #     type: fixed-rate
       #     opts:
-      #       tps: 325
+      #       tps: 200
       #   workload:
       #     module: ./workloads/AddCampaignTokenTransaction.js
       #     arguments:
       #       contractId: poc
-      #       numCampaigns: 1
-      #       numOrgsPerType: 1
-      #       numPeersPerOrgs: 1
+      #       numOrgsPerType: 2
+      #       numPeersPerOrgs: 2
       #       numVerifiersPerType: 1
       #       numDevices: 1
 
-
-      # - label: AddCampaignTokenTransaction(orgs:1-verifiers:1-camp:1-tps:350)
+      # - label: AddCampaignTokenTransaction(nc:2)
       #   description: AddCampaignTokenTransaction benchmark
       #   txNumber: 5000
       #   rateControl:
       #     type: fixed-rate
       #     opts:
-      #       tps: 350
+      #       tps: 200
       #   workload:
       #     module: ./workloads/AddCampaignTokenTransaction.js
       #     arguments:
       #       contractId: poc
-      #       numCampaigns: 1
-      #       numOrgsPerType: 1
-      #       numPeersPerOrgs: 1
+      #       numOrgsPerType: 2
+      #       numPeersPerOrgs: 2
       #       numVerifiersPerType: 1
       #       numDevices: 1
 
-      # - label: AddCampaignTokenTransaction(orgs:1-verifiers:1-camp:1-tps:375)
+      # - label: AddCampaignTokenTransaction(nc:2)
       #   description: AddCampaignTokenTransaction benchmark
       #   txNumber: 5000
       #   rateControl:
       #     type: fixed-rate
       #     opts:
-      #       tps: 375
+      #       tps: 200
       #   workload:
       #     module: ./workloads/AddCampaignTokenTransaction.js
       #     arguments:
       #       contractId: poc
-      #       numCampaigns: 1
-      #       numOrgsPerType: 1
-      #       numPeersPerOrgs: 1
+      #       numOrgsPerType: 2
+      #       numPeersPerOrgs: 2
       #       numVerifiersPerType: 1
       #       numDevices: 1
-
-      # - label: AddCampaignTokenTransaction(orgs:1-verifiers:1-camp:1-tps:400)
-      #   description: AddCampaignTokenTransaction benchmark
-      #   txNumber: 5000
-      #   rateControl:
-      #     type: fixed-rate
-      #     opts:
-      #       tps: 400
-      #   workload:
-      #     module: ./workloads/AddCampaignTokenTransaction.js
-      #     arguments:
-      #       contractId: poc
-      #       numCampaigns: 1
-      #       numOrgsPerType: 1
-      #       numPeersPerOrgs: 1
-      #       numVerifiersPerType: 1
-      #       numDevices: 1
-

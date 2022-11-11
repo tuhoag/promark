@@ -59,13 +59,6 @@ def setup_console_logging(args):
 def add_arguments(parser):
     parser.add_argument("--exp")
 
-def load_campaign_init_exp_data():
-    path = os.path.join("..", "..", "exp_data", "createCampaign.csv")
-    logger.debug(path)
-
-    df = pd.read_csv(path)
-    return df
-
 def visualize_line_chart(df, x_name, y_name, cat_name, path):
     x_values = df[x_name].unique()
     cat_values= df[cat_name].unique()
@@ -101,8 +94,10 @@ def get_title(name):
     name_dict = {
         "tps": "Throughput (Txs/second)",
         "avgLatency": "Average Latency (seconds)",
-        "numOrgs": "Number of Organizations",
-        "numPeers": "Number of Peers per Organization"
+        "numOrgs": "# of Organizations",
+        "numPeers": "# of Peers per Organization",
+        "numVerifiers": "# of Verifiers",
+        "contract": "Smart contract",
     }
 
     return name_dict[name]
@@ -115,16 +110,32 @@ def visualize_campaign_init(df):
     visualize_line_chart(df, "numOrgs", "tps", "numPeers", tps_figure_path)
     visualize_line_chart(df, "numOrgs", "avgLatency", "numPeers", latency_figure_path)
 
+
+def visualize_all(df):
+    tps_figure_path = os.path.join("..","..","exp_data","all-tps.pdf")
+    latency_figure_path = os.path.join("..","..","exp_data","all-latency.pdf")
+    logger.debug(df.columns)
+
+    visualize_line_chart(df, "numVerifiers", "tps", "contract", tps_figure_path)
+    visualize_line_chart(df, "numVerifiers", "avgLatency", "contract", latency_figure_path)
+
+
 def load_exp_data(exp_name):
     load_data_dict = {
-        "caminit": load_campaign_init_exp_data
+        "caminit": "createCampaign.csv",
+        "all": "all.csv",
     }
 
-    return load_data_dict[exp_name]()
+    path = os.path.join("..", "..", "exp_data", load_data_dict[exp_name])
+    logger.debug(path)
+
+    df = pd.read_csv(path)
+    return df
 
 def visualize(exp_name, df):
     visualize_fn_dict = {
-        "caminit": visualize_campaign_init
+        "caminit": visualize_campaign_init,
+        "all": visualize_all
     }
 
     visualize_fn_dict[exp_name](df)
