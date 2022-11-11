@@ -36,12 +36,12 @@ exports.generateTPoCs = async (camId, cStr, rStr, numVerifiers, numTPoCs) => {
 }
 
 exports.generatePoCAndTPoCs = async (camId, entityId, numTPoCs) => {
-    logger.debug(`generateTPoCs: ${camId},${entityId}`);
+    logger.debug(`generatePocAndTPoCs: ${camId},${entityId}`);
 
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('poc');
 
-        logger.info(`GeneratePoCProof: camId:${camId} - entityId:${entityId} - numTPoCs: ${numTPoCs}`);
+        logger.info(`generatePocAndTPoCs: camId:${camId} - entityId:${entityId} - numTPoCs: ${numTPoCs}`);
         return contract.submitTransaction("GeneratePoCAndTPoCProof", camId, entityId, numTPoCs);
     }, async response => {
         logger.debug(`response:${response}`);
@@ -77,14 +77,12 @@ exports.verifyTPoCProof = async (camId, commS, rs, hs, key) => {
         return contract.submitTransaction("VerifyTPoCProof", camId, commStr, rsStr, hsStr, key);
     }, async response => {
         logger.debug(`response:${response}`);
-        const resultProof = JSON.parse(response);
+        let resultProof = response == "true";
+        logger.debug(resultProof)
         return resultProof;
     });
 }
 
-// camId string, deviceId string, addedTimeStr int64, dCsStr string, dRsStr string, dHashesStr string, dKeyStr string, uCsStr string, uRsStr string, uHashesStr string, uKeyStr string
-
-// camId string, deviceId string, addedTimeStr int64, dCsStr string, dRsStr string, dHashesStr string, dKeyStr string, uCsStr string, uRsStr string, uHashesStr string, uKeyStr string
 
 exports.addProof = async (camId, deviceId, addedTime, deviceTPoC, customerTPoC) => {
     return utils.callChaincodeFn(async network => {

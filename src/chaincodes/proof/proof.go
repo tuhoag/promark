@@ -503,3 +503,27 @@ func (s *ProofSmartContract) DeleteAllProofs(ctx contractapi.TransactionContextI
 
 	return nil
 }
+
+func (s *ProofSmartContract) DeleteAllProofs(ctx contractapi.TransactionContextInterface) error {
+	proofs, err := s.GetAllProofs(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	var result bool
+
+	for _, proof := range proofs {
+		result, err = s.DeleteProofById(ctx, proof.Id)
+
+		if err != nil {
+			return err
+		}
+
+		if !result {
+			return fmt.Errorf("Cannot remove proof %s", proof.Id)
+		}
+	}
+
+	return nil
+}
