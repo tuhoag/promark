@@ -80,7 +80,7 @@ const CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, num
     logger.debug(`all verifiers: ${JSON.stringify(allVerifiersUrls)}`);
 
     var verifierURLs = [];
-    for (let i = 0; i < numVerifiers; i++) {
+    for (let i = 0; i < numVerifiers * 2; i++) {
         // randomly select a peer to be verifier
         let verifierUrlIdx = Math.floor(Math.random()*10000) % allVerifiersUrls.length;
         let verifierUrl = allVerifiersUrls[verifierUrlIdx];
