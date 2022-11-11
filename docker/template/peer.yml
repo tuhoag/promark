@@ -1,0 +1,40 @@
+peer${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com:
+    container_name: peer${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com
+    depends_on:
+        - couchdb${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com
+    external_links:
+        - orderer.${PROJECT_NAME}.com
+        - external.${PROJECT_NAME}.com
+    environment:
+        - CORE_PEER_ID=peer${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com
+        - CORE_PEER_ADDRESS=peer${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com:7051
+        - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+        - CORE_PEER_CHAINCODEADDRESS=peer${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com:7052
+        - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+        - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com:7051
+        - CORE_PEER_GOSSIP_BOOTSTRAP=peer${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com:7051
+        - CORE_PEER_LOCALMSPID=${ORG_NAME}MSP
+        - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com:5984
+    extends:
+        file: docker-compose.base.yml
+        service: peer-verifier-base
+    networks:
+        - promarknet
+    ports:
+        - ${PEER_PORT}:7051
+        - ${API_PORT}:5000
+        # - 60000:9443
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../credentials/peerOrganizations/${ORG_NAME}.${PROJECT_NAME}.com/peers/peer${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com/msp:/etc/hyperledger/fabric/msp
+        - ../credentials/peerOrganizations/${ORG_NAME}.${PROJECT_NAME}.com/peers/peer${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com/tls:/etc/hyperledger/fabric/tls
+
+couchdb${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com:
+    container_name: couchdb${PEER_ID}.${ORG_NAME}.${PROJECT_NAME}.com
+    extends:
+        file: docker-compose.base.yml
+        service: couchdb-base
+    networks:
+        - promarknet
+    ports:
+        - ${DB_PORT}:5984

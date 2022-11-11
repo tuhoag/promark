@@ -16,6 +16,9 @@ function initialize() {
 
     # generate genesis-block
     $BASE_SCRIPTS_DIR/gen-genesis-block.sh $1 $2 $CHANNEL_NAME
+
+    # generate docker compose file for peers
+    python docker.py -o $1 -p $2 -t "adv,pub"
 }
 
 function createChannel() {

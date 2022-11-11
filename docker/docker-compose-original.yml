@@ -1,10 +1,5 @@
 version: '2'
 
-# volumes:
-    # orderer.promark.com:
-    # peer0.adv0.promark.com:
-    # peer0.pub0.promark.com:
-
 networks:
     test:
 

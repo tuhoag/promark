@@ -32,3 +32,4 @@ src/application/wallet
 /credentials
 /scenarios
 *.mycert
+peers-*-*.yml
