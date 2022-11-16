@@ -351,6 +351,21 @@ function invokeVerifyTPoCProof() {
     # $SCRIPTS_DIR/verify-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2 $3 $4 $5
 }
 
+function invokeQueryTokenTransactionsByTimestamps() {
+    local orgNum=$1
+    local peerNum=$2
+    local startTime=$3
+    local endTime=$4
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node main.js $orgNum $peerNum proof query-time $startTime $endTime
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/verify-proof.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2 $3 $4 $5
+}
+
 function runLogService() {
     local orgNum=$1
     local peerNum=$2
@@ -580,6 +595,10 @@ elif [ $MODE = "proof" ]; then
         comm=$6
         r=$7
         invokeVerifyTPoCProof $NO_ORGS $NO_PEERS $camId $comm $r
+    elif [ $SUB_MODE = "query-time" ]; then
+        startTime=$5
+        endTime=$6
+        invokeQueryTokenTransactionsByTimestamps $NO_ORGS $NO_PEERS $startTime $endTime
     else
         errorln "Unsupported $MODE $SUB_MODE command."
     fi

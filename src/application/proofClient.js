@@ -88,7 +88,7 @@ exports.addProof = async (camId, deviceId, addedTime, deviceTPoC, customerTPoC) 
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
 
-        logger.info(`AddCampaignTokenTransaction: camid: ${camId} - deviceId: ${deviceId} - cusTPoC: ${JSON.stringify(customerTPoC)} - deviceTPoC: ${JSON.stringify(deviceTPoC)} - addedTimeStr: ${addedTime}`);
+        logger.debug(`AddCampaignTokenTransaction: camid: ${camId} - deviceId: ${deviceId} - cusTPoC: ${JSON.stringify(customerTPoC)} - deviceTPoC: ${JSON.stringify(deviceTPoC)} - addedTimeStr: ${addedTime}`);
 
         return contract.submitTransaction("AddCampaignTokenTransaction", camId, deviceId, addedTime, deviceTPoC.tComms.join(";"), deviceTPoC.tRs.join(";"), deviceTPoC.hashes.join(";"), deviceTPoC.key, customerTPoC.tComms.join(";"), customerTPoC.tRs.join(";"), customerTPoC.hashes.join(";"), customerTPoC.key);
     }, async response => {
@@ -126,6 +126,40 @@ exports.getAllProofs = async () => {
     });
 }
 
+exports.getTokenTransactionsByCampaignId = async (camId, mode) => {
+    return utils.callChaincodeFn(async (network) => {
+        const contract = await network.getContract("proof");
+        logger.debug("getTokenTransactionsByCampaignId");
+        return contract.submitTransaction("FindTokenTransactionsByCampaignId", camId, mode);
+    }, async (response) => {
+        if (response.length == 0) {
+            logger.debug("No proofs");
+            return [];
+        }
+
+        const proofs = JSON.parse(response);
+        logger.debug(`got ${proofs.length} proofs: ${response}`);
+        return proofs;
+    });
+}
+
+exports.getTokenTransactionsByTimestamps = async (startTime, endTime) => {
+    return utils.callChaincodeFn(async (network) => {
+        const contract = await network.getContract("proof");
+        logger.debug("getTokenTransactionsByTimestamps");
+        return contract.submitTransaction("FindTokenTransactionsByTimestamps", startTime, endTime);
+    }, async (response) => {
+        if (response.length == 0) {
+            logger.debug("No proofs");
+            return [];
+        }
+
+        const proofs = JSON.parse(response);
+        logger.debug(`got ${proofs.length} proofs: ${response}`);
+        return proofs;
+    });
+}
+
 exports.verifyProof = async (camId, proofId) => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("proof");
@@ -134,5 +168,22 @@ exports.verifyProof = async (camId, proofId) => {
     }, async (response) => {
         logger.debug(`response: ${response}`);
         return response;
+    });
+}
+
+exports.queryByTimestamps = async (startTime, endTime) => {
+    return utils.callChaincodeFn(async (network) => {
+        const contract = await network.getContract("proof");
+        logger.info("queryByTimestamps");
+        return contract.submitTransaction("FindTokenTransactionsByTimestamps", startTime, endTime);
+    }, async (response) => {
+        if (response.length == 0) {
+            logger.debug("No proofs");
+            return [];
+        }
+
+        const proofs = JSON.parse(response);
+        logger.debug(`got ${proofs.length} proofs: ${response}`);
+        return proofs;
     });
 }

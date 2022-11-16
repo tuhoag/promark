@@ -12,8 +12,8 @@ import (
 	"fmt"
 
 	// "log"
-
-	// "strconv"
+	// "hash/fnv"
+	"strconv"
 	"strings"
 
 	tecc_utils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
@@ -26,6 +26,8 @@ import (
 )
 
 var LOG_MODE = "test"
+var DEVICE_VALIDATION_MODE = "device"
+var ALL_VALIDATION_MODE = "all"
 
 type ProofSmartContract struct {
 	contractapi.Contract
@@ -96,7 +98,7 @@ func (s *ProofSmartContract) GetAllProofsInCampaignRange(ctx contractapi.Transac
 	return proofs, nil
 }
 
-func GetCampaignById(ctx contractapi.TransactionContextInterface, camId string) (*putils.Campaign, error) {
+func CallGetCampaignById(ctx contractapi.TransactionContextInterface, camId string) (*putils.Campaign, error) {
 	campaignChaincodeArgs := util.ToChaincodeArgs("GetCampaignById", camId)
 	response := ctx.GetStub().InvokeChaincode("campaign", campaignChaincodeArgs, "mychannel")
 
@@ -200,7 +202,7 @@ func (s *ProofSmartContract) VerifyPoCProof(ctx contractapi.TransactionContextIn
 	putils.SendLog("camId", camId, LOG_MODE)
 
 	// get campaign
-	campaign, err := GetCampaignById(ctx, camId)
+	campaign, err := CallGetCampaignById(ctx, camId)
 	if err != nil {
 		return false, err
 	}
@@ -234,7 +236,7 @@ func (s *ProofSmartContract) VerifyTPoCProof(ctx contractapi.TransactionContextI
 	putils.SendLog("camId", camId, LOG_MODE)
 
 	// get campaign
-	campaign, err := GetCampaignById(ctx, camId)
+	campaign, err := CallGetCampaignById(ctx, camId)
 	if err != nil {
 		return false, err
 	}
@@ -262,6 +264,7 @@ func (s *ProofSmartContract) VerifyTPoCProof(ctx contractapi.TransactionContextI
 		Key:    keyStr,
 	}
 
+	// return VerifyTPoCProof(campaign, &proof)
 	verificationResult, err := putils.VerifyTPoCSocket(campaign, &proof)
 
 	return verificationResult, err
@@ -272,7 +275,8 @@ func (s *ProofSmartContract) AddCampaignTokenTransaction(ctx contractapi.Transac
 	putils.SendLog("camId", camId, LOG_MODE)
 
 	// check trans id
-	tranId := fmt.Sprintf("p:%s:%s:%d", camId, deviceId, addedTimeStr)
+	hash := putils.Hash(uCsStr)
+	tranId := fmt.Sprintf("p:%s:%s:%s", camId, deviceId, hash)
 
 	tranJSON, err := ctx.GetStub().GetState(tranId)
 	if err != nil && tranJSON != nil {
@@ -284,6 +288,7 @@ func (s *ProofSmartContract) AddCampaignTokenTransaction(ctx contractapi.Transac
 		return nil, err
 	}
 
+	putils.SendLog("Validity", fmt.Sprintf("%s", isValid), LOG_MODE)
 	if !isValid {
 		return nil, fmt.Errorf("device TPoC does not belong to campaign %s", camId)
 	}
@@ -332,7 +337,7 @@ func (s *ProofSmartContract) VerifyCampaignProof(ctx contractapi.TransactionCont
 	}
 
 	// get campaign
-	campaign, err := GetCampaignById(ctx, camId)
+	campaign, err := CallGetCampaignById(ctx, camId)
 	if err != nil {
 		return false, err
 	}
@@ -480,28 +485,102 @@ func RequestVerification(camId string, r string, url string) (*string, error) {
 	return &verificationResponse.Comm, nil
 }
 
-func (s *ProofSmartContract) DeleteAllProofs(ctx contractapi.TransactionContextInterface) error {
-	proofs, err := s.GetAllProofs(ctx)
-
+func (s *ProofSmartContract) FindTokenTransactionsByTimestamps(ctx contractapi.TransactionContextInterface, startTimeStr string, endTimeStr string) ([]*putils.CustomerCampaignTokenTransaction, error) {
+	startTime, err := strconv.ParseInt(startTimeStr, 10, 64)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	var result bool
+	endTime, err := strconv.ParseInt(endTimeStr, 10, 64)
+	if err != nil {
+		return nil, err
+	}
 
-	for _, proof := range proofs {
-		result, err = s.DeleteProofById(ctx, proof.Id)
+	queryString := fmt.Sprintf(`{"selector":{"addedTime":{"$gte": %v,"$lte": %v}}}`, startTime, endTime)
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	var trans []*putils.CustomerCampaignTokenTransaction
+	for resultsIterator.HasNext() {
+		queryResult, err := resultsIterator.Next()
 
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		if !result {
-			return fmt.Errorf("Cannot remove proof %s", proof.Id)
+		var tokenTransaction putils.CustomerCampaignTokenTransaction
+		err = json.Unmarshal(queryResult.Value, &tokenTransaction)
+		if err != nil {
+			return nil, err
+		}
+
+		trans = append(trans, &tokenTransaction)
+	}
+
+	return trans, nil
+}
+
+func (s *ProofSmartContract) FindTokenTransactionsByCampaignId(ctx contractapi.TransactionContextInterface, camId string, mode string) ([]*putils.CustomerCampaignTokenTransaction, error) {
+	if mode != DEVICE_VALIDATION_MODE && mode != ALL_VALIDATION_MODE {
+		return nil, fmt.Errorf("mode '%s' is unsupported", mode)
+	}
+
+	campaign, err := CallGetCampaignById(ctx, camId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	queryString := fmt.Sprintf(`{"selector":{"addedTime":{"$gte": %v,"$lte": %v}}}`, campaign.StartTime, campaign.EndTime)
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	var trans []*putils.CustomerCampaignTokenTransaction
+
+	for resultsIterator.HasNext() {
+		queryResult, err := resultsIterator.Next()
+
+		if err != nil {
+			return nil, err
+		}
+
+		var tokenTransaction putils.CustomerCampaignTokenTransaction
+		err = json.Unmarshal(queryResult.Value, &tokenTransaction)
+		if err != nil {
+			return nil, err
+		}
+
+		// verify
+		var tpocs []putils.TPoCProof
+
+		if mode == DEVICE_VALIDATION_MODE {
+			tpocs = append(tpocs, tokenTransaction.DeviceTPoC)
+		} else if mode == ALL_VALIDATION_MODE {
+			tpocs = append(tpocs, tokenTransaction.DeviceTPoC)
+			tpocs = append(tpocs, tokenTransaction.CustomerTPoC)
+		}
+
+		validity := false
+		for _, tpoc := range tpocs {
+			validity, err = putils.VerifyTPoCSocket(campaign, &tpoc)
+
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if validity {
+			trans = append(trans, &tokenTransaction)
 		}
 	}
 
-	return nil
+	return trans, nil
 }
 
 func (s *ProofSmartContract) DeleteAllProofs(ctx contractapi.TransactionContextInterface) error {
@@ -527,3 +606,35 @@ func (s *ProofSmartContract) DeleteAllProofs(ctx contractapi.TransactionContextI
 
 	return nil
 }
+
+// func (t *ProofSmartContract) QueryAssets(ctx contractapi.TransactionContextInterface, queryString string) ([]*putils.CustomerCampaignTokenTransaction, error) {
+// 	return getQueryResultForQueryString(ctx, queryString)
+// }
+
+// // getQueryResultForQueryString executes the passed in query string.
+// func (s *ProofSmartContract) getQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*putils.CustomerCampaignTokenTransaction, error) {
+
+// 	resultsIterator, err := ctx.GetStub().GetPrivateDataQueryResult(assetCollection, queryString)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer resultsIterator.Close()
+
+// 	results := []*Asset{}
+
+// 	for resultsIterator.HasNext() {
+// 		response, err := resultsIterator.Next()
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		var asset *Asset
+
+// 		err = json.Unmarshal(response.Value, &asset)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("failed to unmarshal JSON: %v", err)
+// 		}
+
+// 		results = append(results, asset)
+// 	}
+// 	return results, nil
+// }
