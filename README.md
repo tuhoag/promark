@@ -1,54 +1,53 @@
-# Advertising Blockchain
+# ProMark: Privacy and Transparency-Aware Proximity Advertising Platform
+
+## Installation
+- Docker@3: [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/)
+- Docker-Compose@1.28.4: [https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/)
+- python@3.8: [https://www.python.org/downloads/](https://www.python.org/downloads/)
+- node.js: [https://nodejs.org/en/download/](https://nodejs.org/en/download/)
+- Go@1.18: [https://go.dev/doc/install](https://go.dev/doc/install)
+- Hyperledger Fabric@2.2: This project includes the binaries of Hyperledger Fabric@2.2 in the `bin` folder. If you don't want to use them, feel free to download them from [the official Hyperledger Fabric Samples](https://github.com/hyperledger/fabric-samples).
+
+## Structure
+This project includes the following folders & files:
+- `bin`: Hyperledger Fabric binaries.
+- `config`: configurations of Hyperleder Fabric network (`core.yaml`, `configtx.yaml`) and digital certificates (`crypto-config.yaml`). `network` folder contains the settings of various network architecture.
+- `docker`: docker images for ProMark peers, services (e.g., crypto, log, prometheus), and templates used to generate docker-compose files for various network architecture.
+- `exp_data`: experimental results and figures visualizing the results.
+- `scripts`: `base` contains scripts to interact with Hyperledger Fabric binaries. The scripts can be used for various Hyperledger Fabric. The remaining scripts in `scripts` use those in `base` to deploy ProMark.
+- `services`: this folder is deprecated and will be removed in the next version.
+- `src`: contains ProMark primary source code
+    - `application` (Node.js): contains source codes of the client application that interact with Hyperledger Fabric chaincode (smart contract),
+    - `chaincodes` (Go): contains ProMark chaincodes,
+    - `caliper` (Node.js): contains experimental simulation in Caliper,
+    - `ext` (Go): contains the crypto service,
+    - `verifier` (Go): contains source code of peer verifiers,
+    - `log` (Go): contains log services,
+    - `visualization` (Python): visualizes experimental results.
+- `docker.py`: source code to generate docker-compose files.
+- `main.sh`: the main script to interact with ProMark.
+- `settings.sh`: all ProMark environment variables.
 
 ## Run the network
-- Initialize credentials by using cryptogen: `$ ./main.sh init`
-- Create channel and let peer.adv0 and peer0.pub0 join the created channel: `$ ./main.sh channel all 1 1`
-- Package chaincode and deploy it in peer0.adv0 and peer0.pub0: `$ ./main.sh chaincode all 1 1`
+All the scripts required to interact with ProMark is in `main.sh`. However, the simplest way to run ProMark is to restart the whole network and deploy all the chaincodes.
+- Restart the network: `$./main.sh restart <N_ORGS> <N_PEERS> all`, where `N_ORGS` and `N_PEERS` are the number of orgnizations per organization type and the number of peers per organization.
+- Test all chaincodes: `$./main.sh test <N_ORGS> <N_PEERS>` to execute the test case that creates campaigns, generates tokens and their one-time versions, and add the token transactions to the ledger.
 
-`chmod -R a+rwx promark/`
+## Run the simulation
+The subcommand `evaluate` in `main.sh` contains all commands used to evaluate most important chaincodes.
+- Evaluate the `CreateCampaign` chaincode: `$./main.sh evaluate <N_ORGS> <N_PEERS> campaign create`
+- Evaluate the `GeneratePoC` chaincode: `$./main.sh evaluate <N_ORGS> <N_PEERS> proof gen`
+- Evaluate the `GenerateTPoC` chaincode: `$./main.sh evaluate <N_ORGS> <N_PEERS> proof verifytpoc`
+- Evaluate the `AddCampaignTokenTransaction` chaincode: `$./main.sh evaluate <N_ORGS> <N_PEERS> proof add`
 
-## Test the System with Hyperledger Caliper
-### Run a Benchmark
-- Go to caliper directory: `$ cd caliper`
-- Initialize a project: `$ npm init -y`
-- Install caliper: `$ npm install --only=prod @hyperledger/caliper-cli@0.4.0`
-- Bind it: `$ npx caliper bind --caliper-bind-sut fabric:2.1 --caliper-bind-cwd ./`
-- Run: `$ npx caliper launch manager --caliper-workspace ./ --caliper-networkconfig networkConfig.yaml --caliper-benchconfig benchmarks/CreateCampaign.yaml  --caliper-fabric-gateway-enabled --caliper-flow-only-test`
-
-`$ npx caliper launch manager --caliper-workspace ./ --caliper-networkconfig networkConfig.yaml --caliper-benchconfig benchmarks/testConfigPeak.yaml  --caliper-fabric-gateway-enabled --caliper-flow-only-test`
-
-- Check `caliper/report.html` for the results of the tests.
 
 ## Monitoring
-Prometheus is enabled in the project as a monitoring framework. In addition, Grafana is added for better visualization. You can access Prometheus at: `http://0.0.0.0:9090` and Grafana at `http://0.0.0.0:3000`.
+To make it easier to debug ProMark, I created a script to monitor logs of all peers in ProMark network: `$./main.sh monitor`.
 
 ## Ports
-There are two types of organizations: adv, pub with some additional services such as CA, couchdb, verifier,... Their ports are organized as follows:
- - ADV0:
-    + Peer0: 5000
-        + CouchDB: 5001
-        + Verifier: 5002
-    + Peer1: 5010
-        + CouchDB: 5011
-        + Verifier: 5012
-- ADV1:
-    + Peer0: 5100
-        + CouchDB: 5101
-        + Verifier: 5102
-    + Peer1: 5110
-        + CouchDB: 5111
-        + Verifier: 5112
-- pub0:
-    + Peer0: 6000
-        + CouchDB: 6001
-        + Verifier: 6002
-    + Peer1: 6010
-        + CouchDB: 6011
-        + Verifier: 6012
-- PUB1:
-    + Peer0: 6100
-        + CouchDB: 6101
-        + Verifier: 6102
-    + Peer1: 6110
-        + CouchDB: 6111
-        + Verifier: 6112
+We export ProMark peers' ports to make it easier to debug ProMark. There are two types of organizations: advertisers (adv) and publisher (pub) with some additional services such as CA, couchdb, verifier,... Their ports can be calcualted as follows:
+- Peer `<peerId>.<orgType><orgId>.promark.com`: orgBasePort + orgId * 100 + peerId * 10, where orgBasePort of advertisers is 5000 and that of publishers is 6000.
+- CouchDB of peer `<peerId>.<orgType><orgId>.promark.com`: Peer port + 1.
+- API of peer `<peerId>.<orgType><orgId>.promark.com`: Peer Port + 2.
+
+`docker.py` contains source codes to calculate the ports for the docker compose file.
