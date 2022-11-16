@@ -2,13 +2,14 @@ package promark_utils
 
 import (
 	"bufio"
-	// b64 "encoding/base64"
+	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	// "math/big"
+	"crypto/sha256"
 	"net"
 	"net/http"
 	"strings"
@@ -169,10 +170,17 @@ type CustomerCampaignTokenTransaction struct {
 	Id           string    `json:"id"`
 	DeviceTPoC   TPoCProof `json:"deviceTPoC"`
 	CustomerTPoC TPoCProof `json:"customerTPoC"`
-	AddedTime    int64     `json:"addedTime`
+	AddedTime    int64     `json:"addedTime"`
 }
 
 var logURL = "http://logs.promark.com:5003/log"
+
+func Hash(s string) string {
+	h := sha256.New()
+	h.Write([]byte(s))
+	result := b64.URLEncoding.EncodeToString(h.Sum(nil))
+	return result
+}
 
 func SendLog(name, message string, logMode string) {
 	if logMode == "test" {

@@ -1,3 +1,4 @@
+const { start } = require('repl');
 const utils = require('./utils');
 const logger = require('./logger')(__filename, "debug");
 
@@ -55,15 +56,13 @@ const generateCampaignArgs = (numOrgsPerType, numPeersPerOrg, numVerifiers, devi
     return result
 }
 
-const CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices) => {
+const CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices, startDate, endDate) => {
     const camId = "c" + Math.floor(Math.random()*10000);
     const name = "Campaign " + camId;
     const advName = "adv"+Math.floor(Math.random()*10000) % numOrgsPerType;
     const pubName = "pub"+Math.floor(Math.random()*10000) % numOrgsPerType;
-    const startTimeStr = Math.floor(new Date("2022-05-01").getTime() / 1000);
-    const endTimeStr = Math.floor(new Date("2022-07-01").getTime() / 1000);
-
-
+    const startTimeStr = Math.floor(new Date(startDate).getTime() / 1000);
+    const endTimeStr = Math.floor(new Date(endDate).getTime() / 1000);
 
     var allVerifiersUrls = [];
 
@@ -121,8 +120,9 @@ exports.createRandomCampaign = async (numVerifiers, deviceIdsStr) => {
     return utils.callChaincodeFn(async network => {
 
         const contract = await network.getContract('campaign');
-
-        const campaign = CreateCampaignUnequalVerifiersArgs(global.numOrgsPerType, global.numPeersPerOrg, numVerifiers, deviceIdsStr);
+        startDate = "2022-11-13"
+        endDate = "2022-11-14"
+        const campaign = CreateCampaignUnequalVerifiersArgs(global.numOrgsPerType, global.numPeersPerOrg, numVerifiers, deviceIdsStr, startDate, endDate);
         logger.info(`Create Campaign: ${JSON.stringify(campaign)}`);
 
         const verifierAddressesStr = campaign.verifierURLs.join(";")
@@ -203,13 +203,13 @@ exports.getChaincodeData = async () => {
     });
 }
 
-exports.CreateCampaignUnequalVerifiersArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices) => {
+exports.CreateCampaignUnequalVerifiersArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices, startDate, endDate) => {
     const camId = "c" + Math.floor(Math.random()*10000);
     const name = "Campaign " + camId;
     const advertiser = "adv"+Math.floor(Math.random()*10000) % numOrgsPerType;
     const publisher = "pub"+Math.floor(Math.random()*10000) % numOrgsPerType;
-    const startTimeStr = Math.floor(new Date("2022-05-01").getTime() / 1000);
-    const endTimeStr = Math.floor(new Date("2022-07-01").getTime() / 1000);
+    const startTimeStr = Math.floor(new Date(startDate).getTime() / 1000);
+    const endTimeStr = Math.floor(new Date(endDate).getTime() / 1000);
 
     var verifierURLs = [];
 

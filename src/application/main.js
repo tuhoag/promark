@@ -94,6 +94,11 @@ const proofCommandHandler = async argv => {
         let proofId = argv[2];
 
         return proofClient.verifyProof(camId, proofId);
+    } else if (command == "query-time") {
+            let startTime = argv[1];
+            let endTime = argv[2];
+
+            return proofClient.queryByTimestamps(startTime, endTime);
     } else {
         logger.info(`Unsupported campaign command ${command}`);
         throw `Unsupported proof command ${command}`;
@@ -105,13 +110,42 @@ const sleep = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+const addTokenTransactions = async (campaign, deviceId, devicePocAndTPoCs, customerPocAndTPoCs, numAdditions) => {
+    let numTPoCs = customerPocAndTPoCs.tpocs.length;
+
+    if (numAdditions > numTPoCs) {
+        throw `numAdditions > numTPoCs: ${numAdditions} > ${numTPoCs}`;
+    }
+
+    const diff = campaign.endTime - campaign.startTime;
+
+    for (let i = 0; i  < numAdditions; i++) {
+        let customerTPoC = customerPocAndTPoCs.tpocs[i];
+        let deviceTPoC = devicePocAndTPoCs.tpocs[i];
+        let addingTime = Math.floor(Math.random() * diff) % diff;
+        let addedTime = campaign.startTime + addingTime;
+
+        logger.debug(`diff: ${diff} - adding time: ${addingTime} - valid: ${(campaign.startTime < addedTime) && (addedTime < campaign.endTime)}`);
+
+        let transaction = await proofClient.addProof(campaign.id, deviceId, addedTime, deviceTPoC, customerTPoC);
+
+        logger.debug(`added transaction: ${JSON.stringify(transaction)}`);
+
+        await sleep(1000);
+    }
+
+    return numAdditions;
+}
+
 const testCommandHandler = async argv => {
 
     try {
         const numVerifiers = 1;
         // add a campaign
-        let campaign = await camClient.createRandomCampaign(numVerifiers, "d1,d2");
-        logger.info("campaign:" + JSON.stringify(campaign));
+        let campaign1 = await camClient.createRandomCampaign(numVerifiers, "d1,d2");
+        logger.info("campaign:" + JSON.stringify(campaign1));
+        let campaign2 = await camClient.createRandomCampaign(numVerifiers, "d1,d2");
+        logger.info("campaign:" + JSON.stringify(campaign2));
         // console.log(campaign);
 
         // sleep(2000);
@@ -120,46 +154,50 @@ const testCommandHandler = async argv => {
         const deviceId = "d1";
         const numTPoCs = 3;
         // let customerPoC = await proofClient.generatePoC(campaign.id, cusId)
-        let customerPocAndTPoCs = await proofClient.generatePoCAndTPoCs(campaign.id, cusId, numTPoCs);
-        let devicePocAndTPoCs = await proofClient.generatePoCAndTPoCs(campaign.id, deviceId, numTPoCs);
+        let customerPocAndTPoCs1 = await proofClient.generatePoCAndTPoCs(campaign1.id, cusId, numTPoCs);
+        let devicePocAndTPoCs1 = await proofClient.generatePoCAndTPoCs(campaign1.id, deviceId, numTPoCs);
+
+        let customerPocAndTPoCs2 = await proofClient.generatePoCAndTPoCs(campaign2.id, cusId, numTPoCs);
+        let devicePocAndTPoCs2 = await proofClient.generatePoCAndTPoCs(campaign2.id, deviceId, numTPoCs);
 
         logger.info(`numTPoCs: ${numTPoCs}`);
 
-        for (let i = 0; i  < numTPoCs; i++) {
-            logger.debug(`checking ${i} token`);
+        // for (let i = 0; i  < numTPoCs; i++) {
+        //     logger.debug(`checking ${i} token`);
 
-            let customerTPoC = customerPocAndTPoCs.tpocs[i];
-            let deviceTPoC = devicePocAndTPoCs.tpocs[i];
+        //     let customerTPoC = customerPocAndTPoCs1.tpocs[i];
+        //     let deviceTPoC = devicePocAndTPoCs1.tpocs[i];
 
-            logger.debug(`Got customer tpoc ${i}: ${JSON.stringify(customerTPoC)}`);
-            let result = await proofClient.verifyTPoCProof(campaign.id, customerTPoC.tComms, customerTPoC.tRs, customerTPoC.hashes, customerTPoC.key);
-            logger.debug("finished verification")
-            logger.info(`verification customer tpoc ${i} result-true: ${result}`);
+        //     logger.debug(`Got customer tpoc ${i}: ${JSON.stringify(customerTPoC)}`);
+        //     let result = await proofClient.verifyTPoCProof(campaign1.id, customerTPoC.tComms, customerTPoC.tRs, customerTPoC.hashes, customerTPoC.key);
+        //     logger.debug("finished verification")
+        //     logger.info(`verification customer tpoc ${i} result-true: ${result}`);
 
-            logger.debug(`Got device tpoc ${i}: ${JSON.stringify(deviceTPoC)}`);
-            result = await proofClient.verifyTPoCProof(campaign.id, deviceTPoC.tComms, deviceTPoC.tRs, deviceTPoC.hashes, deviceTPoC.key);
-            logger.info(`verification device tpoc ${i} result-true: ${result}`);
-        }
+        //     logger.debug(`Got device tpoc ${i}: ${JSON.stringify(deviceTPoC)}`);
+        //     result = await proofClient.verifyTPoCProof(campaign1.id, deviceTPoC.tComms, deviceTPoC.tRs, deviceTPoC.hashes, deviceTPoC.key);
+        //     logger.info(`verification device tpoc ${i} result-true: ${result}`);
+        // }
 
         // add transaction
-        const diff = campaign.endTime - campaign.startTime;
+        let count1 = await addTokenTransactions(campaign1, deviceId, devicePocAndTPoCs1, customerPocAndTPoCs1, 2);
+        let count2 = 0
+        // let count2 = await addTokenTransactions(campaign2, deviceId, devicePocAndTPoCs2, customerPocAndTPoCs2, 2);
 
-        for (let i = 0; i  < numTPoCs; i++) {
-            let customerTPoC = customerPocAndTPoCs.tpocs[i];
-            let deviceTPoC = devicePocAndTPoCs.tpocs[i];
-            let addedTime = campaign.startTime + Math.floor(Math.random()) % diff;
+        const addedTokenTransactions1 = await proofClient.getTokenTransactionsByCampaignId(campaign1.id, "device")
+        logger.info(`camId ${campaign1.id} - ${addedTokenTransactions1.length} token transactions: ${addedTokenTransactions1}`);
 
-            let transaction = await proofClient.addProof(campaign.id, deviceId, addedTime, deviceTPoC, customerTPoC);
+        const addedTokenTransactions2 = await proofClient.getTokenTransactionsByTimestamps(campaign1.startTime, campaign1.endTime)
+        logger.info(`camId ${campaign1.id} - ${addedTokenTransactions2.length} token transactions: ${addedTokenTransactions2}`);
 
-            logger.info(`added transaction: ${JSON.stringify(transaction)}`);
-        }
-
-        const allAddedTransactions = await proofClient.getAllProofs();
-        logger.info(`all ${allAddedTransactions.length} added transactions: ${JSON.stringify(allAddedTransactions)}`);
+        // const allAddedTransactions = await proofClient.getAllProofs();
+        // logger.info(`all ${allAddedTransactions.length} vs count1: ${count1} count2: ${count2}`);
+        // logger.info(`all ${allAddedTransactions.length} added transactions: ${JSON.stringify(allAddedTransactions)}`);
     } catch (error) {
         logger.debug(`error: ${error}`);
     }
 }
+
+
 
 
 // Main program function
