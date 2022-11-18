@@ -131,7 +131,7 @@ const addTokenTransactions = async (campaign, deviceId, devicePocAndTPoCs, custo
 
         logger.debug(`added transaction: ${JSON.stringify(transaction)}`);
 
-        // await sleep(1000);
+        await sleep(1000);
     }
 
     return numAdditions;
