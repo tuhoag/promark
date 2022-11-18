@@ -158,19 +158,19 @@ const testCommandHandler = async argv => {
         let customerPocAndTPoCs1 = await proofClient.generatePoCAndTPoCs(campaign1.id, cusId, numTPoCs1);
         let devicePocAndTPoCs1 = await proofClient.generatePoCAndTPoCs(campaign1.id, deviceId, numTPoCs1);
 
-        // let customerPocAndTPoCs2 = await proofClient.generatePoCAndTPoCs(campaign2.id, cusId, numTPoCs2);
-        // let devicePocAndTPoCs2 = await proofClient.generatePoCAndTPoCs(campaign2.id, deviceId, numTPoCs2);
+        let customerPocAndTPoCs2 = await proofClient.generatePoCAndTPoCs(campaign2.id, cusId, numTPoCs2);
+        let devicePocAndTPoCs2 = await proofClient.generatePoCAndTPoCs(campaign2.id, deviceId, numTPoCs2);
 
         // add transaction
         let count1 = await addTokenTransactions(campaign1, deviceId, devicePocAndTPoCs1, customerPocAndTPoCs1, numTPoCs1);
         // let count2 = 0
-        // let count2 = await addTokenTransactions(campaign2, deviceId, devicePocAndTPoCs2, customerPocAndTPoCs2, numTPoCs2);
+        let count2 = await addTokenTransactions(campaign2, deviceId, devicePocAndTPoCs2, customerPocAndTPoCs2, numTPoCs2);
 
         const addedTokenTransactions1 = await proofClient.getTokenTransactionsByCampaignId(campaign1.id, "device")
         logger.info(`camId ${campaign1.id} - numTPoC: ${customerPocAndTPoCs1.tpocs.length} - ${addedTokenTransactions1.length} token transactions - valid: ${customerPocAndTPoCs1.length == addedTokenTransactions1.length}: ${JSON.stringify(addedTokenTransactions1)}`);
 
-        // const addedTokenTransactions2 = await proofClient.getTokenTransactionsByCampaignId(campaign2.id, "device")
-        // logger.info(`camId ${campaign2.id} - numTPoC: ${customerPocAndTPoCs2.tpocs.length} - ${addedTokenTransactions2.length} token transactions - valid: ${customerPocAndTPoCs2.length == addedTokenTransactions2.length}: ${JSON.stringify(addedTokenTransactions2)}`);
+        const addedTokenTransactions2 = await proofClient.getTokenTransactionsByCampaignId(campaign2.id, "device")
+        logger.info(`camId ${campaign2.id} - numTPoC: ${customerPocAndTPoCs2.tpocs.length} - ${addedTokenTransactions2.length} token transactions - valid: ${customerPocAndTPoCs2.length == addedTokenTransactions2.length}: ${JSON.stringify(addedTokenTransactions2)}`);
 
         // const addedTokenTransactions2 = await proofClient.getTokenTransactionsByTimestamps(campaign1.startTime, campaign1.endTime)
         // logger.info(`camId ${campaign1.id} - numTPoC: ${customerPocAndTPoCs2.length} - ${addedTokenTransactions2.length} token transactions - valid: ${customerPocAndTPoCs2.length == addedTokenTransactions2.length}: ${JSON.stringify(addedTokenTransactions2)}`);

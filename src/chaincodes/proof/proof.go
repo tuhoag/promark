@@ -288,7 +288,7 @@ func (s *ProofSmartContract) AddCampaignTokenTransaction(ctx contractapi.Transac
 		return nil, err
 	}
 
-	putils.SendLog("Validity", fmt.Sprintf("%s", isValid), LOG_MODE)
+	putils.SendLog("Validity", fmt.Sprintf("%t", isValid), LOG_MODE)
 	if !isValid {
 		return nil, fmt.Errorf("device TPoC does not belong to campaign %s", camId)
 	}
@@ -315,7 +315,7 @@ func (s *ProofSmartContract) AddCampaignTokenTransaction(ctx contractapi.Transac
 		return nil, err
 	}
 
-	err = ctx.GetStub().PutState(camId, tranJSON)
+	err = ctx.GetStub().PutState(tranId, tranJSON)
 	if err != nil {
 		return nil, err
 	}
