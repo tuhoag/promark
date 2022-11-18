@@ -432,7 +432,7 @@ func GeneratePoCProofFromVerifiers(campaign *Campaign) (*PoCProof, error) {
 		verifierURL := campaign.VerifierURLs[i]
 
 		fmt.Println("Call RequestVerifierToGenerateSubPoCProof: " + verifierURL)
-		verifierProof, err := RequestVerifierToGenerateSubPoCProof(verifierURL)
+		verifierProof, err := RequestVerifierToGenerateSubPoCProof(verifierURL, campaign.Id)
 
 		if err != nil {
 			return nil, err
@@ -535,6 +535,47 @@ func GeneratePoCProofFromVerifiers2(campaign *Campaign, userId string) (*PoCProo
 	return &proof, nil
 }
 
+func RequestVerifierToInitializeSecretValue(url string, camId string) error {
+	// putils.SendLog("RequestCommitment at", url, LOG_MODE)
+	conn, err := net.Dial("tcp", url)
+	if err != nil {
+		// putils.SendLog("Error connecting:", err.Error(), LOG_MODE)
+
+		fmt.Println("Error connecting:" + err.Error())
+		return errors.New("ERROR:" + err.Error())
+	}
+
+	// requestArgs := PoCGenerationRequest{
+	// 	CamId: camId,
+	// }
+
+	// jsonArgs, err := json.Marshal(requestArgs)
+
+	SendRequest(conn, "init-cam", camId)
+	responseStr, err := bufio.NewReader(conn).ReadString('\n')
+
+	if err != nil {
+		// sendLog("Error connecting:", err.Error())
+		log.Println("Error generating PoC:", err.Error())
+		return errors.New("Error generate PoC:" + err.Error())
+	}
+
+	fmt.Println("Reiceived From: " + url + "-Response:" + responseStr)
+	// SendLog("Reiceived From: "+url+"-Response:", responseStr, LOG_MODE)
+
+	response, err := ParseResponse(responseStr)
+
+	if err != nil {
+		return err
+	}
+
+	if response.Error != "" {
+		return errors.New(response.Error)
+	}
+
+	return nil
+}
+
 func RequestVerifierToGenerateSubPoCProof2(url string, camId string, userId string) (*PoCProof, error) {
 	// putils.SendLog("RequestCommitment at", url, LOG_MODE)
 	conn, err := net.Dial("tcp", url)
@@ -583,7 +624,7 @@ func RequestVerifierToGenerateSubPoCProof2(url string, camId string, userId stri
 	return &subPoCProof, nil
 }
 
-func RequestVerifierToGenerateSubPoCProof(url string) (*PoCProof, error) {
+func RequestVerifierToGenerateSubPoCProof(url string, camId string) (*PoCProof, error) {
 	// putils.SendLog("RequestCommitment at", url, LOG_MODE)
 	conn, err := net.Dial("tcp", url)
 	if err != nil {
@@ -593,7 +634,7 @@ func RequestVerifierToGenerateSubPoCProof(url string) (*PoCProof, error) {
 		return nil, errors.New("ERROR:" + err.Error())
 	}
 
-	SendRequest(conn, "genpoc", "")
+	SendRequest(conn, "genpoc", camId)
 	responseStr, err := bufio.NewReader(conn).ReadString('\n')
 
 	if err != nil {
@@ -775,4 +816,16 @@ func StringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func InitializeCampaignCryptoParams(camId string, verifierURLs []string) error {
+	for _, verifierURL := range verifierURLs {
+		err := RequestVerifierToInitializeSecretValue(verifierURL, camId)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

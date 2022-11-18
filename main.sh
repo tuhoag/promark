@@ -294,6 +294,19 @@ function invokeDelProofById() {
     # $SCRIPTS_DIR/del-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2 $3
 }
 
+function invokeDelAllProofs() {
+    local orgNum=$1
+    local peerNum=$2
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node main.js $orgNum $peerNum proof delall
+    { set +x; } 2>/dev/null
+    popd
+
+    # $SCRIPTS_DIR/del-proof-by-id.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2 $3
+}
+
 function invokeGetCustomerProofById() {
     local orgNum=$1
     local peerNum=$2
@@ -582,6 +595,8 @@ elif [ $MODE = "proof" ]; then
     elif [ $SUB_MODE = "del" ]; then
         proofId=$5
         invokeDelProofById $NO_ORGS $NO_PEERS $proofId
+    elif [ $SUB_MODE = "delall" ]; then
+        invokeDelAllProofs $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "get" ]; then
         proofId=$5
         invokeGetCustomerProofById $NO_ORGS $NO_PEERS $proofId

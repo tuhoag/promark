@@ -260,11 +260,11 @@ func (s *CampaignSmartContract) CreateCampaignAsync(ctx contractapi.TransactionC
 func CreateCampaign(camId string, name string, advertiser string, publisher string, startTime int64, endTime int64, verifierURLs []string, deviceIds []string) (*putils.Campaign, error) {
 	fmt.Println("Call RequestCampaignCryptoParamsSocket")
 
-	// err := InitializeCampaignCryptoParams(camId, verifierURLs)
+	err := putils.InitializeCampaignCryptoParams(camId, verifierURLs)
 
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if err != nil {
+		return nil, err
+	}
 
 	campaign := putils.Campaign{
 		Id:           camId,

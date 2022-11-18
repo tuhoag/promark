@@ -192,6 +192,8 @@ func handleConnection(conn net.Conn) {
 	if request.Command == "create" {
 		// fmt.Println("ok:", string(command))
 		CreateVerifierCampaignCryptoParamsHandler(conn, request.Data)
+	} else if request.Command == "init-cam" {
+		InitializeCampaignSecretValue(conn, request.Data)
 	} else if request.Command == "get" {
 		// fmt.Println("ok:", string(buffer))
 		GetCampaignCryptoParamsHandler(conn, request.Data)
@@ -388,7 +390,8 @@ func GenerateSubPoCProofSaveHandler(conn net.Conn, requestData string) {
 
 func GenerateSubPoCProof(conn net.Conn, requestData string) {
 	// calculate commitment
-	subPoCProof, err := GeneratePoCProof()
+	camId := requestData
+	subPoCProof, err := GeneratePoCProof(camId)
 
 	if err != nil {
 		putils.SendResponse(conn, err.Error(), "")
@@ -414,7 +417,7 @@ func CalculateCommitmentNoCamHandler(conn net.Conn, requestData string) {
 
 	fmt.Printf("Got - paramsRequest.CamId:%s\n", paramsRequest.CamId)
 
-	commEnc, err := CalculateCommitment(paramsRequest.R)
+	commEnc, err := CalculateCommitmentFromStoredSecretValue(paramsRequest.CamId, paramsRequest.R)
 	if err != nil {
 		putils.SendResponse(conn, err.Error(), "")
 		return
@@ -500,14 +503,29 @@ func GetCustomerCampaignProof(camId string, userId string) (*putils.CampaignCust
 	return &subProof, nil
 }
 
-func GeneratePoCProof() (*putils.PoCProof, error) {
+func GeneratePoCProof(camId string) (*putils.PoCProof, error) {
+	// get s from redis
+	rdb := putils.GetRedisConnection()
+	defer rdb.Close()
+
+	sEnc, err := rdb.Get(ctx, camId).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := eutils.ConvertStringToScalar(sEnc)
+
+	if err != nil {
+		return nil, err
+	}
+
 	// generate r
 	var rScalar ristretto.Scalar
 	rScalar.Rand()
 	fmt.Printf("Generated R: %s\n", rScalar)
 
 	// calculate commitment
-	comm := pedersen.CommitTo(&H, &rScalar, &s)
+	comm := pedersen.CommitTo(&H, &rScalar, s)
 	fmt.Printf("Calculated comm: %s\n", comm)
 
 	commEnc := eutils.ConvertPointToString(comm)
@@ -519,6 +537,31 @@ func GeneratePoCProof() (*putils.PoCProof, error) {
 	}
 
 	return &poc, nil
+}
+
+func CalculateCommitmentFromStoredSecretValue(camId string, rEnc string) (string, error) {
+	rdb := putils.GetRedisConnection()
+	defer rdb.Close()
+
+	sEnc, err := rdb.Get(ctx, camId).Result()
+	if err != nil {
+		panic(err)
+	}
+
+	s, err := eutils.ConvertStringToScalar(sEnc)
+	if err != nil {
+		return "", err
+	}
+
+	r, err := eutils.ConvertStringToScalar(rEnc)
+	if err != nil {
+		return "", err
+	}
+
+	comm := pedersen.CommitTo(&H, r, s)
+	cEnc := eutils.ConvertPointToString(comm)
+
+	return cEnc, nil
 }
 
 func CalculateCommitment(rEnc string) (string, error) {
@@ -985,4 +1028,71 @@ func ClearDataHandler(conn net.Conn, requestData string) {
 	}
 	fmt.Printf("Removed %s keys\n", count)
 	putils.SendResponse(conn, "", string(count))
+}
+
+func InitializeCampaignSecretValue(conn net.Conn, requestData string) {
+	camId := requestData
+
+	sStr, err := GenerateAndStoreCampaignSecretValue(camId)
+
+	if err != nil {
+		putils.SendResponse(conn, err.Error(), "")
+	}
+
+	putils.SendResponse(conn, "", sStr)
+}
+
+func GenerateAndStoreCampaignSecretValue(camId string) (string, error) {
+	var sStr string
+
+	txf := func(tx *redis.Tx) error {
+		value, err := tx.Get(ctx, camId).Result()
+		if err != nil && err != redis.Nil {
+			return err
+		}
+
+		fmt.Printf("Got from Redis with Key (%s): %s", camId, value)
+
+		if err == redis.Nil {
+			// generate R and store
+			var s ristretto.Scalar
+			s.Rand()
+
+			sStr = eutils.ConvertScalarToString(&s)
+
+			// Operation is commited only if the watched keys remain unchanged.
+			_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+				pipe.Set(ctx, camId, sStr, 0)
+
+				fmt.Println("Added secret value to db")
+				return nil
+			})
+
+			return err
+		}
+
+		return err
+	}
+
+	rdb := putils.GetRedisConnection()
+	defer rdb.Close()
+
+	maxRetries := 1000
+	for i := 0; i < maxRetries; i++ {
+		fmt.Printf("Tried: %s times\n", i)
+		err := rdb.Watch(ctx, txf, camId)
+		if err == nil {
+			// success
+			break
+
+		}
+
+		if err == redis.TxFailedErr {
+			fmt.Println("There are some modifications on subproof")
+			continue
+		}
+
+		return "", err
+	}
+	return sStr, nil
 }
