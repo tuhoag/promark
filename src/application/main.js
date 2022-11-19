@@ -118,8 +118,9 @@ const addTokenTransactions = async (campaign, deviceId, devicePocAndTPoCs, custo
     }
 
     const diff = campaign.endTime - campaign.startTime;
-
     for (let i = 0; i  < numAdditions; i++) {
+        logger.debug(JSON.stringify(customerPocAndTPoCs));
+        logger.debug(JSON.stringify(customerPocAndTPoCs.tpocs[i]));
         let customerTPoC = customerPocAndTPoCs.tpocs[i];
         let deviceTPoC = devicePocAndTPoCs.tpocs[i];
         let addingTime = Math.floor(Math.random() * diff) % diff;
@@ -140,44 +141,47 @@ const addTokenTransactions = async (campaign, deviceId, devicePocAndTPoCs, custo
 const testCommandHandler = async argv => {
 
     try {
-        const numVerifiers = 1;
-        // add a campaign
-        let campaign1 = await camClient.createRandomCampaign(numVerifiers, "d1,d2");
-        logger.info("campaign:" + JSON.stringify(campaign1));
-        let campaign2 = await camClient.createRandomCampaign(numVerifiers, "d1,d2");
-        logger.info("campaign:" + JSON.stringify(campaign2));
-        // console.log(campaign);
-
-        // sleep(2000);
-        // generate its proof
+        const numVerifiersPerOrg = 1;
         const cusId = "u1";
         const deviceId = "d1";
-        const numTPoCs1 = 3;
-        const numTPoCs2 = 2;
-        // let customerPoC = await proofClient.generatePoC(campaign.id, cusId)
-        let customerPocAndTPoCs1 = await proofClient.generatePoCAndTPoCs(campaign1.id, cusId, numTPoCs1);
-        let devicePocAndTPoCs1 = await proofClient.generatePoCAndTPoCs(campaign1.id, deviceId, numTPoCs1);
+        const numTPoCs = [3, 2];
+        const numCampaigns = 2;
 
-        let customerPocAndTPoCs2 = await proofClient.generatePoCAndTPoCs(campaign2.id, cusId, numTPoCs2);
-        let devicePocAndTPoCs2 = await proofClient.generatePoCAndTPoCs(campaign2.id, deviceId, numTPoCs2);
 
-        // add transaction
-        let count1 = await addTokenTransactions(campaign1, deviceId, devicePocAndTPoCs1, customerPocAndTPoCs1, numTPoCs1);
-        // let count2 = 0
-        let count2 = await addTokenTransactions(campaign2, deviceId, devicePocAndTPoCs2, customerPocAndTPoCs2, numTPoCs2);
+        let campaigns = [];
 
-        const addedTokenTransactions1 = await proofClient.getTokenTransactionsByCampaignId(campaign1.id, "device")
-        logger.info(`camId ${campaign1.id} - numTPoC: ${customerPocAndTPoCs1.tpocs.length} - ${addedTokenTransactions1.length} token transactions - valid: ${customerPocAndTPoCs1.length == addedTokenTransactions1.length}: ${JSON.stringify(addedTokenTransactions1)}`);
+        for (let i = 0; i < numCampaigns; i++) {
+            let campaign = await camClient.createRandomCampaign(numVerifiersPerOrg, "d1,d2");
 
-        const addedTokenTransactions2 = await proofClient.getTokenTransactionsByCampaignId(campaign2.id, "device")
-        logger.info(`camId ${campaign2.id} - numTPoC: ${customerPocAndTPoCs2.tpocs.length} - ${addedTokenTransactions2.length} token transactions - valid: ${customerPocAndTPoCs2.length == addedTokenTransactions2.length}: ${JSON.stringify(addedTokenTransactions2)}`);
+            logger.info(`campaign ${i}: ${JSON.stringify(campaign)}`);
+            campaigns.push(campaign);
+        }
 
-        // const addedTokenTransactions2 = await proofClient.getTokenTransactionsByTimestamps(campaign1.startTime, campaign1.endTime)
-        // logger.info(`camId ${campaign1.id} - numTPoC: ${customerPocAndTPoCs2.length} - ${addedTokenTransactions2.length} token transactions - valid: ${customerPocAndTPoCs2.length == addedTokenTransactions2.length}: ${JSON.stringify(addedTokenTransactions2)}`);
+        let customersPocs = [];
+        let devicesPocs = [];
 
-        // const allAddedTransactions = await proofClient.getAllProofs();
-        // logger.info(`all ${allAddedTransactions.length} vs count1: ${count1} count2: ${count2}`);
-        // logger.info(`all ${allAddedTransactions.length} added transactions: ${JSON.stringify(allAddedTransactions)}`);
+        for (let i = 0; i < numCampaigns; i++) {
+            let customerPoc = await proofClient.generatePoC(campaigns[i].id, cusId);
+
+            let customerPocAndTPoCs = await proofClient.generateTPoCs(campaigns[i].id, customerPoc.comm, customerPoc.r, numVerifiersPerOrg * 2, numTPoCs[i]);
+
+            let devicePoC = await proofClient.generatePoC(campaigns[i].id, deviceId);
+            let devicePocAndTPoCs = await proofClient.generateTPoCs(campaigns[i].id, devicePoC.comm, devicePoC.r, numVerifiersPerOrg * 2, numTPoCs[i]);
+
+            customersPocs.push(customerPocAndTPoCs);
+            devicesPocs.push(devicePocAndTPoCs);
+        }
+
+
+        for (let i = 0; i < numCampaigns; i++) {
+            let count1 = await addTokenTransactions(campaigns[i], deviceId, devicesPocs[i], customersPocs[i], numTPoCs[i]);
+        }
+
+
+        for (let i = 0; i < numCampaigns; i++) {
+            let addedTokenTransactions = await proofClient.getTokenTransactionsByCampaignId(campaigns[i].id, "device")
+            logger.info(`camId ${campaigns[i].id} - numTPoC: ${customersPocs[i].tpocs.length} - ${addedTokenTransactions.length} token transactions - valid: ${customersPocs[i].length == addedTokenTransactions.length}: ${JSON.stringify(addedTokenTransactions)}`);
+        }
     } catch (error) {
         logger.debug(`error: ${error}`);
     }

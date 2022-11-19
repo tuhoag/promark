@@ -1,0 +1,86 @@
+test:
+    name: campaign-contract-benchmark
+    description: test benchmark
+    workers:
+      type: local
+      number: 1
+    rounds:
+      - label: VerifyCampaignTPoCs(nc:2)
+        description: VerifyCampaignTPoCs benchmark
+        txNumber: 5000
+        rateControl:
+          type: fixed-rate
+          opts:
+            tps: 700
+        workload:
+          module: ./workloads/VerifyCampaignTPoCs.js
+          arguments:
+            contractId: proof
+            numOrgsPerType: 1
+            numPeersPerOrgs: 3
+            numVerifiers: 2
+            numDevices: 1
+
+      # - label: VerifyTPoC(nc:3)
+      #   description: VerifyTPoC benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 700
+      #   workload:
+      #     module: ./workloads/VerifyTPoC.js
+      #     arguments:
+      #       contractId: poc
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 3
+      #       numVerifiers: 3
+      #       numDevices: 1
+
+      # - label: VerifyTPoC(nc:4)
+      #   description: VerifyTPoC benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 700
+      #   workload:
+      #     module: ./workloads/VerifyTPoC.js
+      #     arguments:
+      #       contractId: poc
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 3
+      #       numVerifiers: 4
+      #       numDevices: 1
+
+      # - label: VerifyTPoC(nc:5)
+      #   description: VerifyTPoC benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 700
+      #   workload:
+      #     module: ./workloads/VerifyTPoC.js
+      #     arguments:
+      #       contractId: poc
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 3
+      #       numVerifiers: 5
+      #       numDevices: 1
+
+      # - label: VerifyTPoC(nc:6)
+      #   description: VerifyTPoC benchmark
+      #   txNumber: 5000
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 700
+      #   workload:
+      #     module: ./workloads/VerifyTPoC.js
+      #     arguments:
+      #       contractId: poc
+      #       numOrgsPerType: 1
+      #       numPeersPerOrgs: 3
+      #       numVerifiers: 6
+      #       numDevices: 1

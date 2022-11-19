@@ -541,7 +541,7 @@ func RequestVerifierToInitializeSecretValue(url string, camId string) error {
 	if err != nil {
 		// putils.SendLog("Error connecting:", err.Error(), LOG_MODE)
 
-		fmt.Println("Error connecting:" + err.Error())
+		fmt.Printf("Error connecting to %s:%s", url, err.Error())
 		return errors.New("ERROR:" + err.Error())
 	}
 
@@ -560,7 +560,7 @@ func RequestVerifierToInitializeSecretValue(url string, camId string) error {
 		return errors.New("Error generate PoC:" + err.Error())
 	}
 
-	fmt.Println("Reiceived From: " + url + "-Response:" + responseStr)
+	fmt.Printf("Reiceived From: %s - Response: %s\n", url, responseStr)
 	// SendLog("Reiceived From: "+url+"-Response:", responseStr, LOG_MODE)
 
 	response, err := ParseResponse(responseStr)

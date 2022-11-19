@@ -20,14 +20,14 @@ exports.generatePoC = async (camId, entityId) => {
     });
 }
 
-exports.generateTPoCs = async (camId, cStr, rStr, numVerifiers, numTPoCs) => {
-    logger.debug(`generateTPoCs: ${camId},${cStr},${rStr},${numVerifiers},${numTPoCs}`);
+exports.generateTPoCs = async (camId, cStr, rStr, numVerifiersPerOrg, numTPoCs) => {
+    logger.debug(`generateTPoCs: ${camId},${cStr},${rStr},${numVerifiersPerOrg},${numTPoCs}`);
 
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('poc');
 
         logger.info(`GenerateTPoCProofs: camId:${camId} - c:${cStr} - r:${rStr} - numTPoCs:${numTPoCs}`);
-        return contract.submitTransaction("GenerateTPoCProofs", camId, cStr, rStr, numVerifiers,numTPoCs);
+        return contract.submitTransaction("GenerateTPoCProofs", camId, cStr, rStr, numVerifiersPerOrg,numTPoCs);
     }, async response => {
         logger.debug(`response:${response}`);
         const resultProof = JSON.parse(response);

@@ -923,7 +923,7 @@ func GenerateOrGetPoC(camId string, userId string) (*putils.PoCProof, error) {
 
 	// get from the database
 
-	var pocProof putils.PoCProof
+	var pocProof *putils.PoCProof
 
 	txf := func(tx *redis.Tx) error {
 		value, err := tx.Get(ctx, key).Result()
@@ -935,15 +935,21 @@ func GenerateOrGetPoC(camId string, userId string) (*putils.PoCProof, error) {
 
 		if err == redis.Nil {
 			// generate R and store
-			var r ristretto.Scalar
-			r.Rand()
-			C := pedersen.CommitTo(&H, &r, &s)
+			pocProof, err = GeneratePoCProof(camId)
 
-			rStr := eutils.ConvertScalarToString(&r)
-			CStr := eutils.ConvertPointToString(C)
+			if err != nil {
+				return err
+			}
 
-			pocProof.R = rStr
-			pocProof.Comm = CStr
+			// var r ristretto.Scalar
+			// r.Rand()
+			// C := pedersen.CommitTo(&H, &r, &s)
+
+			// rStr := eutils.ConvertScalarToString(&r)
+			// CStr := eutils.ConvertPointToString(C)
+
+			// pocProof.R = rStr
+			// pocProof.Comm = CStr
 
 			jsonParam, err := json.Marshal(pocProof)
 			if err != nil {
@@ -989,7 +995,7 @@ func GenerateOrGetPoC(camId string, userId string) (*putils.PoCProof, error) {
 		return nil, err
 	}
 
-	return &pocProof, nil
+	return pocProof, nil
 }
 
 func ClearDataHandler(conn net.Conn, requestData string) {
@@ -1051,7 +1057,7 @@ func GenerateAndStoreCampaignSecretValue(camId string) (string, error) {
 			return err
 		}
 
-		fmt.Printf("Got from Redis with Key (%s): %s", camId, value)
+		fmt.Printf("Got from Redis with Key (%s): %s\n", camId, value)
 
 		if err == redis.Nil {
 			// generate R and store

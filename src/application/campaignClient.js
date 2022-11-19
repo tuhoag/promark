@@ -56,7 +56,7 @@ const generateCampaignArgs = (numOrgsPerType, numPeersPerOrg, numVerifiers, devi
     return result
 }
 
-const CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices, startDate, endDate) => {
+const CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, numVerifiersPerOrg, numDevices, startDate, endDate) => {
     const camId = "c" + Math.floor(Math.random()*10000);
     const name = "Campaign " + camId;
     const advName = "adv"+Math.floor(Math.random()*10000) % numOrgsPerType;
@@ -79,7 +79,7 @@ const CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, num
     logger.debug(`all verifiers: ${JSON.stringify(allVerifiersUrls)}`);
 
     var verifierURLs = [];
-    for (let i = 0; i < numVerifiers * 2; i++) {
+    for (let i = 0; i < numVerifiersPerOrg * 2; i++) {
         // randomly select a peer to be verifier
         let verifierUrlIdx = Math.floor(Math.random()*10000) % allVerifiersUrls.length;
         let verifierUrl = allVerifiersUrls[verifierUrlIdx];
@@ -116,13 +116,13 @@ const CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, num
     return result
 }
 
-exports.createRandomCampaign = async (numVerifiers, deviceIdsStr) => {
+exports.createRandomCampaign = async (numVerifiersPerOrg, deviceIdsStr) => {
     return utils.callChaincodeFn(async network => {
 
         const contract = await network.getContract('campaign');
         startDate = "2022-11-13"
         endDate = "2022-11-14"
-        const campaign = CreateCampaignUnequalVerifiersArgs(global.numOrgsPerType, global.numPeersPerOrg, numVerifiers, deviceIdsStr, startDate, endDate);
+        const campaign = CreateCampaignUnequalVerifiersArgs(global.numOrgsPerType, global.numPeersPerOrg, numVerifiersPerOrg, deviceIdsStr, startDate, endDate);
         logger.info(`Create Campaign: ${JSON.stringify(campaign)}`);
 
         const verifierAddressesStr = campaign.verifierURLs.join(";")
