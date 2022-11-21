@@ -20,8 +20,8 @@ test:
             numPeersPerOrgs: 1
             numVerifiers: 2
             numDevices: 1
-            maxNumTrans: 10
-            minNumTrans: 1
+            maxNumTrans: 10000
+            minNumTrans: 5000
             # numCampaigns: 1
             mode: device
 

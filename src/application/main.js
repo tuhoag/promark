@@ -89,6 +89,8 @@ const proofCommandHandler = async argv => {
         return proofClient.getAllProofs();
     } else if (command == "delall") {
         return proofClient.deleteAllProofs();
+    } else if (command == "allids") {
+        return proofClient.getAllProofIds();
     } else if (command == "verify") {
         camId = argv[1];
         let proofId = argv[2];

@@ -70,6 +70,8 @@ class GenerateProofWorkload extends WorkloadModuleBase {
 
         this.PoCs = [];
         this.TPoCs = [];
+        this.tokenTrans = [];
+
         for (let i = 0; i < numCampaigns; i++) {
             let userId = Math.floor(Math.random()*10000);
             let deviceId = Math.floor(Math.random()*10000 % numDevices);
@@ -98,7 +100,6 @@ class GenerateProofWorkload extends WorkloadModuleBase {
 
             let diff = this.campaigns[i].endTime - this.campaigns[i].startTime;
             for (let j = 0; j < numTrans; j++) {
-                let addingTime = Math.floor(Math.random() * 10000) % diff + this.campaigns[i].startTime;
                 // let addedTime = campaign.startTime + endTime;
                 let tpTransArgs = {
                     contractId: "poc",
@@ -119,6 +120,7 @@ class GenerateProofWorkload extends WorkloadModuleBase {
 
                 result = await this.sutAdapter.sendRequests(tpTransArgs);
                 let deviceTPoC = JSON.parse(result["result"]).tpocs[0];
+                let addingTime = Math.floor(Math.random() * 10000 % diff + this.campaigns[i].startTime);
 
                 let transArgs = {
                     contractId: "proof",
@@ -128,12 +130,14 @@ class GenerateProofWorkload extends WorkloadModuleBase {
                 };
 
                 result = await this.sutAdapter.sendRequests(transArgs);
+                let tokenTran = JSON.parse(result["result"]);
+                this.tokenTrans.push(tokenTran);
             }
 
         }
 
 
-        // throw Error(JSON.stringify(this.TPoCs))
+        // throw Error(JSON.stringify(this.tokenTrans))
     }
 
     /**
@@ -166,14 +170,24 @@ class GenerateProofWorkload extends WorkloadModuleBase {
 
         await this.sutAdapter.sendRequests(transArgs);
 
+        // for (let i = 0; i < this.tokenTrans.length; i++) {
+        //     transArgs = {
+        //         contractId: "proof",
+        //         contractFunction: 'DeleteProofById',
+        //         contractArguments: [this.tokenTrans[i]["id"]],
+        //         readOnly: false
+        //     };
+        //     await this.sutAdapter.sendRequests(transArgs);
+        // }
+
         transArgs = {
             contractId: "proof",
             contractFunction: 'DeleteAllProofs',
             contractArguments: [],
             readOnly: false
         };
-
         await this.sutAdapter.sendRequests(transArgs);
+
     }
 }
 

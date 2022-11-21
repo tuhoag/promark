@@ -187,3 +187,20 @@ exports.queryByTimestamps = async (startTime, endTime) => {
         return proofs;
     });
 }
+
+exports.getAllProofIds = async () => {
+    return utils.callChaincodeFn(async (network) => {
+        const contract = await network.getContract("proof");
+        logger.info("GetAllProofIds");
+        return contract.submitTransaction("GetAllProofIds");
+    }, async (response) => {
+        if (response.length == 0) {
+            logger.debug("No proofs");
+            return [];
+        }
+
+        const proofs = JSON.parse(response);
+        logger.debug(`got ${proofs.length} proofIds: ${response}`);
+        return proofs;
+    });
+}

@@ -280,6 +280,17 @@ function invokeGetAllCustomerProofs() {
     # $SCRIPTS_DIR/get-all-proofs.sh $CHANNEL_NAME $PROOF_CHAINCODE_NAME "adv,pub" $1 $2
 }
 
+function invokeGetAllCustomerProofIds() {
+    local orgNum=$1
+    local peerNum=$2
+
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node main.js $orgNum $peerNum proof allids
+    { set +x; } 2>/dev/null
+    popd
+}
+
 function invokeDelProofById() {
     local orgNum=$1
     local peerNum=$2
@@ -592,6 +603,8 @@ elif [ $MODE = "proof" ]; then
         invokeAddCustomerProof $NO_ORGS $NO_PEERS $proofId $comm $rsStr
     elif [ $SUB_MODE = "all" ]; then
         invokeGetAllCustomerProofs $NO_ORGS $NO_PEERS
+    elif [ $SUB_MODE = "allids" ]; then
+        invokeGetAllCustomerProofIds $NO_ORGS $NO_PEERS
     elif [ $SUB_MODE = "del" ]; then
         proofId=$5
         invokeDelProofById $NO_ORGS $NO_PEERS $proofId

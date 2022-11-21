@@ -149,11 +149,11 @@ func (s *ProofSmartContract) DeleteProofById(ctx contractapi.TransactionContextI
 		return false, fmt.Errorf("the proof id %s does not exist", proofId)
 	}
 
-	var proof putils.CollectedCustomerProof
-	err = json.Unmarshal(proofJSON, &proof)
-	if err != nil {
-		return false, err
-	}
+	// var proof putils.CollectedCustomerProof
+	// err = json.Unmarshal(proofJSON, &proof)
+	// if err != nil {
+	// 	return false, err
+	// }
 
 	err = ctx.GetStub().DelState(proofId)
 	if err != nil {
@@ -270,7 +270,7 @@ func (s *ProofSmartContract) VerifyTPoCProof(ctx contractapi.TransactionContextI
 	return verificationResult, err
 }
 
-func (s *ProofSmartContract) AddCampaignTokenTransaction(ctx contractapi.TransactionContextInterface, camId string, deviceId string, addedTimeStr int64, dCsStr string, dRsStr string, dHashesStr string, dKeyStr string, uCsStr string, uRsStr string, uHashesStr string, uKeyStr string) (*putils.CustomerCampaignTokenTransaction, error) {
+func (s *ProofSmartContract) AddCampaignTokenTransaction(ctx contractapi.TransactionContextInterface, camId string, deviceId string, addedTimeStr string, dCsStr string, dRsStr string, dHashesStr string, dKeyStr string, uCsStr string, uRsStr string, uHashesStr string, uKeyStr string) (*putils.CustomerCampaignTokenTransaction, error) {
 	putils.SendLog("AddCampaignToken", "", LOG_MODE)
 	putils.SendLog("camId", camId, LOG_MODE)
 
@@ -293,6 +293,8 @@ func (s *ProofSmartContract) AddCampaignTokenTransaction(ctx contractapi.Transac
 		return nil, fmt.Errorf("device TPoC does not belong to campaign %s", camId)
 	}
 
+	timestamp, err := strconv.ParseInt(addedTimeStr, 10, 64)
+
 	transaction := putils.CustomerCampaignTokenTransaction{
 		Id: tranId,
 		DeviceTPoC: putils.TPoCProof{
@@ -307,7 +309,7 @@ func (s *ProofSmartContract) AddCampaignTokenTransaction(ctx contractapi.Transac
 			Hashes: strings.Split(uHashesStr, ";"),
 			Key:    dKeyStr,
 		},
-		AddedTime: addedTimeStr,
+		AddedTime: timestamp,
 	}
 
 	tranJSON, err = json.Marshal(transaction)
@@ -583,8 +585,38 @@ func (s *ProofSmartContract) FindTokenTransactionsByCampaignId(ctx contractapi.T
 	return trans, nil
 }
 
+func (s *ProofSmartContract) GetAllProofIds(ctx contractapi.TransactionContextInterface) ([]string, error) {
+	// range query with empty string for startKey and endKey does an
+	// open-ended query of all assets in the chaincode namespace.
+	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+	if err != nil {
+		return nil, err
+	}
+	// close the resultsIterator when this function is finished
+	defer resultsIterator.Close()
+
+	var proofIds []string
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		putils.SendLog("queryResponse.Value", string(queryResponse.Value), LOG_MODE)
+		// var proof putils.CustomerCampaignTokenTransaction
+		// err = json.Unmarshal(queryResponse.Value, &proof)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// proofs = append(proofs, &proof)
+		proofIds = append(proofIds, queryResponse.Key)
+	}
+
+	return proofIds, nil
+}
+
 func (s *ProofSmartContract) DeleteAllProofs(ctx contractapi.TransactionContextInterface) error {
-	proofs, err := s.GetAllProofs(ctx)
+	proofIds, err := s.GetAllProofIds(ctx)
 
 	if err != nil {
 		return err
@@ -592,15 +624,15 @@ func (s *ProofSmartContract) DeleteAllProofs(ctx contractapi.TransactionContextI
 
 	var result bool
 
-	for _, proof := range proofs {
-		result, err = s.DeleteProofById(ctx, proof.Id)
+	for _, id := range proofIds {
+		result, err = s.DeleteProofById(ctx, id)
 
 		if err != nil {
 			return err
 		}
 
 		if !result {
-			return fmt.Errorf("Cannot remove proof %s", proof.Id)
+			return fmt.Errorf("Cannot remove proof %s", id)
 		}
 	}
 

@@ -10,8 +10,8 @@ exports.CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, n
     const name = "Campaign " + camId;
     const advName = "adv"+Math.floor(Math.random()*10000) % numOrgsPerType;
     const pubName = "pub"+Math.floor(Math.random()*10000) % numOrgsPerType;
-    const startTimeStr = Math.floor(new Date("2022-05-01").getTime() / 1000);
-    const endTimeStr = Math.floor(new Date("2022-07-01").getTime() / 1000);
+    const startTimeStr = Math.floor((new Date("2022.09.01").getTime() / 1000).toFixed(0));
+    const endTimeStr = Math.floor((new Date("2022.10.01").getTime() / 1000).toFixed(0));
 
     var allVerifiersUrls = [];
 
