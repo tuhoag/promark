@@ -134,7 +134,7 @@
             <ul>
                 <h3>&nbspBenchmark results</h3>
                 <li><a href="#benchmarksummary">Summary</a></li>
-                    <li><a href="#VerifyTPoC(nc:2)">VerifyTPoC(nc:2)</a></li>
+                    <li><a href="#VerifyCampaignTPoCs(nc:2)">VerifyCampaignTPoCs(nc:2)</a></li>
             </ul>
             <ul>
                 <h3>&nbspSystem under test</h3>
@@ -152,28 +152,28 @@
                     </tr>
 
                     <tr>
-                         <td>VerifyTPoC(nc:2)</td> <td>5000</td> <td>0</td> <td>299.0</td> <td>0.03</td> <td>0.01</td> <td>0.01</td> <td>298.8</td>
+                         <td>VerifyCampaignTPoCs(nc:2)</td> <td>5000</td> <td>0</td> <td>202.6</td> <td>13.30</td> <td>0.04</td> <td>6.03</td> <td>169.0</td>
                     </tr>
                 </table>
             </div>
-            <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;" id="VerifyTPoC(nc:2)">
-                <h2>Benchmark round: VerifyTPoC(nc:2)</h2>
-                <p>VerifyTPoC benchmark</p>
+            <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;" id="VerifyCampaignTPoCs(nc:2)">
+                <h2>Benchmark round: VerifyCampaignTPoCs(nc:2)</h2>
+                <p>VerifyCampaignTPoCs benchmark</p>
                 <pre style="overflow: visible;white-space: pre-wrap;max-height:100%;">rateControl:
   type: fixed-rate
   opts:
     tps: 700
 </pre>
-                        <h3>Performance metrics for VerifyTPoC(nc:2)</h3>
+                        <h3>Performance metrics for VerifyCampaignTPoCs(nc:2)</h3>
                             <table style="min-width: 100%;">
                                 <tr>
                                      <th>Name</th> <th>Succ</th> <th>Fail</th> <th>Send Rate (TPS)</th> <th>Max Latency (s)</th> <th>Min Latency (s)</th> <th>Avg Latency (s)</th> <th>Throughput (TPS)</th>
                                 </tr>
                                 <tr>
-                                     <td>VerifyTPoC(nc:2)</td> <td>5000</td> <td>0</td> <td>299.0</td> <td>0.03</td> <td>0.01</td> <td>0.01</td> <td>298.8</td>
+                                     <td>VerifyCampaignTPoCs(nc:2)</td> <td>5000</td> <td>0</td> <td>202.6</td> <td>13.30</td> <td>0.04</td> <td>6.03</td> <td>169.0</td>
                                 </tr>
                             </table>
-                        <h3>Resource utilization for VerifyTPoC(nc:2)</h3>
+                        <h3>Resource utilization for VerifyCampaignTPoCs(nc:2)</h3>
             </div>
 
             <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;">
@@ -185,21 +185,24 @@ workers:
   type: local
   number: 1
 rounds:
-  - label: &#39;VerifyTPoC(nc:2)&#39;
-    description: VerifyTPoC benchmark
+  - label: &#39;VerifyCampaignTPoCs(nc:2)&#39;
+    description: VerifyCampaignTPoCs benchmark
     txNumber: 5000
     rateControl:
       type: fixed-rate
       opts:
         tps: 700
     workload:
-      module: .&#x2F;workloads&#x2F;VerifyTPoC.js
+      module: .&#x2F;workloads&#x2F;VerifyCampaignTPoCs.js
       arguments:
-        contractId: poc
+        contractId: proof
         numOrgsPerType: 1
-        numPeersPerOrgs: 3
-        numVerifiers: 3
+        numPeersPerOrgs: 1
+        numVerifiers: 2
         numDevices: 1
+        maxNumTrans: 10
+        minNumTrans: 1
+        mode: device
 </pre>
                 <h3>SUT</h3>
                 <pre id="sutdetails">not provided</pre>

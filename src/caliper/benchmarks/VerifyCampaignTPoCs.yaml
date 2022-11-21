@@ -17,9 +17,13 @@ test:
           arguments:
             contractId: proof
             numOrgsPerType: 1
-            numPeersPerOrgs: 3
+            numPeersPerOrgs: 1
             numVerifiers: 2
             numDevices: 1
+            maxNumTrans: 10
+            minNumTrans: 1
+            # numCampaigns: 1
+            mode: device
 
       # - label: VerifyTPoC(nc:3)
       #   description: VerifyTPoC benchmark

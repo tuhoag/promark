@@ -35,10 +35,10 @@ class GenerateProofWorkload extends WorkloadModuleBase {
         const args = this.roundArguments;
         this.contractId = args.contractId;
         this.contractVersion = args.contractVersion;
-        const {numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices} = this.roundArguments
+        const {numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices, maxNumTrans, minNumTrans} = this.roundArguments
 
         // generate campaigns
-        this.campaignIds = [];
+        this.campaigns = [];
 
         let numCampaigns = Math.floor(numPeersPerOrgs * numOrgsPerType / numVerifiers);
         if (numCampaigns < 1) {
@@ -47,7 +47,7 @@ class GenerateProofWorkload extends WorkloadModuleBase {
 
         for (let i = 0; i < numCampaigns; i++) {
 
-            const {camId, name, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignUnequalVerifiersArgs(numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices)
+            const {camId, name, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignUnequalVerifiersArgs(numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices);
 
             // throw Error(advertiser)
             const newCampaignId = "c" + i
@@ -56,11 +56,15 @@ class GenerateProofWorkload extends WorkloadModuleBase {
             const transArgs = {
                 contractId: "campaign",
                 contractFunction: 'CreateCampaign',
-                contractArguments: [newCampaignId, newCampaignName, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
+                contractArguments: [camId, name, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
                 readOnly: false
             };
 
-            this.campaignIds.push(newCampaignId)
+            this.campaigns.push({
+                id: camId,
+                startTime: startTimeStr,
+                endTime: endTimeStr
+            });
             await this.sutAdapter.sendRequests(transArgs);
         }
 
@@ -68,29 +72,66 @@ class GenerateProofWorkload extends WorkloadModuleBase {
         this.TPoCs = [];
         for (let i = 0; i < numCampaigns; i++) {
             let userId = Math.floor(Math.random()*10000);
+            let deviceId = Math.floor(Math.random()*10000 % numDevices);
 
             let pTransArgs = {
                 contractId: "proof",
                 contractFunction: "GeneratePoCProof2",
-                contractArguments: [this.campaignIds[i], userId],
+                contractArguments: [this.campaigns[i].id, userId],
                 readOnly: true
             };
 
             let result = await this.sutAdapter.sendRequests(pTransArgs);
-            let PoC = JSON.parse(result["result"]);
+            let customerPoC = JSON.parse(result["result"]);
 
-            let tpTransArgs = {
-                contractId: "poc",
-                contractFunction: "GenerateTPoCProofs",
-                contractArguments: [this.campaignIds[i], PoC.comm, PoC.r, PoC.numVerifiers, 1],
+            pTransArgs = {
+                contractId: "proof",
+                contractFunction: "GeneratePoCProof2",
+                contractArguments: [this.campaigns[i].id, deviceId],
                 readOnly: true
             };
+            result = await this.sutAdapter.sendRequests(pTransArgs);
+            let devicePoC = JSON.parse(result["result"]);
 
-            result = await this.sutAdapter.sendRequests(tpTransArgs);
-            let TPoC = JSON.parse(result["result"]).tpocs[0];
-            this.PoCs.push(PoC);
-            this.TPoCs.push(TPoC);
+            // generate number of tpocs
+            let numTrans = Math.random(Math.floor(Math.random()*10000 % maxNumTrans + minNumTrans));
+
+            let diff = this.campaigns[i].endTime - this.campaigns[i].startTime;
+            for (let j = 0; j < numTrans; j++) {
+                let addingTime = Math.floor(Math.random() * 10000) % diff + this.campaigns[i].startTime;
+                // let addedTime = campaign.startTime + endTime;
+                let tpTransArgs = {
+                    contractId: "poc",
+                    contractFunction: "GenerateTPoCProofs",
+                    contractArguments: [this.campaigns[i].id, customerPoC.comm, customerPoC.r, customerPoC.numVerifiers, 1],
+                    readOnly: true
+                };
+
+                result = await this.sutAdapter.sendRequests(tpTransArgs);
+                let customerTPoC = JSON.parse(result["result"]).tpocs[0];
+
+                tpTransArgs = {
+                    contractId: "poc",
+                    contractFunction: "GenerateTPoCProofs",
+                    contractArguments: [this.campaigns[i].id, devicePoC.comm, devicePoC.r, devicePoC.numVerifiers, 1],
+                    readOnly: true
+                };
+
+                result = await this.sutAdapter.sendRequests(tpTransArgs);
+                let deviceTPoC = JSON.parse(result["result"]).tpocs[0];
+
+                let transArgs = {
+                    contractId: "proof",
+                    contractFunction: "AddCampaignTokenTransaction",
+                    contractArguments: [this.campaigns[i].id, deviceId, addingTime, deviceTPoC.tComms.join(";"), deviceTPoC.tRs.join(";"), deviceTPoC.hashes.join(";"), deviceTPoC.key, customerTPoC.tComms.join(";"), customerTPoC.tRs.join(";"), customerTPoC.hashes.join(";"), customerTPoC.key],
+                    readOnly: false
+                };
+
+                result = await this.sutAdapter.sendRequests(transArgs);
+            }
+
         }
+
 
         // throw Error(JSON.stringify(this.TPoCs))
     }
@@ -100,15 +141,15 @@ class GenerateProofWorkload extends WorkloadModuleBase {
      * @return {Promise<TxStatus[]>}
      */
     async submitTransaction() {
-        // logger.info(`submit: ${JSON.stringify(this.TPoC)} - ${this.campaignId}`);
-        const tpocIdx = Math.floor(Math.random()*10000) % this.TPoCs.length;
-        const tpoc = this.TPoCs[tpocIdx];
+        const {mode} = this.roundArguments;
+        const camIdx = Math.floor(Math.random()*10000) % this.campaigns.length;
+        const camId = this.campaigns[camIdx].id;
 
         // camId string, csStr string, rsStr string, hashesStr string, keyStr string
         const transArgs = {
             contractId: "proof",
-            contractFunction: "VerifyTPoCProof",
-            contractArguments: [this.campaignIds[tpocIdx], tpoc.tComms.join(";"), tpoc.tRs.join(";"), tpoc.hashes.join(";"), tpoc.key],
+            contractFunction: "FindTokenTransactionsByCampaignId",
+            contractArguments: [camId, mode],
             readOnly: true
         };
 
@@ -116,9 +157,18 @@ class GenerateProofWorkload extends WorkloadModuleBase {
     }
 
     async cleanupWorkloadModule() {
-        const transArgs = {
+        let transArgs = {
             contractId: "campaign",
             contractFunction: 'DeleteAllCampaigns',
+            contractArguments: [],
+            readOnly: false
+        };
+
+        await this.sutAdapter.sendRequests(transArgs);
+
+        transArgs = {
+            contractId: "proof",
+            contractFunction: 'DeleteAllProofs',
             contractArguments: [],
             readOnly: false
         };

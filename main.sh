@@ -659,6 +659,8 @@ elif [ $MODE = "evaluate" ]; then
             evaluate $NO_ORGS $NO_PEERS "VerifyPoC"
         elif [ $SUB_SUB_MODE = "verifytpoc" ]; then
             evaluate $NO_ORGS $NO_PEERS "VerifyTPoC"
+        elif [ $SUB_SUB_MODE = "findtokentrans" ]; then
+            evaluate $NO_ORGS $NO_PEERS "VerifyCampaignTPoCs"
         else
             errorln "Unsupported $MODE $SUB_MODE $SUB_SUB_MODE command."
         fi

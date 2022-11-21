@@ -43,7 +43,7 @@ exports.CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, n
 
     var deviceIds = [];
     for (let i = 0; i < numDevices; i ++) {
-        const deviceId = "w" + Math.floor(Math.random()*10000) % numPeersPerOrgs + "." + pubName;
+        const deviceId = `w${i}`;
         deviceIds.push(deviceId);
     }
 
