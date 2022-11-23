@@ -7,26 +7,30 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
     return `${timestamp} [${label}] ${level}: ${message}`;
 });
 
-module.exports = (name, level) => createLogger({
-    // format: combine(
-    //     label({ label: 'promark' }),
-    //     timestamp(),
-    //     myFormat
-    // ),
-    transports: [
-        new transports.Console({
-            level: level,
-            json: false,
-            timestamp: true,
-            prettyPrint: true,
-            depth: true,
-            colorize: true,
-            format: combine(
-                label({ label: path.basename(name) }),
-                timestamp(),
-                myFormat
-            ),
-        })
-        // new transports.File({ filename: 'error.log', level: 'error'}),
-    ]
-});
+exports.createLogger = (name, level) => {
+    const setting = require('./setting');
+
+    if (level === undefined) {
+        currentLevel = setting['logLevel'];
+    } else {
+        currentLevel = level
+    }
+    return createLogger({
+        transports: [
+            new transports.Console({
+                level: currentLevel,
+                json: false,
+                timestamp: true,
+                prettyPrint: true,
+                depth: true,
+                colorize: true,
+                format: combine(
+                    label({ label: path.basename(name) }),
+                    timestamp(),
+                    myFormat
+                ),
+            })
+            // new transports.File({ filename: 'error.log', level: 'error'}),
+        ]
+    });
+}

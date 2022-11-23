@@ -420,6 +420,20 @@ function addGoPath {
     export PATH=$PATH:./go/bin
 }
 
+function generateFindCampaignProofs {
+    local orgNum=$1
+    local peerNum=$2
+    local verifiersNum=$3
+    local transNum=$4
+
+    # numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevice
+    pushd $CLIENT_DIR_PATH
+    set -x
+    node main.js $orgNum $peerNum data verify-cam-tpocs $verifiersNum $transNum
+    { set +x; } 2>/dev/null
+    popd
+}
+
 function evaluate {
     local orgNum=$1
     local peerNum=$2
@@ -673,7 +687,20 @@ elif [ $MODE = "evaluate" ]; then
         elif [ $SUB_SUB_MODE = "verifytpoc" ]; then
             evaluate $NO_ORGS $NO_PEERS "VerifyTPoC"
         elif [ $SUB_SUB_MODE = "findtokentrans" ]; then
+            NO_VERIFIERS=$6
+            NO_TRANS=$7
+
+            # generateFindCampaignProofs $NO_ORGS $NO_PEERS $NO_VERIFIERS $NO_TRANS
             evaluate $NO_ORGS $NO_PEERS "VerifyCampaignTPoCs"
+        else
+            errorln "Unsupported $MODE $SUB_MODE $SUB_SUB_MODE command."
+        fi
+    elif [ $SUB_MODE = "data" ]; then
+        if [ $SUB_SUB_MODE = "findtokentrans" ]; then
+            NO_VERIFIERS=$6
+            NO_TRANS=$7
+
+            generateFindCampaignProofs $NO_ORGS $NO_PEERS $NO_VERIFIERS $NO_TRANS
         else
             errorln "Unsupported $MODE $SUB_MODE $SUB_SUB_MODE command."
         fi
@@ -682,7 +709,6 @@ elif [ $MODE = "evaluate" ]; then
     fi
 elif [ $MODE = "test" ]; then
     testPromark $NO_ORGS $NO_PEERS
-
 else
     errorln "Unsupported $MODE command."
 fi

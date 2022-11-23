@@ -525,7 +525,7 @@ func (s *ProofSmartContract) FindTokenTransactionsByTimestamps(ctx contractapi.T
 	return trans, nil
 }
 
-func (s *ProofSmartContract) FindTokenTransactionsByCampaignId(ctx contractapi.TransactionContextInterface, camId string, mode string) ([]*putils.CustomerCampaignTokenTransaction, error) {
+func (s *ProofSmartContract) FindTokenTransactionsByCampaignId(ctx contractapi.TransactionContextInterface, camId string, mode string, limit int) ([]*putils.CustomerCampaignTokenTransaction, error) {
 	if mode != DEVICE_VALIDATION_MODE && mode != ALL_VALIDATION_MODE {
 		return nil, fmt.Errorf("mode '%s' is unsupported", mode)
 	}
@@ -544,6 +544,7 @@ func (s *ProofSmartContract) FindTokenTransactionsByCampaignId(ctx contractapi.T
 	defer resultsIterator.Close()
 
 	var trans []*putils.CustomerCampaignTokenTransaction
+	var count = 0
 
 	for resultsIterator.HasNext() {
 		queryResult, err := resultsIterator.Next()
@@ -579,6 +580,12 @@ func (s *ProofSmartContract) FindTokenTransactionsByCampaignId(ctx contractapi.T
 
 		if validity {
 			trans = append(trans, &tokenTransaction)
+		}
+
+		count += 1
+
+		if limit >= 0 && count == limit {
+			break
 		}
 	}
 

@@ -17,12 +17,11 @@ test:
           arguments:
             contractId: proof
             numOrgsPerType: 1
-            numPeersPerOrgs: 1
+            numPeersPerOrgs: 3
             numVerifiers: 2
             numDevices: 1
-            maxNumTrans: 10000
-            minNumTrans: 5000
-            # numCampaigns: 1
+            numTrans: 10
+            numCampaigns: 0
             mode: device
 
       # - label: VerifyTPoC(nc:3)

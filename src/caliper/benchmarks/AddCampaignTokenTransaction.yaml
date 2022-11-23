@@ -16,7 +16,7 @@ test:
           module: ./workloads/AddCampaignTokenTransaction.js
           arguments:
             numOrgsPerType: 2
-            numPeersPerOrgs: 2
+            numPeersPerOrgs: 3
             numVerifiersPerType: 1
             numDevices: 1
 

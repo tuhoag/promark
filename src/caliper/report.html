@@ -152,7 +152,7 @@
                     </tr>
 
                     <tr>
-                         <td>VerifyCampaignTPoCs(nc:2)</td> <td>5000</td> <td>0</td> <td>293.2</td> <td>0.06</td> <td>0.01</td> <td>0.01</td> <td>293.0</td>
+                         <td>VerifyCampaignTPoCs(nc:2)</td> <td>5000</td> <td>0</td> <td>146.8</td> <td>4.42</td> <td>0.06</td> <td>0.43</td> <td>134.9</td>
                     </tr>
                 </table>
             </div>
@@ -170,7 +170,7 @@
                                      <th>Name</th> <th>Succ</th> <th>Fail</th> <th>Send Rate (TPS)</th> <th>Max Latency (s)</th> <th>Min Latency (s)</th> <th>Avg Latency (s)</th> <th>Throughput (TPS)</th>
                                 </tr>
                                 <tr>
-                                     <td>VerifyCampaignTPoCs(nc:2)</td> <td>5000</td> <td>0</td> <td>293.2</td> <td>0.06</td> <td>0.01</td> <td>0.01</td> <td>293.0</td>
+                                     <td>VerifyCampaignTPoCs(nc:2)</td> <td>5000</td> <td>0</td> <td>146.8</td> <td>4.42</td> <td>0.06</td> <td>0.43</td> <td>134.9</td>
                                 </tr>
                             </table>
                         <h3>Resource utilization for VerifyCampaignTPoCs(nc:2)</h3>
@@ -197,11 +197,11 @@ rounds:
       arguments:
         contractId: proof
         numOrgsPerType: 1
-        numPeersPerOrgs: 1
+        numPeersPerOrgs: 3
         numVerifiers: 2
         numDevices: 1
-        maxNumTrans: 10000
-        minNumTrans: 5000
+        numTrans: 10
+        numCampaigns: 0
         mode: device
 </pre>
                 <h3>SUT</h3>

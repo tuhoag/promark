@@ -4,7 +4,8 @@ const yaml = require('js-yaml');
 const path = require('path');
 
 const setting = require('./setting');
-const logger = require('./logger')(__filename, "info");
+const { createLogger } = require('./logger');
+logger = createLogger(__filename);
 
 
 const buildCPP = async (numOrgsPerType, numPeersPerOrg) => {
@@ -52,7 +53,7 @@ const getOrgUserFullName = (orgUserName, orgFullName) => {
     return orgUserName + "@" + orgFullName;
 }
 
-const connectToGateway = async (userName, orgName, orgUserName) => {
+exports.connectToGateway = async (userName, orgName, orgUserName) => {
     const wallet = await buildWallet(userName);
     const gateway = new Gateway();
 
@@ -76,14 +77,14 @@ const connectToGateway = async (userName, orgName, orgUserName) => {
     return gateway;
 }
 
-const connectToNetwork = async (userName, orgName, orgUserName) => {
-    const gateway = connectToGateway(userName, orgName, orgUserName);
+exports.connectToNetwork = async (userName, orgName, orgUserName) => {
+    const gateway = exports.connectToGateway(userName, orgName, orgUserName);
     logger.debug('Use network channel: ' + setting.channelName);
     return gateway.getNetwork(setting.channelName);
 }
 
 
-class ChaincodeCaller {
+exports.ChaincodeCaller = class ChaincodeCaller {
     constructor() {
         this.gateway = null;
         this.network = null;
@@ -91,7 +92,7 @@ class ChaincodeCaller {
 
     static async init() {
         let caller = new ChaincodeCaller();
-        caller.gateway = await connectToGateway(setting.userName, setting.orgName, setting.orgUserName);
+        caller.gateway = await exports.connectToGateway(setting.userName, setting.orgName, setting.orgUserName);
         caller.network = await caller.gateway.getNetwork(setting.channelName);
 
         return caller
@@ -106,10 +107,12 @@ class ChaincodeCaller {
     }
 }
 
-const callChaincodeFn = async (requestFn, responseFn) => {
+// export {ChaincodeCaller};
+
+exports.callChaincodeFn = async (requestFn, responseFn) => {
     let gateway;
     try {
-        gateway = await connectToGateway(setting.userName, setting.orgName, setting.orgUserName);
+        gateway = await exports.connectToGateway(setting.userName, setting.orgName, setting.orgUserName);
         const network = await gateway.getNetwork(setting.channelName);
         const response = await requestFn(network);
         return responseFn(response);
@@ -122,18 +125,70 @@ const callChaincodeFn = async (requestFn, responseFn) => {
     }
 }
 
-const getId = (maxNum) => {
+exports.getId = (maxNum) => {
     return Math.floor(Math.random() * 10000) % maxNum;
 }
 
-function randomDate(start, end) {
+exports.randomDate = (start, end) => {
     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-  }
-
-module.exports = {
-    connectToGateway,
-    callChaincodeFn,
-    ChaincodeCaller,
-    getId,
-    randomDate,
 }
+
+exports.CreateCampaignsWithEqualVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices) => {
+    let campaigns = [];
+    let verifierUrls = [];
+    const startTime = Math.floor((new Date("2022.09.01").getTime() / 1000).toFixed(0));
+    const endTime = Math.floor((new Date("2022.10.01").getTime() / 1000).toFixed(0));
+
+    var deviceIds = [];
+    for (let i = 0; i < numDevices; i ++) {
+        const deviceId = `w${i}`;
+        deviceIds.push(deviceId);
+    }
+
+    const deviceIdsStr = deviceIds.join(";");
+
+    for (let orgId = 0; orgId < numOrgsPerType; orgId++) {
+        let advName = `adv${orgId}`;
+        let pubName = `pub${orgId}`;
+
+        for (let peerId = 0; peerId < numPeersPerOrgs; peerId++) {
+            const advPeerURL = `peer${peerId}.${advName}.promark.com:5000`;
+            const pubPeerURL = `peer${peerId}.${pubName}.promark.com:5000`;
+
+            verifierUrls.push(advPeerURL, pubPeerURL);
+        }
+    }
+
+    let numCampaigns = Math.floor(verifierUrls.length / numVerifiers);
+
+    for (let camIdx = 0; camIdx < numCampaigns; camIdx ++) {
+        let camId = `c${camIdx}`;
+        let name = `Campaign ${camId}`;
+
+        let advName = `adv${Math.floor(Math.random()*10000) % numOrgsPerType}`;
+        let pubName = `pub${Math.floor(Math.random()*10000) % numOrgsPerType}`;
+
+        let currentVerifierUrls = [];
+
+        for (let i = 0; i < numVerifiers; i++) {
+            currentVerifierUrls.push(verifierUrls.pop());
+        }
+
+        campaigns.push({
+            id: camId,
+            name,
+            advName,
+            pubName,
+            verifierURLsStr: currentVerifierUrls.join(";"),
+            startTime: startTime,
+            endTime: endTime,
+            deviceIdsStr
+        });
+    }
+
+    return campaigns;
+}
+
+// module.exports = {
+//     ChaincodeCaller,
+// }

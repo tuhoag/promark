@@ -551,7 +551,7 @@ func (s *CampaignSmartContract) DeleteCampaignById(ctx contractapi.TransactionCo
 		return false, fmt.Errorf("Failed to delete state:" + err.Error())
 	}
 
-	err = s.DeleteVerifiersData(ctx, camId)
+	err = ClearVerifiersData(&campaign)
 	if err != nil {
 		return false, err
 	}
@@ -598,10 +598,22 @@ func (s *CampaignSmartContract) DeleteAllCampaigns(ctx contractapi.TransactionCo
 		if !result {
 			return -1, fmt.Errorf("cannot remove campaign %s", cam.Id)
 		}
+
 		count += 1
 	}
 
 	return count, nil
+}
+
+func ClearVerifiersData(campaign *putils.Campaign) error {
+	for _, verifierURL := range campaign.VerifierURLs {
+		err := putils.RequestClearVerifierData(verifierURL, campaign.Id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *CampaignSmartContract) DeleteVerifiersData(ctx contractapi.TransactionContextInterface, camId string) error {

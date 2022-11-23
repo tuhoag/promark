@@ -1,5 +1,6 @@
 const utils = require('./utils');
-const logger = require('./logger')(__filename, "debug");
+const { createLogger } = require('./logger');
+logger = createLogger(__filename);
 
 exports.generatePoC = async (camId, entityId) => {
     logger.debug(`generatePoC: ${camId},${entityId}`);
@@ -11,7 +12,7 @@ exports.generatePoC = async (camId, entityId) => {
         if (entityId === undefined) {
             entityId = `u${utils.getId(10000)}`;
         }
-        logger.info(`GeneratePoCProof: camId:${camId} - entityId:${entityId}`);
+        logger.debug(`GeneratePoCProof: camId:${camId} - entityId:${entityId}`);
         return contract.submitTransaction("GeneratePoCProof2", camId, entityId);
     }, async response => {
         logger.debug(`response:${response}`);
@@ -26,7 +27,7 @@ exports.generateTPoCs = async (camId, cStr, rStr, numVerifiersPerOrg, numTPoCs) 
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('poc');
 
-        logger.info(`GenerateTPoCProofs: camId:${camId} - c:${cStr} - r:${rStr} - numTPoCs:${numTPoCs}`);
+        logger.debug(`GenerateTPoCProofs: camId:${camId} - c:${cStr} - r:${rStr} - numTPoCs:${numTPoCs}`);
         return contract.submitTransaction("GenerateTPoCProofs", camId, cStr, rStr, numVerifiersPerOrg,numTPoCs);
     }, async response => {
         logger.debug(`response:${response}`);
@@ -41,7 +42,7 @@ exports.generatePoCAndTPoCs = async (camId, entityId, numTPoCs) => {
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('poc');
 
-        logger.info(`generatePocAndTPoCs: camId:${camId} - entityId:${entityId} - numTPoCs: ${numTPoCs}`);
+        logger.debug(`generatePocAndTPoCs: camId:${camId} - entityId:${entityId} - numTPoCs: ${numTPoCs}`);
         return contract.submitTransaction("GeneratePoCAndTPoCProof", camId, entityId, numTPoCs);
     }, async response => {
         logger.debug(`response:${response}`);
@@ -55,7 +56,7 @@ exports.verifyPoCProof = async (camId, comm, r) => {
 
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
-        logger.info(`VerifyPoCProof: camId:${camId} - comm:${comm} - r: ${r}`);
+        logger.debug(`VerifyPoCProof: camId:${camId} - comm:${comm} - r: ${r}`);
         return contract.submitTransaction("VerifyPoCProof", camId, comm, r);
     }, async response => {
         logger.debug(`response:${response}`);
@@ -73,7 +74,7 @@ exports.verifyTPoCProof = async (camId, commS, rs, hs, key) => {
         const commStr = commS.join(";")
         const hsStr = hs.join(";")
 
-        logger.info(`verifyTPoCProof: camId:${camId} - commStr:${commStr} - rsStr: ${rsStr} hsStr: ${hsStr} - key: ${key}`);
+        logger.debug(`verifyTPoCProof: camId:${camId} - commStr:${commStr} - rsStr: ${rsStr} hsStr: ${hsStr} - key: ${key}`);
         return contract.submitTransaction("VerifyTPoCProof", camId, commStr, rsStr, hsStr, key);
     }, async response => {
         logger.debug(`response:${response}`);
@@ -101,7 +102,7 @@ exports.addProof = async (camId, deviceId, addedTime, deviceTPoC, customerTPoC) 
 exports.deleteAllProofs = async () => {
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('proof');
-        logger.info("DeleteAllProofs");
+        logger.debug("DeleteAllProofs");
         return contract.submitTransaction("DeleteAllProofs");
     }, async response => {
         logger.debug(`response:${response}`);
@@ -112,7 +113,7 @@ exports.deleteAllProofs = async () => {
 exports.getAllProofs = async () => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("proof");
-        logger.info("GetAllProofs");
+        logger.debug("GetAllProofs");
         return contract.submitTransaction("GetAllProofs");
     }, async (response) => {
         if (response.length == 0) {
@@ -126,11 +127,11 @@ exports.getAllProofs = async () => {
     });
 }
 
-exports.getTokenTransactionsByCampaignId = async (camId, mode) => {
+exports.getTokenTransactionsByCampaignId = async (camId, mode, limit) => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("proof");
         logger.debug("getTokenTransactionsByCampaignId");
-        return contract.submitTransaction("FindTokenTransactionsByCampaignId", camId, mode);
+        return contract.submitTransaction("FindTokenTransactionsByCampaignId", camId, mode, limit);
     }, async (response) => {
         if (response.length == 0) {
             logger.debug("No proofs");
@@ -163,7 +164,7 @@ exports.getTokenTransactionsByTimestamps = async (startTime, endTime) => {
 exports.verifyProof = async (camId, proofId) => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("proof");
-        logger.info(`VerifyCampaignProof: camId: ${camId} - proofId: ${proofId}`);
+        logger.debug(`VerifyCampaignProof: camId: ${camId} - proofId: ${proofId}`);
         return contract.submitTransaction("VerifyCampaignProof", camId, proofId);
     }, async (response) => {
         logger.debug(`response: ${response}`);
@@ -174,7 +175,7 @@ exports.verifyProof = async (camId, proofId) => {
 exports.queryByTimestamps = async (startTime, endTime) => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("proof");
-        logger.info("queryByTimestamps");
+        logger.debug("queryByTimestamps");
         return contract.submitTransaction("FindTokenTransactionsByTimestamps", startTime, endTime);
     }, async (response) => {
         if (response.length == 0) {
@@ -191,7 +192,7 @@ exports.queryByTimestamps = async (startTime, endTime) => {
 exports.getAllProofIds = async () => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("proof");
-        logger.info("GetAllProofIds");
+        logger.debug("GetAllProofIds");
         return contract.submitTransaction("GetAllProofIds");
     }, async (response) => {
         if (response.length == 0) {
@@ -203,4 +204,32 @@ exports.getAllProofIds = async () => {
         logger.debug(`got ${proofs.length} proofIds: ${response}`);
         return proofs;
     });
+}
+
+exports.addTokenTransactions = async (campaign, deviceId, devicePocAndTPoCs, customerPocAndTPoCs, numAdditions) => {
+    let numTPoCs = customerPocAndTPoCs.tpocs.length;
+
+    if (numAdditions > numTPoCs) {
+        throw `numAdditions > numTPoCs: ${numAdditions} > ${numTPoCs}`;
+    }
+
+    const diff = campaign.endTime - campaign.startTime;
+    for (let i = 0; i  < numAdditions; i++) {
+        logger.debug(JSON.stringify(customerPocAndTPoCs));
+        logger.debug(JSON.stringify(customerPocAndTPoCs.tpocs[i]));
+        let customerTPoC = customerPocAndTPoCs.tpocs[i];
+        let deviceTPoC = devicePocAndTPoCs.tpocs[i];
+        let addingTime = Math.floor(Math.random() * diff + campaign.startTime);
+        // let addedTime = campaign.startTime + relativeAddingTime;
+
+        logger.debug(`start: ${campaign.startTime} - end: ${campaign.endTime} - diff: ${diff} - adding time: ${addingTime} - valid: ${(campaign.startTime < addingTime) && (addingTime < campaign.endTime)}`);
+
+        let transaction = await exports.addProof(campaign.id, deviceId, addingTime, deviceTPoC, customerTPoC);
+
+        logger.debug(`added transaction: ${JSON.stringify(transaction)}`);
+
+        // await sleep(1000);
+    }
+
+    return numAdditions;
 }

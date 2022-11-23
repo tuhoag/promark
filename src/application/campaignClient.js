@@ -1,6 +1,7 @@
 const { start } = require('repl');
 const utils = require('./utils');
-const logger = require('./logger')(__filename, "debug");
+const { createLogger } = require('./logger');
+logger = createLogger(__filename);
 
 
 const findAdvertiser = (numAdvs) => {
@@ -116,6 +117,19 @@ const CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, num
     return result
 }
 
+exports.createCampaign = async (camId, name, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr) => {
+    return utils.callChaincodeFn(async network => {
+
+        const contract = await network.getContract('campaign');
+
+        return contract.submitTransaction("CreateCampaign", camId, name, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr);
+    }, async response => {
+        const resultCampaign = JSON.parse(response);
+        logger.debug(`raw response: ${response}`);
+        return resultCampaign;
+    });
+}
+
 exports.createRandomCampaign = async (numVerifiersPerOrg, deviceIdsStr) => {
     return utils.callChaincodeFn(async network => {
 
@@ -123,11 +137,11 @@ exports.createRandomCampaign = async (numVerifiersPerOrg, deviceIdsStr) => {
         startDate = "2022-11-13"
         endDate = "2022-11-14"
         const campaign = CreateCampaignUnequalVerifiersArgs(global.numOrgsPerType, global.numPeersPerOrg, numVerifiersPerOrg, deviceIdsStr, startDate, endDate);
-        logger.info(`Create Campaign: ${JSON.stringify(campaign)}`);
+        logger.debug(`Create Campaign: ${JSON.stringify(campaign)}`);
 
         const verifierAddressesStr = campaign.verifierURLs.join(";")
 
-        logger.info(`Create Campaign: ${JSON.stringify(campaign)} and ${verifierAddressesStr} - devices: ${campaign.deviceIds.join(";")}`);
+        logger.debug(`Create Campaign: ${JSON.stringify(campaign)} and ${verifierAddressesStr} - devices: ${campaign.deviceIds.join(";")}`);
 
         return contract.submitTransaction("CreateCampaign", campaign.id, campaign.name, campaign.advertiser, campaign.publisher, campaign.startTimeStr, campaign.endTimeStr, verifierAddressesStr, campaign.deviceIds.join(";"));
     }, async response => {
@@ -141,7 +155,7 @@ exports.createRandomCampaign = async (numVerifiersPerOrg, deviceIdsStr) => {
 exports.getCampaignById = async (camId) => {
     return utils.callChaincodeFn(async network => {
         const contract = await network.getContract('campaign');
-        logger.info(`Get Campaign: ${camId}`);
+        logger.debug(`Get Campaign: ${camId}`);
         return contract.submitTransaction("GetCampaignById", camId);
     }, async response => {
         const resultCampaign = JSON.parse(response);
@@ -154,11 +168,11 @@ exports.getCampaignById = async (camId) => {
 exports.getAllCampaigns = async () => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("campaign");
-        logger.info("GetAllCampaigns");
+        logger.debug("GetAllCampaigns");
         return contract.submitTransaction("GetAllCampaigns");
     }, async (response) => {
         if (response.length == 0) {
-            logger.info("No campaigns");
+            logger.debug("No campaigns");
             return [];
         }
 
@@ -173,7 +187,7 @@ exports.getAllCampaigns = async () => {
 exports.deleteCampaignById = async (camId) => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("campaign");
-        logger.info("DeleteCampaignById");
+        logger.debug("DeleteCampaignById");
         return contract.submitTransaction("DeleteCampaignById", camId);
     }, async (response) => {
         logger.debug(`response: ${response}`);
@@ -184,7 +198,7 @@ exports.deleteCampaignById = async (camId) => {
 exports.deleteAllCampaigns = async () => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("campaign");
-        logger.info("DeleteAllCampaigns");
+        logger.debug("DeleteAllCampaigns");
         return contract.submitTransaction("DeleteAllCampaigns");
     }, async (response) => {
         logger.debug(`response: ${response}`);
@@ -195,7 +209,7 @@ exports.deleteAllCampaigns = async () => {
 exports.getChaincodeData = async () => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("campaign");
-        logger.info("GetChaincodeData");
+        logger.debug("GetChaincodeData");
         return contract.submitTransaction("GetChaincodeData");
     }, async (response) => {
         logger.debug(`response: ${response}`);

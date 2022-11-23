@@ -7,8 +7,10 @@ const path = require('path');
 const utils = require('./utils');
 const camClient = require('./campaignClient');
 const proofClient = require('./proofClient');
+const dataClient = require('./dataClient');
 const setting = require('./setting');
-const logger = require('./logger')(__filename, "debug");
+const { createLogger } = require('./logger');
+logger = createLogger(__filename);
 
 const campaignCommandHandler = async (argv) => {
     logger.debug(argv);
@@ -31,7 +33,7 @@ const campaignCommandHandler = async (argv) => {
     } else if (command == "delall") {
         return camClient.deleteAllCampaigns();
     } else {
-        logger.info(`Unsupported campaign command ${command}`);
+        logger.error(`Unsupported campaign command ${command}`);
         throw `Unsupported campaign command ${command}`;
     }
 }
@@ -102,7 +104,7 @@ const proofCommandHandler = async argv => {
 
             return proofClient.queryByTimestamps(startTime, endTime);
     } else {
-        logger.info(`Unsupported campaign command ${command}`);
+        logger.error(`Unsupported campaign command ${command}`);
         throw `Unsupported proof command ${command}`;
     }
 }
@@ -112,33 +114,6 @@ const sleep = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-const addTokenTransactions = async (campaign, deviceId, devicePocAndTPoCs, customerPocAndTPoCs, numAdditions) => {
-    let numTPoCs = customerPocAndTPoCs.tpocs.length;
-
-    if (numAdditions > numTPoCs) {
-        throw `numAdditions > numTPoCs: ${numAdditions} > ${numTPoCs}`;
-    }
-
-    const diff = campaign.endTime - campaign.startTime;
-    for (let i = 0; i  < numAdditions; i++) {
-        logger.debug(JSON.stringify(customerPocAndTPoCs));
-        logger.debug(JSON.stringify(customerPocAndTPoCs.tpocs[i]));
-        let customerTPoC = customerPocAndTPoCs.tpocs[i];
-        let deviceTPoC = devicePocAndTPoCs.tpocs[i];
-        let addingTime = Math.floor(Math.random() * diff) % diff;
-        let addedTime = campaign.startTime + addingTime;
-
-        logger.debug(`diff: ${diff} - adding time: ${addingTime} - valid: ${(campaign.startTime < addedTime) && (addedTime < campaign.endTime)}`);
-
-        let transaction = await proofClient.addProof(campaign.id, deviceId, addedTime, deviceTPoC, customerTPoC);
-
-        logger.debug(`added transaction: ${JSON.stringify(transaction)}`);
-
-        await sleep(1000);
-    }
-
-    return numAdditions;
-}
 
 const testCommandHandler = async argv => {
 
@@ -148,16 +123,18 @@ const testCommandHandler = async argv => {
         const deviceId = "d1";
         const numTPoCs = [3, 2];
         const numCampaigns = 2;
-
+        const limit = 0;
 
         let campaigns = [];
 
         for (let i = 0; i < numCampaigns; i++) {
             let campaign = await camClient.createRandomCampaign(numVerifiersPerOrg, "d1,d2");
 
-            logger.info(`campaign ${i}: ${JSON.stringify(campaign)}`);
+            logger.debug(`campaign ${i}: ${JSON.stringify(campaign)}`);
             campaigns.push(campaign);
         }
+
+        logger.info(`added ${campaigns.length} campaigns`);
 
         let customersPocs = [];
         let devicesPocs = [];
@@ -174,14 +151,17 @@ const testCommandHandler = async argv => {
             devicesPocs.push(devicePocAndTPoCs);
         }
 
+        logger.info(`generated ${customersPocs.length} tokens`);
+
 
         for (let i = 0; i < numCampaigns; i++) {
-            let count1 = await addTokenTransactions(campaigns[i], deviceId, devicesPocs[i], customersPocs[i], numTPoCs[i]);
+            let count1 = await proofClient.addTokenTransactions(campaigns[i], deviceId, devicesPocs[i], customersPocs[i], numTPoCs[i]);
+
+            logger.info(`cam ${campaigns[i].id} - added ${count1} token transactions`);
         }
 
-
         for (let i = 0; i < numCampaigns; i++) {
-            let addedTokenTransactions = await proofClient.getTokenTransactionsByCampaignId(campaigns[i].id, "device")
+            let addedTokenTransactions = await proofClient.getTokenTransactionsByCampaignId(campaigns[i].id, "device", limit)
             logger.info(`camId ${campaigns[i].id} - numTPoC: ${customersPocs[i].tpocs.length} - ${addedTokenTransactions.length} token transactions - valid: ${customersPocs[i].length == addedTokenTransactions.length}: ${JSON.stringify(addedTokenTransactions)}`);
         }
     } catch (error) {
@@ -190,6 +170,21 @@ const testCommandHandler = async argv => {
 }
 
 
+const dataCommandHandler = async argv => {
+    logger.debug(`data handler args: ${argv}`);
+    const numOrgsPerType = argv[0];
+    const numPeersPerOrg = argv[1];
+    const numVerifiers = argv[4];
+    const numTrans = argv[5];
+    const command = argv[3].trim();
+
+    if (command == "verify-cam-tpocs") {
+        return await dataClient.generateDataForBatchVerificationEvaluation(numOrgsPerType, numPeersPerOrg, numVerifiers, 2, numTrans);
+    } else {
+        logger.error(`Unsupported data command ${command}`);
+        throw `Unsupported data command ${command}`;
+    }
+}
 
 
 // Main program function
@@ -211,9 +206,7 @@ const main = async (argv) => {
         case "test":
             return testCommandHandler(subArgs);
         case "data":
-            return dataCommandHandler(subArgs);
-        case "chaincode":
-            return chaincodeCommandHandler(subArgs);
+            return dataCommandHandler(argv);
         default:
             throw `Unsupported command ${command}`;
     }
