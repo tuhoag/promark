@@ -123,7 +123,11 @@ const testCommandHandler = async argv => {
         const deviceId = "d1";
         const numTPoCs = [3, 2];
         const numCampaigns = 2;
-        const limit = 0;
+        var numTrans = 0
+
+        for (let i = 0; i < numTPoCs.length; i ++) {
+            numTrans += numTPoCs[i];
+        }
 
         let campaigns = [];
 
@@ -161,11 +165,20 @@ const testCommandHandler = async argv => {
         }
 
         for (let i = 0; i < numCampaigns; i++) {
-            let addedTokenTransactions = await proofClient.getTokenTransactionsByCampaignId(campaigns[i].id, "device", limit)
+            let addedTokenTransactions = await proofClient.getTokenTransactionsByCampaignId(campaigns[i].id, "device")
             logger.info(`camId ${campaigns[i].id} - numTPoC: ${customersPocs[i].tpocs.length} - ${addedTokenTransactions.length} token transactions - valid: ${customersPocs[i].length == addedTokenTransactions.length}: ${JSON.stringify(addedTokenTransactions)}`);
+
+            addedTokenTransactions = await proofClient.getTokenTransactionsByCampaignId(campaigns[i].id, "device")
+            logger.info(`camId ${campaigns[i].id} - numTPoC: ${customersPocs[i].tpocs.length} - ${addedTokenTransactions.length} token transactions - valid: ${customersPocs[i].length == addedTokenTransactions.length}: ${JSON.stringify(addedTokenTransactions)}`);
+
+            let counts = await proofClient.simulateGetTokenTransactionsByCampaignId(campaigns[i].id, "device", numTrans)
+            logger.info(`camId ${campaigns[i].id} - numTPoC: ${customersPocs[i].tpocs.length} - ${addedTokenTransactions.length} token transactions - counts: ${counts}`);
+
+            counts = await proofClient.simulateGetTokenTransactionsByCampaignId(campaigns[i].id, "device", 20)
+            logger.info(`camId ${campaigns[i].id} - numTPoC: ${customersPocs[i].tpocs.length} - ${addedTokenTransactions.length} token transactions - counts: ${counts}`);
         }
     } catch (error) {
-        logger.debug(`error: ${error}`);
+        logger.debug(`error: ${error.stack}`);
     }
 }
 

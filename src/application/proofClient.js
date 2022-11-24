@@ -127,11 +127,11 @@ exports.getAllProofs = async () => {
     });
 }
 
-exports.getTokenTransactionsByCampaignId = async (camId, mode, limit) => {
+exports.getTokenTransactionsByCampaignId = async (camId, mode) => {
     return utils.callChaincodeFn(async (network) => {
         const contract = await network.getContract("proof");
         logger.debug("getTokenTransactionsByCampaignId");
-        return contract.submitTransaction("FindTokenTransactionsByCampaignId", camId, mode, limit);
+        return contract.submitTransaction("FindTokenTransactionsByCampaignId", camId, mode);
     }, async (response) => {
         if (response.length == 0) {
             logger.debug("No proofs");
@@ -143,6 +143,24 @@ exports.getTokenTransactionsByCampaignId = async (camId, mode, limit) => {
         return proofs;
     });
 }
+
+exports.simulateGetTokenTransactionsByCampaignId = async (camId, mode, limit) => {
+    return utils.callChaincodeFn(async (network) => {
+        const contract = await network.getContract("proof");
+        logger.debug(`simulateGetTokenTransactionsByCampaignId: ${camId} - ${mode} - ${limit}`);
+        return contract.submitTransaction("SimulateFindTokenTransactionsByCampaignId", camId, mode, limit);
+    }, async (response) => {
+        if (response.length == 0) {
+            logger.debug("No proofs");
+            return [];
+        }
+
+        const proofs = JSON.parse(response);
+        logger.debug(`got: ${response}`);
+        return proofs;
+    });
+}
+
 
 exports.getTokenTransactionsByTimestamps = async (startTime, endTime) => {
     return utils.callChaincodeFn(async (network) => {

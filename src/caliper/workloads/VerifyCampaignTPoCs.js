@@ -2,6 +2,7 @@
 
 const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 const utils = require('./utils');
+const fs = require('fs');
 
 const logger = require('@hyperledger/caliper-core').CaliperUtils.getLogger('my-module');
 
@@ -128,21 +129,25 @@ class GenerateProofWorkload extends WorkloadModuleBase {
         //     }
 
         // }
-        const args = this.roundArguments;
+        // const args = this.roundArguments;
         // this.contractId = args.contractId;
         // this.contractVersion = args.contractVersion;
         const {numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices, numTrans, numCampaigns} = this.roundArguments;
+
+        this.camIds = [];
 
         try {
             let path = `../caliper/data/cams-${numOrgsPerType}-${numPeersPerOrgs}-${numVerifiers}.txt`;
             const data = fs.readFileSync(path, 'utf8');
             this.camIds = data.split(",");
             // console.log(data);
+
+
         } catch (err) {
             console.error(err.stack);
         }
 
-
+        // throw Error(JSON.stringify(this.camIds))
         // throw Error(JSON.stringify(this.tokenTrans))
     }
 
@@ -151,15 +156,15 @@ class GenerateProofWorkload extends WorkloadModuleBase {
      * @return {Promise<TxStatus[]>}
      */
     async submitTransaction() {
-        const {mode} = this.roundArguments;
-        const camIdx = Math.floor(Math.random()*10000) % this.campaigns.length;
+        const {mode, limit} = this.roundArguments;
+        const camIdx = Math.floor(Math.random()*10000) % this.camIds.length;
         const camId = this.camIds[camIdx];
 
         // camId string, csStr string, rsStr string, hashesStr string, keyStr string
         const transArgs = {
             contractId: "proof",
             contractFunction: "FindTokenTransactionsByCampaignId",
-            contractArguments: [camId, mode],
+            contractArguments: [camId, mode, limit],
             readOnly: true
         };
 

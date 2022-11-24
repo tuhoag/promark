@@ -525,7 +525,7 @@ func (s *ProofSmartContract) FindTokenTransactionsByTimestamps(ctx contractapi.T
 	return trans, nil
 }
 
-func (s *ProofSmartContract) FindTokenTransactionsByCampaignId(ctx contractapi.TransactionContextInterface, camId string, mode string, limit int) ([]*putils.CustomerCampaignTokenTransaction, error) {
+func (s *ProofSmartContract) FindTokenTransactionsByCampaignId(ctx contractapi.TransactionContextInterface, camId string, mode string) ([]*putils.CustomerCampaignTokenTransaction, error) {
 	if mode != DEVICE_VALIDATION_MODE && mode != ALL_VALIDATION_MODE {
 		return nil, fmt.Errorf("mode '%s' is unsupported", mode)
 	}
@@ -544,7 +544,6 @@ func (s *ProofSmartContract) FindTokenTransactionsByCampaignId(ctx contractapi.T
 	defer resultsIterator.Close()
 
 	var trans []*putils.CustomerCampaignTokenTransaction
-	var count = 0
 
 	for resultsIterator.HasNext() {
 		queryResult, err := resultsIterator.Next()
@@ -581,15 +580,85 @@ func (s *ProofSmartContract) FindTokenTransactionsByCampaignId(ctx contractapi.T
 		if validity {
 			trans = append(trans, &tokenTransaction)
 		}
-
-		count += 1
-
-		if limit >= 0 && count == limit {
-			break
-		}
 	}
 
 	return trans, nil
+}
+
+func (s *ProofSmartContract) SimulateFindTokenTransactionsByCampaignId(ctx contractapi.TransactionContextInterface, camId string, mode string, limit int) ([]int, error) {
+	var counts = []int{0, 0}
+
+	if mode != DEVICE_VALIDATION_MODE && mode != ALL_VALIDATION_MODE {
+		return counts, fmt.Errorf("mode '%s' is unsupported", mode)
+	}
+
+	campaign, err := CallGetCampaignById(ctx, camId)
+
+	if err != nil {
+		return counts, err
+	}
+
+	queryString := fmt.Sprintf(`{"selector":{"addedTime":{"$gte": %v,"$lte": %v}}}`, campaign.StartTime, campaign.EndTime)
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return counts, err
+	}
+	defer resultsIterator.Close()
+
+	var trans []*putils.CustomerCampaignTokenTransaction
+	var count = 0
+	var validCount = 0
+
+	for count < limit {
+		var tokenTransaction putils.CustomerCampaignTokenTransaction
+
+		if resultsIterator.HasNext() {
+			queryResult, err := resultsIterator.Next()
+
+			if err != nil {
+				return counts, err
+			}
+
+			err = json.Unmarshal(queryResult.Value, &tokenTransaction)
+			if err != nil {
+				return counts, err
+			}
+			trans = append(trans, &tokenTransaction)
+		} else {
+			// var tokenIdx := count % len(trains)
+			tokenTransaction = *trans[count%len(trans)]
+		}
+
+		// verify
+		var tpocs []putils.TPoCProof
+
+		if mode == DEVICE_VALIDATION_MODE {
+			tpocs = append(tpocs, tokenTransaction.DeviceTPoC)
+		} else if mode == ALL_VALIDATION_MODE {
+			tpocs = append(tpocs, tokenTransaction.DeviceTPoC)
+			tpocs = append(tpocs, tokenTransaction.CustomerTPoC)
+		}
+
+		validity := false
+		for _, tpoc := range tpocs {
+			validity, err = putils.VerifyTPoCSocket(campaign, &tpoc)
+
+			if err != nil {
+				return counts, err
+			}
+		}
+
+		if validity {
+			validCount += 1
+		}
+
+		count += 1
+	}
+
+	counts[0] = count
+	counts[1] = validCount
+
+	return counts, nil
 }
 
 func (s *ProofSmartContract) GetAllProofIds(ctx contractapi.TransactionContextInterface) ([]string, error) {

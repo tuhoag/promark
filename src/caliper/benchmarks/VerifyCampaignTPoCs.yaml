@@ -23,6 +23,7 @@ test:
             numTrans: 10
             numCampaigns: 0
             mode: device
+            limit: -1
 
       # - label: VerifyTPoC(nc:3)
       #   description: VerifyTPoC benchmark
