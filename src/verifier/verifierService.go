@@ -31,7 +31,7 @@ import (
 )
 
 var ctx = context.Background()
-var LOG_MODE = "debug"
+var LOG_MODE = "test"
 var secretFileName string
 var H ristretto.Point
 var HEnc string

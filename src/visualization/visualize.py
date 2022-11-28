@@ -120,10 +120,14 @@ def visualize_all(df):
     visualize_line_chart(df, "numVerifiers", "avgLatency", "contract", latency_figure_path)
 
 
+def visualize_verification(df):
+    pass
+
 def load_exp_data(exp_name):
     load_data_dict = {
         "caminit": "createCampaign.csv",
         "all": "all.csv",
+        "ver": "verification.csv",
     }
 
     path = os.path.join("..", "..", "exp_data", load_data_dict[exp_name])
@@ -135,7 +139,8 @@ def load_exp_data(exp_name):
 def visualize(exp_name, df):
     visualize_fn_dict = {
         "caminit": visualize_campaign_init,
-        "all": visualize_all
+        "all": visualize_all,
+        "ver": visualize_verification,
     }
 
     visualize_fn_dict[exp_name](df)

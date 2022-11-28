@@ -33,122 +33,103 @@ class GenerateProofWorkload extends WorkloadModuleBase {
     async initializeWorkloadModule(workerIndex, totalWorkers, roundIndex, roundArguments, sutAdapter, sutContext) {
         await super.initializeWorkloadModule(workerIndex, totalWorkers, roundIndex, roundArguments, sutAdapter, sutContext);
 
+        // numOrgsPerType: 1
+        //     numPeersPerOrgs: 1
+        //     numVerifiers: 2
+        //     numCampaigns: 0
+        //     mode: device
+        //     limit: 10
 
-
-        // // generate campaigns
-        // this.campaigns = utils.CreateCampaignsWithEqualVerifiersArgs(numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices);
-
-        // // throw Error(`${numPeersPerOrgs} * ${numOrgsPerType * 2} / ${numVerifiers} = ${this.campaigns.length}`);
-        // // throw Error(`${JSON.stringify(this.campaigns)}`);
-        // for (let i = 0; i < this.campaigns.length; i++) {
-        //     const {camId, name, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = this.campaigns[i];
-
-        //     let transArgs = {
-        //         contractId: "campaign",
-        //         contractFunction: 'CreateCampaign',
-        //         contractArguments: [camId, name, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
-        //         readOnly: false
-        //     };
-
-        //     // throw Error(`${JSON.stringify(transArgs.contractArguments)}`);
-
-        //     await this.sutAdapter.sendRequests(transArgs);
+        // if (this.roundIndex > 0) {
+        //     return
         // }
 
-        // this.PoCs = [];
-        // this.TPoCs = [];
-        // this.tokenTrans = [];
-        // // let numTrans = Math.floor(Math.random()*10000 % maxNumTrans + minNumTrans);
-        // let numAddedTrans = 0;
-        // let numTransPerCampaigns = Math.floor(numTrans / this.campaigns.length);
+        const { numOrgsPerType, numPeersPerOrgs, numVerifiers, numCampaigns, mode, limit } = this.roundArguments;
+        const numDevices = 2;
+        // generate campaigns
+        this.campaigns = utils.CreateCampaignsWithEqualVerifiersArgs(numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices);
 
-        // for (let i = 0; i < this.campaigns.length; i++) {
-        //     let userId = Math.floor(Math.random()*10000);
-        //     let deviceId = Math.floor(Math.random()*10000 % numDevices);
+        // throw Error(`${numPeersPerOrgs} * ${numOrgsPerType * 2} / ${numVerifiers} = ${this.campaigns.length}`);
+        // throw Error(`${JSON.stringify(this.campaigns)}`);
+        for (let i = 0; i < this.campaigns.length; i++) {
+            const {id, name, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = this.campaigns[i];
 
-        //     let pTransArgs = {
-        //         contractId: "proof",
-        //         contractFunction: "GeneratePoCProof2",
-        //         contractArguments: [this.campaigns[i].camId, userId],
-        //         readOnly: true
-        //     };
+            let transArgs = {
+                contractId: "campaign",
+                contractFunction: 'CreateCampaign',
+                contractArguments: [id, name, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
+                readOnly: false
+            };
 
-        //     let result = await this.sutAdapter.sendRequests(pTransArgs);
-        //     let customerPoC = JSON.parse(result["result"]);
+            // throw Error(`${JSON.stringify(transArgs.contractArguments)}`);
 
-        //     pTransArgs = {
-        //         contractId: "proof",
-        //         contractFunction: "GeneratePoCProof2",
-        //         contractArguments: [this.campaigns[i].camId, deviceId],
-        //         readOnly: true
-        //     };
-        //     result = await this.sutAdapter.sendRequests(pTransArgs);
-        //     let devicePoC = JSON.parse(result["result"]);
-
-        //     // generate number of tpocs
-        //     let curNumTransPerCampaigns = numTransPerCampaigns;
-        //     if (i == numCampaigns - 1) {
-        //         curNumTransPerCampaigns = numTrans - numAddedTrans;
-        //     }
-
-        //     numAddedTrans = numAddedTrans + curNumTransPerCampaigns;
-        //     let diff = this.campaigns[i].endTimeStr - this.campaigns[i].startTimeStr;
-        //     for (let j = 0; j < curNumTransPerCampaigns; j++) {
-        //         // let addedTime = campaign.startTime + endTime;
-        //         let tpTransArgs = {
-        //             contractId: "poc",
-        //             contractFunction: "GenerateTPoCProofs",
-        //             contractArguments: [this.campaigns[i].camId, customerPoC.comm, customerPoC.r, customerPoC.numVerifiers, 1],
-        //             readOnly: true
-        //         };
-
-        //         result = await this.sutAdapter.sendRequests(tpTransArgs);
-        //         let customerTPoC = JSON.parse(result["result"]).tpocs[0];
-
-        //         tpTransArgs = {
-        //             contractId: "poc",
-        //             contractFunction: "GenerateTPoCProofs",
-        //             contractArguments: [this.campaigns[i].camId, devicePoC.comm, devicePoC.r, devicePoC.numVerifiers, 1],
-        //             readOnly: true
-        //         };
-
-        //         result = await this.sutAdapter.sendRequests(tpTransArgs);
-        //         let deviceTPoC = JSON.parse(result["result"]).tpocs[0];
-        //         let addingTime = Math.floor(Math.random() * 10000 % diff + this.campaigns[i].startTimeStr);
-
-        //         let transArgs = {
-        //             contractId: "proof",
-        //             contractFunction: "AddCampaignTokenTransaction",
-        //             contractArguments: [this.campaigns[i].camId, deviceId, addingTime, deviceTPoC.tComms.join(";"), deviceTPoC.tRs.join(";"), deviceTPoC.hashes.join(";"), deviceTPoC.key, customerTPoC.tComms.join(";"), customerTPoC.tRs.join(";"), customerTPoC.hashes.join(";"), customerTPoC.key],
-        //             readOnly: false
-        //         };
-
-        //         result = await this.sutAdapter.sendRequests(transArgs);
-        //         let tokenTran = JSON.parse(result["result"]);
-        //         this.tokenTrans.push(tokenTran);
-        //     }
-
-        // }
-        // const args = this.roundArguments;
-        // this.contractId = args.contractId;
-        // this.contractVersion = args.contractVersion;
-        const {numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices, numTrans, numCampaigns} = this.roundArguments;
-
-        this.camIds = [];
-
-        try {
-            let path = `../caliper/data/cams-${numOrgsPerType}-${numPeersPerOrgs}-${numVerifiers}.txt`;
-            const data = fs.readFileSync(path, 'utf8');
-            this.camIds = data.split(",");
-            // console.log(data);
-
-
-        } catch (err) {
-            console.error(err.stack);
+            await this.sutAdapter.sendRequests(transArgs);
         }
 
-        // throw Error(JSON.stringify(this.camIds))
-        // throw Error(JSON.stringify(this.tokenTrans))
+        this.tokenTrans = [];
+
+        for (let i = 0; i < this.campaigns.length; i++) {
+            let userId = Math.floor(Math.random()*10000);
+            let deviceId = Math.floor(Math.random()*10000 % numDevices);
+
+            let pTransArgs = {
+                contractId: "proof",
+                contractFunction: "GeneratePoCProof2",
+                contractArguments: [this.campaigns[i].id, userId],
+                readOnly: true
+            };
+
+            let result = await this.sutAdapter.sendRequests(pTransArgs);
+            let customerPoC = JSON.parse(result["result"]);
+
+            pTransArgs = {
+                contractId: "proof",
+                contractFunction: "GeneratePoCProof2",
+                contractArguments: [this.campaigns[i].id, deviceId],
+                readOnly: true
+            };
+            result = await this.sutAdapter.sendRequests(pTransArgs);
+            let devicePoC = JSON.parse(result["result"]);
+
+            // generate number of tpocs
+            let curNumTransPerCampaigns = 1;
+
+            let diff = this.campaigns[i].endTimeStr - this.campaigns[i].startTimeStr;
+            for (let j = 0; j < curNumTransPerCampaigns; j++) {
+                // let addedTime = campaign.startTime + endTime;
+                let tpTransArgs = {
+                    contractId: "poc",
+                    contractFunction: "GenerateTPoCProofs",
+                    contractArguments: [this.campaigns[i].id, customerPoC.comm, customerPoC.r, customerPoC.numVerifiers, 1],
+                    readOnly: true
+                };
+
+                result = await this.sutAdapter.sendRequests(tpTransArgs);
+                let customerTPoC = JSON.parse(result["result"]).tpocs[0];
+
+                tpTransArgs = {
+                    contractId: "poc",
+                    contractFunction: "GenerateTPoCProofs",
+                    contractArguments: [this.campaigns[i].id, devicePoC.comm, devicePoC.r, devicePoC.numVerifiers, 1],
+                    readOnly: true
+                };
+
+                result = await this.sutAdapter.sendRequests(tpTransArgs);
+                let deviceTPoC = JSON.parse(result["result"]).tpocs[0];
+                let addingTime = Math.floor(Math.random() * 10000 % diff + this.campaigns[i].startTimeStr);
+
+                let transArgs = {
+                    contractId: "proof",
+                    contractFunction: "AddCampaignTokenTransaction",
+                    contractArguments: [this.campaigns[i].id, deviceId, addingTime, deviceTPoC.tComms.join(";"), deviceTPoC.tRs.join(";"), deviceTPoC.hashes.join(";"), deviceTPoC.key, customerTPoC.tComms.join(";"), customerTPoC.tRs.join(";"), customerTPoC.hashes.join(";"), customerTPoC.key],
+                    readOnly: false
+                };
+
+                result = await this.sutAdapter.sendRequests(transArgs);
+                let tokenTran = JSON.parse(result["result"]);
+                this.tokenTrans.push(tokenTran);
+            }
+        }
     }
 
     /**
@@ -157,13 +138,13 @@ class GenerateProofWorkload extends WorkloadModuleBase {
      */
     async submitTransaction() {
         const {mode, limit} = this.roundArguments;
-        const camIdx = Math.floor(Math.random()*10000) % this.camIds.length;
-        const camId = this.camIds[camIdx];
+        const camIdx = Math.floor(Math.random()*10000) % this.campaigns.length;
+        const camId = this.campaigns[camIdx].id;
 
         // camId string, csStr string, rsStr string, hashesStr string, keyStr string
         const transArgs = {
             contractId: "proof",
-            contractFunction: "FindTokenTransactionsByCampaignId",
+            contractFunction: "SimulateFindTokenTransactionsByCampaignId",
             contractArguments: [camId, mode, limit],
             readOnly: true
         };
@@ -172,14 +153,21 @@ class GenerateProofWorkload extends WorkloadModuleBase {
     }
 
     async cleanupWorkloadModule() {
-        // let transArgs = {
-        //     contractId: "campaign",
-        //     contractFunction: 'DeleteAllCampaigns',
-        //     contractArguments: [],
-        //     readOnly: false
-        // };
+        const {mode, limit} = this.roundArguments;
 
-        // await this.sutAdapter.sendRequests(transArgs);
+        // throw Error(`${this.roundIndex}, ${mode}`);
+        // if (this.roundIndex < 1) {
+        //     return
+        // }
+
+        let transArgs = {
+            contractId: "campaign",
+            contractFunction: 'DeleteAllCampaigns',
+            contractArguments: [],
+            readOnly: false
+        };
+
+        await this.sutAdapter.sendRequests(transArgs);
 
         // // for (let i = 0; i < this.tokenTrans.length; i++) {
         // //     transArgs = {
@@ -191,13 +179,13 @@ class GenerateProofWorkload extends WorkloadModuleBase {
         // //     await this.sutAdapter.sendRequests(transArgs);
         // // }
 
-        // transArgs = {
-        //     contractId: "proof",
-        //     contractFunction: 'DeleteAllProofs',
-        //     contractArguments: [],
-        //     readOnly: false
-        // };
-        // await this.sutAdapter.sendRequests(transArgs);
+        transArgs = {
+            contractId: "proof",
+            contractFunction: 'DeleteAllProofs',
+            contractArguments: [],
+            readOnly: false
+        };
+        await this.sutAdapter.sendRequests(transArgs);
 
     }
 }

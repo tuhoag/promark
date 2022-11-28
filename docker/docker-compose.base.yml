@@ -88,9 +88,6 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
 
       # peer
-      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-
-      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
 
       # Couchdb
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB

@@ -134,7 +134,7 @@
             <ul>
                 <h3>&nbspBenchmark results</h3>
                 <li><a href="#benchmarksummary">Summary</a></li>
-                    <li><a href="#VerifyCampaignTPoCs(nc:2)">VerifyCampaignTPoCs(nc:2)</a></li>
+                    <li><a href="#CreateCampaign(numVer:2)">CreateCampaign(numVer:2)</a></li>
             </ul>
             <ul>
                 <h3>&nbspSystem under test</h3>
@@ -152,28 +152,28 @@
                     </tr>
 
                     <tr>
-                         <td>VerifyCampaignTPoCs(nc:2)</td> <td>5000</td> <td>0</td> <td>145.3</td> <td>10.45</td> <td>0.07</td> <td>1.45</td> <td>116.8</td>
+                         <td>CreateCampaign(numVer:2)</td> <td>500</td> <td>0</td> <td>77.3</td> <td>21.55</td> <td>0.56</td> <td>15.20</td> <td>19.3</td>
                     </tr>
                 </table>
             </div>
-            <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;" id="VerifyCampaignTPoCs(nc:2)">
-                <h2>Benchmark round: VerifyCampaignTPoCs(nc:2)</h2>
-                <p>VerifyCampaignTPoCs benchmark</p>
+            <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;" id="CreateCampaign(numVer:2)">
+                <h2>Benchmark round: CreateCampaign(numVer:2)</h2>
+                <p>CreateCampaign benchmark</p>
                 <pre style="overflow: visible;white-space: pre-wrap;max-height:100%;">rateControl:
   type: fixed-rate
   opts:
-    tps: 700
+    tps: 150
 </pre>
-                        <h3>Performance metrics for VerifyCampaignTPoCs(nc:2)</h3>
+                        <h3>Performance metrics for CreateCampaign(numVer:2)</h3>
                             <table style="min-width: 100%;">
                                 <tr>
                                      <th>Name</th> <th>Succ</th> <th>Fail</th> <th>Send Rate (TPS)</th> <th>Max Latency (s)</th> <th>Min Latency (s)</th> <th>Avg Latency (s)</th> <th>Throughput (TPS)</th>
                                 </tr>
                                 <tr>
-                                     <td>VerifyCampaignTPoCs(nc:2)</td> <td>5000</td> <td>0</td> <td>145.3</td> <td>10.45</td> <td>0.07</td> <td>1.45</td> <td>116.8</td>
+                                     <td>CreateCampaign(numVer:2)</td> <td>500</td> <td>0</td> <td>77.3</td> <td>21.55</td> <td>0.56</td> <td>15.20</td> <td>19.3</td>
                                 </tr>
                             </table>
-                        <h3>Resource utilization for VerifyCampaignTPoCs(nc:2)</h3>
+                        <h3>Resource utilization for CreateCampaign(numVer:2)</h3>
             </div>
 
             <div style="border-bottom: 1px solid #d9d9d9; padding-bottom: 10px;">
@@ -185,25 +185,22 @@ workers:
   type: local
   number: 1
 rounds:
-  - label: &#39;VerifyCampaignTPoCs(nc:2)&#39;
-    description: VerifyCampaignTPoCs benchmark
-    txNumber: 5000
+  - label: &#39;CreateCampaign(numVer:2)&#39;
+    description: CreateCampaign benchmark
+    txNumber: 500
     rateControl:
       type: fixed-rate
       opts:
-        tps: 700
+        tps: 150
     workload:
-      module: .&#x2F;workloads&#x2F;VerifyCampaignTPoCs.js
+      module: .&#x2F;workloads&#x2F;CreateCampaign.js
       arguments:
-        contractId: proof
-        numOrgsPerType: 1
+        numCampaigns: 1
+        contractId: campaign
+        numOrgsPerType: 5
         numPeersPerOrgs: 3
-        numVerifiers: 2
-        numDevices: 1
-        numTrans: 10
-        numCampaigns: 0
-        mode: device
-        limit: -1
+        numVerifiers: 6
+        numDevices: 2
 </pre>
                 <h3>SUT</h3>
                 <pre id="sutdetails">not provided</pre>

@@ -551,10 +551,10 @@ func (s *CampaignSmartContract) DeleteCampaignById(ctx contractapi.TransactionCo
 		return false, fmt.Errorf("Failed to delete state:" + err.Error())
 	}
 
-	err = ClearVerifiersData(&campaign)
-	if err != nil {
-		return false, err
-	}
+	// err = ClearVerifiersData(&campaign)
+	// if err != nil {
+	// 	return false, err
+	// }
 
 	return true, err
 }

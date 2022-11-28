@@ -47,7 +47,7 @@ exports.CreateCampaignsWithEqualVerifiersArgs = (numOrgsPerType, numPeersPerOrgs
         }
 
         campaigns.push({
-            camId,
+            id: camId,
             name,
             advName,
             pubName,
@@ -110,7 +110,7 @@ exports.CreateCampaignUnequalVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, n
     };
 }
 
-exports.CreateCampaignArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices) => {
+exports.CreateCampaignArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices) => {
     const camId = "c" + Math.floor(Math.random()*10000);
     const name = "Campaign " + camId;
     const advertiser = "adv"+Math.floor(Math.random()*10000) % numOrgsPerType;
@@ -120,18 +120,36 @@ exports.CreateCampaignArgs = (numPeersPerOrgs, numOrgsPerType, numVerifiersPerTy
 
     var verifierURLs = [];
 
-    for (let i = 0; i < numVerifiersPerType; i++) {
-        const advertierPeerName = "peer" + Math.floor(Math.random()*10000) % numPeersPerOrgs;
-        const publisherPeerName = "peer" + Math.floor(Math.random()*10000) % numPeersPerOrgs;
+    for (let orgId = 0; orgId < numOrgsPerType; orgId++) {
+        let advName = `adv${orgId}`;
+        let pubName = `pub${orgId}`;
 
-        const advPeerURL = advertierPeerName + "."+advertiser + ".promark.com:5000";
-        const pubPeerURL = publisherPeerName + "."+publisher + ".promark.com:5000";
+        for (let peerId = 0; peerId < numPeersPerOrgs; peerId++) {
+            const advPeerURL = `peer${peerId}.${advName}.promark.com:5000`;
+            const pubPeerURL = `peer${peerId}.${pubName}.promark.com:5000`;
 
-        verifierURLs.push(advPeerURL);
-        verifierURLs.push(pubPeerURL);
+            verifierURLs.push(advPeerURL, pubPeerURL);
+        }
     }
 
-    const verifierURLsStr = verifierURLs.join(";");
+    let currentVerifierURLs = [];
+    for (let i = 0; i < numVerifiers; i++) {
+        let verifierIdx = Math.floor(Math.random()*10000) % verifierURLs.length;
+        currentVerifierURLs.push(verifierURLs.pop(verifierIdx));
+    }
+
+    // for (let i = 0; i < numVerifiers; i++) {
+    //     const advertierPeerName = "peer" + Math.floor(Math.random()*10000) % numPeersPerOrgs;
+    //     const publisherPeerName = "peer" + Math.floor(Math.random()*10000) % numPeersPerOrgs;
+
+    //     const advPeerURL = advertierPeerName + "."+advertiser + ".promark.com:5000";
+    //     const pubPeerURL = publisherPeerName + "."+publisher + ".promark.com:5000";
+
+    //     verifierURLs.push(advPeerURL);
+    //     verifierURLs.push(pubPeerURL);
+    // }
+
+    const verifierURLsStr = currentVerifierURLs.join(";");
 
     var deviceIds = [];
     for (let i = 0; i < numDevices; i ++) {

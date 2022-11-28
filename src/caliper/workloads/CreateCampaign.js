@@ -43,9 +43,10 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
      */
     async submitTransaction() {
         // camId string, name string, advertiser string, publisher string, verifierURLStr string
-        const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices} = this.roundArguments
-        const {camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices)
+        const {numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices} = this.roundArguments
+        const {camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices)
 
+        // throw Error(`verifiers: ${verifierURLsStr}`)
         const newCamId = `c${this.txIndex}`;
         const newCamName = `Campaign${this.txIndex}`;
 
@@ -55,8 +56,15 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
             contractArguments: [newCamId, newCamName, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
             // invokerIdentity: 'peer0.adv0.promark.com',
             timeout: 300,
-            // readOnly: false
+            readOnly: false
         };
+
+        // let transArgs = {
+        //     contractId: "campaign",
+        //     contractFunction: 'CreateCampaign',
+        //     contractArguments: [id, name, advName, pubName, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
+        //     readOnly: false
+        // };
 
         this.campaignIds.push(camId);
 
@@ -69,6 +77,7 @@ class CreateCampaignWorkload extends WorkloadModuleBase {
             contractId: "campaign",
             contractFunction: 'DeleteAllCampaigns',
             contractArguments: [],
+            timeout: 300,
             readOnly: false
         };
         await this.sutAdapter.sendRequests(transArgs);
