@@ -98,6 +98,7 @@ def get_title(name):
         "numPeers": "# of Peers per Organization",
         "numVerifiers": "# of Verifiers",
         "contract": "Smart contract",
+        "numTrans": "# of Token Transactions"
     }
 
     return name_dict[name]
@@ -121,7 +122,15 @@ def visualize_all(df):
 
 
 def visualize_verification(df):
-    pass
+    partial_figure_path = os.path.join("..","..","exp_data","verification-partial.pdf")
+    full_figure_path = os.path.join("..","..","exp_data","verification-full.pdf")
+    logger.debug(df.columns)
+
+    partial_df = df[df["contract"] == "SC_Verification#partial"]
+    visualize_line_chart(partial_df, "numVerifiers", "avgLatency", "numTrans", partial_figure_path)
+
+    full_df = df[df["contract"] == "SC_Verification#partial"]
+    visualize_line_chart(full_df, "numVerifiers", "avgLatency", "numTrans", full_figure_path)
 
 def load_exp_data(exp_name):
     load_data_dict = {
