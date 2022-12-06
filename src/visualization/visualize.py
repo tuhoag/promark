@@ -83,6 +83,30 @@ def visualize_line_chart(df, x_name, y_name, cat_name, path):
 
     plt.show()
 
+def visualize_bar_chart(df, x_name, y_name, cat_name, path):
+    x_values = df[x_name].unique()
+    cat_values= df[cat_name].unique()
+
+    logger.debug("x: {} - values: {}".format(x_name, x_values))
+    logger.debug("cat: {} - values: {}".format(cat_name, cat_values))
+
+    # sns.set_palette("pastel")
+    custom_palette = sns.color_palette("bright", len(cat_values))
+    sns.set_palette(custom_palette)
+    # sns.palplot(custom_palette)
+    figure = sns.barplot(data=df, y=y_name, x=x_name, hue=cat_name, palette=custom_palette).get_figure()
+
+    plt.ylabel(get_title(y_name))
+    plt.xlabel(get_title(x_name))
+    plt.grid(linestyle="--", axis="y", color="grey", linewidth=0.5)
+    # plt.xticks(x_values)
+    plt.legend(title=get_title(cat_name))
+
+    if path is not None:
+        save_figure(figure, path)
+
+    plt.show()
+
 def save_figure(figure, path):
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
@@ -98,7 +122,10 @@ def get_title(name):
         "numPeers": "# of Peers per Organization",
         "numVerifiers": "# of Verifiers",
         "contract": "Smart contract",
-        "numTrans": "# of Token Transactions"
+        "numTrans": "# of Token Transactions",
+        "latency": "Average Latency (seconds)",
+        "numTransTitle": "# of Token Transactions",
+        "latencyM": "Average Latency (minutes)",
     }
 
     return name_dict[name]
@@ -127,10 +154,11 @@ def visualize_verification(df):
     logger.debug(df.columns)
 
     partial_df = df[df["contract"] == "SC_Verification#partial"]
-    visualize_line_chart(partial_df, "numVerifiers", "avgLatency", "numTrans", partial_figure_path)
+    # visualize_bar_chart(partial_df, "numTransTitle", "latencyM", "numVerifiers", partial_figure_path)
+    visualize_bar_chart(partial_df, "numVerifiers", "latencyM", "numTransTitle", partial_figure_path)
 
-    full_df = df[df["contract"] == "SC_Verification#partial"]
-    visualize_line_chart(full_df, "numVerifiers", "avgLatency", "numTrans", full_figure_path)
+    full_df = df[df["contract"] == "SC_Verification#full"]
+    visualize_bar_chart(full_df, "numVerifiers", "latencyM", "numTransTitle", full_figure_path)
 
 def load_exp_data(exp_name):
     load_data_dict = {
@@ -154,12 +182,33 @@ def visualize(exp_name, df):
 
     visualize_fn_dict[exp_name](df)
 
+def categorise(row):
+    if row['numTrans'] == 997260:
+        return "997,260 (1 week)"
+    elif row["numTrans"] == 1994520:
+        return "1,994,520 (2 weeks)"
+    elif row["numTrans"] == 3989040:
+        return "3,989,040 (4 weeks)"
+    return "3,989,040 (4 weeks)"
+
+def add_more_data(df):
+    df["numTransTitle"] = df.apply(lambda row: categorise(row), axis=1)
+
+    df["latencyM"] = df["latency"] / 60
+    # df.loc[df["numTrans"] == 997260, "numTransTitle"] = "997,260 (1 week)"
+    # df.loc[df["numTrans"] == 1994520, "numTransTitle"] = "1,994,520 (2 weeks)"
+    # df.loc[df["numTrans"] == 3989040, "numTransTitle"] = "3,989,040 (4 weeks)"
+
+    # df["numTransTitle"] = df["numTransTitle"].astype(str)
+
 def main(args):
     exp_name = args["exp"]
 
     df = load_exp_data(exp_name)
 
     logger.debug(df)
+    add_more_data(df)
+
     visualize(exp_name, df)
 
 if __name__ == "__main__":
