@@ -85,9 +85,11 @@ def visualize_line_chart(df, x_name, y_name, cat_name, path):
 
 def visualize_bar_chart(df, x_name, y_name, cat_name, path):
     x_values = df[x_name].unique()
+    y_values = df[y_name].unique()
     cat_values= df[cat_name].unique()
 
     logger.debug("x: {} - values: {}".format(x_name, x_values))
+    logger.debug("y: {} - values: {}".format(x_name, y_values))
     logger.debug("cat: {} - values: {}".format(cat_name, cat_values))
 
     # sns.set_palette("pastel")
@@ -155,10 +157,13 @@ def visualize_verification(df):
 
     partial_df = df[df["contract"] == "SC_Verification#partial"]
     # visualize_bar_chart(partial_df, "numTransTitle", "latencyM", "numVerifiers", partial_figure_path)
-    visualize_bar_chart(partial_df, "numVerifiers", "latencyM", "numTransTitle", partial_figure_path)
+    sns.barplot(data=partial_df, x="numVerifiers", y="latencyM", hue="numTrans")
+    plt.show()
 
-    full_df = df[df["contract"] == "SC_Verification#full"]
-    visualize_bar_chart(full_df, "numVerifiers", "latencyM", "numTransTitle", full_figure_path)
+    # visualize_bar_chart(partial_df, "numVerifiers", "latencyM", "numTrans", partial_figure_path)
+
+    # full_df = df[df["contract"] == "SC_Verification#full"]
+    # visualize_bar_chart(full_df, "numVerifiers", "latencyM", "numTransTitle", full_figure_path)
 
 def load_exp_data(exp_name):
     load_data_dict = {
@@ -183,13 +188,13 @@ def visualize(exp_name, df):
     visualize_fn_dict[exp_name](df)
 
 def categorise(row):
-    if row['numTrans'] == 997260:
-        return "997,260 (1 week)"
-    elif row["numTrans"] == 1994520:
-        return "1,994,520 (2 weeks)"
-    elif row["numTrans"] == 3989040:
-        return "3,989,040 (4 weeks)"
-    return "3,989,040 (4 weeks)"
+    if row['numTrans'] == 115750:
+        return "115,750 (1 week)"
+    elif row["numTrans"] == 231500:
+        return "231,500 (2 weeks)"
+    elif row["numTrans"] == 463000:
+        return "463,000 (4 weeks)"
+    return "463,000 (4 weeks)"
 
 def add_more_data(df):
     df["numTransTitle"] = df.apply(lambda row: categorise(row), axis=1)
