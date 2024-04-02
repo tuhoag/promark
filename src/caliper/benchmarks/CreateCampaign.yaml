@@ -17,9 +17,9 @@ test:
           arguments:
             numCampaigns: 1
             contractId: campaign
-            numOrgsPerType: 5
-            numPeersPerOrgs: 3
-            numVerifiers: 6
+            numOrgsPerType: 2
+            numPeersPerOrgs: 1
+            numVerifiers: 1
             numDevices: 2
 
 #       - label: CreateCampaign(numVer:3)

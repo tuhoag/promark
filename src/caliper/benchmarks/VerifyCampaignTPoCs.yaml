@@ -40,72 +40,72 @@ test:
             mode: all
             limit: 5000
 
-      - label: VerifyCampaignTPoCs(mode:device-10000)
-        description: VerifyCampaignTPoCs benchmark
-        txNumber: 1
-        rateControl:
-          type: fixed-rate
-          opts:
-            tps: 10
-        workload:
-          module: ./workloads/VerifyCampaignTPoCs.js
-          arguments:
-            contractId: proof
-            numOrgsPerType: 5
-            numPeersPerOrgs: 3
-            numVerifiers: 6
-            numCampaigns: 0
-            mode: device
-            limit: 10000
-      - label: VerifyCampaignTPoCs(mode:full-10000)
-        description: VerifyCampaignTPoCs benchmark
-        txNumber: 1
-        rateControl:
-          type: fixed-rate
-          opts:
-            tps: 10
-        workload:
-          module: ./workloads/VerifyCampaignTPoCs.js
-          arguments:
-            contractId: proof
-            numOrgsPerType: 5
-            numPeersPerOrgs: 3
-            numVerifiers: 6
-            numCampaigns: 0
-            mode: all
-            limit: 10000
+      # - label: VerifyCampaignTPoCs(mode:device-10000)
+      #   description: VerifyCampaignTPoCs benchmark
+      #   txNumber: 1
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 10
+      #   workload:
+      #     module: ./workloads/VerifyCampaignTPoCs.js
+      #     arguments:
+      #       contractId: proof
+      #       numOrgsPerType: 5
+      #       numPeersPerOrgs: 3
+      #       numVerifiers: 6
+      #       numCampaigns: 0
+      #       mode: device
+      #       limit: 10000
+      # - label: VerifyCampaignTPoCs(mode:full-10000)
+      #   description: VerifyCampaignTPoCs benchmark
+      #   txNumber: 1
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 10
+      #   workload:
+      #     module: ./workloads/VerifyCampaignTPoCs.js
+      #     arguments:
+      #       contractId: proof
+      #       numOrgsPerType: 5
+      #       numPeersPerOrgs: 3
+      #       numVerifiers: 6
+      #       numCampaigns: 0
+      #       mode: all
+      #       limit: 10000
 
-      - label: VerifyCampaignTPoCs(mode:device-15000)
-        description: VerifyCampaignTPoCs benchmark
-        txNumber: 1
-        rateControl:
-          type: fixed-rate
-          opts:
-            tps: 10
-        workload:
-          module: ./workloads/VerifyCampaignTPoCs.js
-          arguments:
-            contractId: proof
-            numOrgsPerType: 5
-            numPeersPerOrgs: 3
-            numVerifiers: 6
-            numCampaigns: 0
-            mode: device
-            limit: 15000
-      - label: VerifyCampaignTPoCs(mode:full-15000)
-        description: VerifyCampaignTPoCs benchmark
-        txNumber: 1
-        rateControl:
-          type: fixed-rate
-          opts:
-            tps: 10
-        workload:
-          module: ./workloads/VerifyCampaignTPoCs.js
-          arguments:
-            contractId: proof
-            numOrgsPerType: 5
-            numPeersPerOrgs: 3
-            numVerifiers: 6
-            numCampaigns: 0
-            mode: all
-            limit: 15000
+      # - label: VerifyCampaignTPoCs(mode:device-15000)
+      #   description: VerifyCampaignTPoCs benchmark
+      #   txNumber: 1
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 10
+      #   workload:
+      #     module: ./workloads/VerifyCampaignTPoCs.js
+      #     arguments:
+      #       contractId: proof
+      #       numOrgsPerType: 5
+      #       numPeersPerOrgs: 3
+      #       numVerifiers: 6
+      #       numCampaigns: 0
+      #       mode: device
+      #       limit: 15000
+      # - label: VerifyCampaignTPoCs(mode:full-15000)
+      #   description: VerifyCampaignTPoCs benchmark
+      #   txNumber: 1
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 10
+      #   workload:
+      #     module: ./workloads/VerifyCampaignTPoCs.js
+      #     arguments:
+      #       contractId: proof
+      #       numOrgsPerType: 5
+      #       numPeersPerOrgs: 3
+      #       numVerifiers: 6
+      #       numCampaigns: 0
+      #       mode: all
+      #       limit: 15000
