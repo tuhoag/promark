@@ -7,18 +7,19 @@ test:
     rounds:
       - label: AddCampaignTokenTransaction(nc:2)
         description: AddCampaignTokenTransaction benchmark
-        txNumber: 5000
+        txNumber: 2
         rateControl:
           type: fixed-rate
           opts:
-            tps: 400
+            tps: 2
         workload:
           module: ./workloads/AddCampaignTokenTransaction.js
           arguments:
-            numOrgsPerType: 2
+            numOrgsPerType: 5
             numPeersPerOrgs: 3
-            numVerifiersPerType: 1
+            numVerifiers: 5
             numDevices: 1
+            numTrans: 2
 
       # - label: AddCampaignTokenTransaction(nc:3)
       #   description: AddCampaignTokenTransaction benchmark

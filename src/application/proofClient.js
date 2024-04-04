@@ -97,6 +97,8 @@ exports.addProof = async (camId, deviceId, addedTime, deviceTPoC, customerTPoC) 
         const resultProof = JSON.parse(response);
         return resultProof;
     });
+
+    // c29,0,0,1D3R3+IW+Y7yQDnPXI0iPm9T7yn9QN2XKa1xB70ueRM=,4S2tcsDuFIW8OVMQwMactH3l/CqOyVtdNoVK4SA7VQ8=,,,yl/lbEIkMRZKzkO6XYMftxHMzuUpsTON/jgsC3hbpCA=,V5Xzqld9AHeUF1/t640Gp7La1p0TRYu9pMNfCWBLZAc=,,
 }
 
 exports.deleteAllProofs = async () => {

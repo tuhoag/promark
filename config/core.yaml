@@ -152,7 +152,7 @@ peer:
         digestWaitTime: 1s
         # Time to wait before pull engine removes incoming nonce (unit: milliseconds)
         # Should be slightly bigger than digestWaitTime
-        requestWaitTime: 1500qms
+        requestWaitTime: 30000ms
         # Time to wait before pull engine ends pull (unit: second)
         responseWaitTime: 10s
         # Alive check interval(unit: second)

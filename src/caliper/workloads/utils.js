@@ -179,3 +179,59 @@ exports.loadInitData = (numCampaigns, numProofs, numVerifiersPerType) => {
 }
 
 // module.exports = { CreateCampaignArgs, loadInitData };
+
+exports.CreateCampaignsWithEqualVerifiersArgs = (numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices) => {
+    let campaigns = [];
+    let verifierUrls = [];
+    const startTime = Math.floor((new Date("2022.09.01").getTime() / 1000).toFixed(0));
+    const endTime = Math.floor((new Date("2022.10.01").getTime() / 1000).toFixed(0));
+
+    var deviceIds = [];
+    for (let i = 0; i < numDevices; i ++) {
+        const deviceId = `w${i}`;
+        deviceIds.push(deviceId);
+    }
+
+    const deviceIdsStr = deviceIds.join(";");
+
+    for (let orgId = 0; orgId < numOrgsPerType; orgId++) {
+        let advName = `adv${orgId}`;
+        let pubName = `pub${orgId}`;
+
+        for (let peerId = 0; peerId < numPeersPerOrgs; peerId++) {
+            const advPeerURL = `peer${peerId}.${advName}.promark.com:5000`;
+            const pubPeerURL = `peer${peerId}.${pubName}.promark.com:5000`;
+
+            verifierUrls.push(advPeerURL, pubPeerURL);
+        }
+    }
+
+    let numCampaigns = Math.floor(verifierUrls.length / numVerifiers);
+
+    for (let camIdx = 0; camIdx < numCampaigns; camIdx ++) {
+        let camId = `c${camIdx}`;
+        let name = `Campaign ${camId}`;
+
+        let advName = `adv${Math.floor(Math.random()*10000) % numOrgsPerType}`;
+        let pubName = `pub${Math.floor(Math.random()*10000) % numOrgsPerType}`;
+
+        let currentVerifierUrls = [];
+
+        for (let i = 0; i < numVerifiers; i++) {
+            currentVerifierUrls.push(verifierUrls.pop());
+        }
+
+        campaigns.push({
+            id: camId,
+            name,
+            advName,
+            pubName,
+            verifierURLsStr: currentVerifierUrls.join(";"),
+            startTime: startTime,
+            endTime: endTime,
+            deviceIdsStr
+        });
+    }
+
+    return campaigns;
+}

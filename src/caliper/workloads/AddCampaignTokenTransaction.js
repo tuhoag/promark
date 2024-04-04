@@ -35,47 +35,122 @@ class GenerateProofWorkload extends WorkloadModuleBase {
         const args = this.roundArguments;
         this.contractId = args.contractId;
         this.contractVersion = args.contractVersion;
-        const {numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices} = this.roundArguments
+        const {numPeersPerOrgs, numOrgsPerType, numVerifiers, numDevices, numTrans} = this.roundArguments
 
-        let {camId, name, advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr} = utils.CreateCampaignArgs(numPeersPerOrgs, numOrgsPerType, numVerifiersPerType, numDevices)
+        this.data = [];
+        this.txIndex = 0;
+        this.campaigns = utils.CreateCampaignsWithEqualVerifiersArgs(numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices);
+        // this.startTime = 0;
+        // logger.debug(`${JSON.stringify(campaigns)}`);
+        // console.log(this.campaigns);
+        // throw Error();
+        let camIds = [];
 
-        camId = "c0";
-        const cTransArgs = {
-            contractId: "campaign",
-            contractFunction: 'CreateCampaign',
-            contractArguments: [camId, "campaign 0", advertiser, publisher, startTimeStr, endTimeStr, verifierURLsStr, deviceIdsStr],
-            readOnly: false
-        };
+        for (let i = 0; i < this.campaigns.length; i++) {
+            const {id, name, advName, pubName, startTime, endTime, verifierURLsStr, deviceIdsStr} = this.campaigns[i];
+            this.startTime = startTime;
 
-        this.campaignId = camId;
-        await this.sutAdapter.sendRequests(cTransArgs);
+            const cTransArgs = {
+                contractId: "campaign",
+                contractFunction: 'CreateCampaign',
+                contractArguments: [id, name, advName, pubName, startTime, endTime, verifierURLsStr, deviceIdsStr],
+                readOnly: false
+            };
 
-        this.userId = Math.floor(Math.random()*10000);
+            camIds.push(id);
 
-        let pTransArgs = {
-            contractId: "poc",
-            contractFunction: "GeneratePoCAndTPoCProof",
-            contractArguments: [this.campaignId, this.userId, 1],
-            readOnly: true
-        };
+            await this.sutAdapter.sendRequests(cTransArgs);
+        }
 
-        let result = await this.sutAdapter.sendRequests(pTransArgs);
-        this.customerPoC = JSON.parse(result["result"]);
-        this.customerTPoC = this.customerPoC.tpocs[0];
+        let numAddedTrans = 0;
+        let numTransPerCampaigns;
 
-        this.deviceId = "d1";
+        if (numTrans == 0) {
+            numTrans = campaigns.length;
+        }
 
-        pTransArgs = {
-            contractId: "poc",
-            contractFunction: "GeneratePoCAndTPoCProof",
-            contractArguments: [this.campaignId, this.deviceId, 1],
-            readOnly: true
-        };
+        numTransPerCampaigns = Math.floor(numTrans / this.campaigns.length);
 
-        result = await this.sutAdapter.sendRequests(pTransArgs);
-        this.devicePoC = JSON.parse(result["result"]);
-        this.deviceTPoC = this.devicePoC.tpocs[0];
+        for (let i =0; i < numTrans; i++) {
+            let userId = Math.floor(Math.random()*10000);
+            let deviceId = Math.floor(Math.random()*10000 % numDevices);
 
+            let iCam = i % this.campaigns.length;
+
+            let pTransArgs = {
+                contractId: "poc",
+                contractFunction: "GeneratePoCAndTPoCProof",
+                contractArguments: [this.campaigns[iCam].id, userId, 1],
+                readOnly: true
+            };
+
+            let result = await this.sutAdapter.sendRequests(pTransArgs);
+            let customerPoCAndTPoCs = JSON.parse(result["result"]);
+
+            pTransArgs = {
+                contractId: "poc",
+                contractFunction: "GeneratePoCAndTPoCProof",
+                contractArguments: [this.campaigns[iCam].id, deviceId, 1],
+                readOnly: true
+            };
+
+            result = await this.sutAdapter.sendRequests(pTransArgs);
+            let devicePoCAndTPoCs = JSON.parse(result["result"]);
+            // let deviceTPoC = this.devicePoC.tpocs[0];
+
+            // for (let j = 0; j < curNumTransPerCampaigns; j ++) {
+                this.data.push({
+                    camId: this.campaigns[iCam].id,
+                    deviceId: deviceId,
+                    deviceTPoC: devicePoCAndTPoCs.tpocs[0],
+                    customerTPoC: customerPoCAndTPoCs.tpocs[0],
+                })
+            // }
+        }
+
+        // for (let i = 0; i < this.campaigns.length; i++) {
+        //     let userId = Math.floor(Math.random()*10000);
+        //     let deviceId = Math.floor(Math.random()*10000 % numDevices);
+
+        //     // generate number of tpocs
+        //     let curNumTransPerCampaigns = numTransPerCampaigns;
+        //     if (i == this.campaigns.length - 1) {
+        //         curNumTransPerCampaigns = numTrans - numAddedTrans;
+        //     }
+
+        //     let pTransArgs = {
+        //         contractId: "poc",
+        //         contractFunction: "GeneratePoCAndTPoCProof",
+        //         contractArguments: [this.campaigns[i].id, userId, curNumTransPerCampaigns],
+        //         readOnly: true
+        //     };
+
+        //     let result = await this.sutAdapter.sendRequests(pTransArgs);
+        //     let customerPoCAndTPoCs = JSON.parse(result["result"]);
+
+        //     pTransArgs = {
+        //         contractId: "poc",
+        //         contractFunction: "GeneratePoCAndTPoCProof",
+        //         contractArguments: [this.campaigns[i].id, deviceId, curNumTransPerCampaigns],
+        //         readOnly: true
+        //     };
+
+        //     result = await this.sutAdapter.sendRequests(pTransArgs);
+        //     let devicePoCAndTPoCs = JSON.parse(result["result"]);
+        //     // let deviceTPoC = this.devicePoC.tpocs[0];
+
+        //     for (let j = 0; j < curNumTransPerCampaigns; j ++) {
+        //         this.data.push({
+        //             camId: this.campaigns[i].id,
+        //             deviceId: deviceId,
+        //             deviceTPoC: devicePoCAndTPoCs.tpocs[j],
+        //             customerTPoC: customerPoCAndTPoCs.tpocs[j],
+        //         })
+        //     }
+        // }
+
+        // console.dir(this.data, {depth: null});
+        // throw Error();
     }
 
     /**
@@ -85,23 +160,41 @@ class GenerateProofWorkload extends WorkloadModuleBase {
     async submitTransaction() {
         // logger.info(`submit: ${JSON.stringify(this.TPoC)} - ${this.campaignId}`);
 
-        // camId string, deviceId string, addedTimeStr int64, dCsStr string, dRsStr string, dHashesStr string, dKeyStr string, uCsStr string, uRsStr string, uHashesStr string, uKeyStr string
+        // return contract.submitTransaction("AddCampaignTokenTransaction", camId, deviceId, addedTime, deviceTPoC.tComms.join(";"), deviceTPoC.tRs.join(";"), deviceTPoC.hashes.join(";"), deviceTPoC.key, customerTPoC.tComms.join(";"), customerTPoC.tRs.join(";"), customerTPoC.hashes.join(";"), customerTPoC.key);
+        // if (this.txIndex == 1) {
+        //     console.log()
+        // }
+
         const addedTime = 0
+        const {camId, deviceId, deviceTPoC, customerTPoC} = this.data[this.txIndex];
+
+        // console.log(this.txIndex);
+        // console.log(camId, deviceId, deviceTPoC, customerTPoC);
+
         const transArgs = {
             contractId: "proof",
             contractFunction: "AddCampaignTokenTransaction",
-            contractArguments: [this.campaignId, this.deviceId, addedTime, this.deviceTPoC.tComms.join(";"), this.deviceTPoC.tRs.join(";"), this.deviceTPoC.hashes.join(";"), this.deviceTPoC.key, this.customerTPoC.tComms.join(";"), this.customerTPoC.tRs.join(";"), this.customerTPoC.hashes.join(";"), this.customerTPoC.key],
-            readOnly: true
+            contractArguments: [camId, deviceId, addedTime, deviceTPoC.tComms.join(";"), deviceTPoC.tRs.join(";"), deviceTPoC.hashes.join(";"), deviceTPoC.key, customerTPoC.tComms.join(";"), customerTPoC.tRs.join(";"), customerTPoC.hashes.join(";"), customerTPoC.key],
+            readOnly: false
         };
-
+        this.txIndex += 1;
         return this.sutAdapter.sendRequests(transArgs);
     }
 
     async cleanupWorkloadModule() {
-        const transArgs = {
+        let transArgs = {
             contractId: "campaign",
-            contractFunction: 'DeleteCampaignById',
-            contractArguments: [this.campaignId],
+            contractFunction: 'DeleteAllCampaigns',
+            contractArguments: [],
+            readOnly: false
+        };
+
+        await this.sutAdapter.sendRequests(transArgs);
+
+        transArgs = {
+            contractId: "proof",
+            contractFunction: 'DeleteAllProofs',
+            contractArguments: [],
             readOnly: false
         };
 

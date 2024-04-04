@@ -15,10 +15,10 @@ test:
         workload:
           module: ./workloads/GeneratePoC.js
           arguments:
-            contractId: poc
-            numCampaigns: 2
-            numOrgsPerType: 2
-            numPeersPerOrgs: 1
+            contractId: proof
+            numCampaigns: 1
+            numOrgsPerType: 5
+            numPeersPerOrgs: 3
             numVerifiers: 1
             numDevices: 1
 
