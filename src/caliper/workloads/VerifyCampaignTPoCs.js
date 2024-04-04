@@ -137,19 +137,19 @@ class GenerateProofWorkload extends WorkloadModuleBase {
      * @return {Promise<TxStatus[]>}
      */
     async submitTransaction() {
-        const {mode, limit} = this.roundArguments;
-        const camIdx = Math.floor(Math.random()*10000) % this.campaigns.length;
-        const camId = this.campaigns[camIdx].id;
+        // const {mode, limit} = this.roundArguments;
+        // const camIdx = Math.floor(Math.random()*10000) % this.campaigns.length;
+        // const camId = this.campaigns[camIdx].id;
 
-        // camId string, csStr string, rsStr string, hashesStr string, keyStr string
-        const transArgs = {
-            contractId: "proof",
-            contractFunction: "SimulateFindTokenTransactionsByCampaignId",
-            contractArguments: [camId, mode, limit],
-            readOnly: true
-        };
+        // // camId string, csStr string, rsStr string, hashesStr string, keyStr string
+        // const transArgs = {
+        //     contractId: "proof",
+        //     contractFunction: "SimulateFindTokenTransactionsByCampaignId",
+        //     contractArguments: [camId, mode, limit],
+        //     readOnly: true
+        // };
 
-        return this.sutAdapter.sendRequests(transArgs);
+        // return this.sutAdapter.sendRequests(transArgs);
     }
 
     async cleanupWorkloadModule() {

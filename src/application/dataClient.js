@@ -5,6 +5,7 @@ const camClient = require('./campaignClient');
 const proofClient = require('./proofClient');
 
 const { createLogger } = require('./logger');
+const { createImportSpecifier } = require('typescript');
 logger = createLogger(__filename);
 
 exports.generateDataForBatchVerificationEvaluation = async (numOrgsPerType, numPeersPerOrgs, numVerifiers, numDevices, numTrans) => {
@@ -24,7 +25,16 @@ exports.generateDataForBatchVerificationEvaluation = async (numOrgsPerType, numP
         }
 
         let numAddedTrans = 0;
-        let numTransPerCampaigns = Math.floor(numTrans / campaigns.length);
+        let numTransPerCampaigns;
+
+        if (numTrans == 0) {
+            numTrans = campaigns.length;
+        }
+
+        numTransPerCampaigns = Math.floor(numTrans / campaigns.length);
+
+
+        logger.debug(`numTransPerCampaigns: ${numTransPerCampaigns}`);
 
         for (let i = 0; i < campaigns.length; i++) {
             let userId = Math.floor(Math.random()*10000);
@@ -55,4 +65,48 @@ exports.generateDataForBatchVerificationEvaluation = async (numOrgsPerType, numP
     } catch (err) {
         logger.error(err.stack);
     }
+}
+
+exports.evaluateFindTPoCs = async (mode, limit) => {
+    // find the first campaign id
+    const campaigns = await camClient.getAllCampaigns();
+    logger.debug(campaigns[0]);
+    logger.debug(campaigns[0].verifierURLs.length);
+
+    // loop through all proofs and evaluate
+    console.time("verify");
+    await proofClient.simulateGetTokenTransactionsByCampaignId(campaigns[0].id, mode, limit);
+    console.timeEnd("verify");
+}
+
+exports.evaluateFindTPoCs2 = async (mode, limit) => {
+    // find the first campaign id
+    const campaigns = await camClient.getAllCampaigns();
+    logger.debug(campaigns[0]);
+    logger.debug(campaigns[0].verifierURLs.length);
+
+    // loop through all proofs and evaluate
+    console.time("verify");
+    const trans = await proofClient.getAllProofs();
+
+    for (const tran of trans) {
+        const splits = tran.id.split(":");
+        const camId = splits[1];
+
+        let tpocs = [tran.deviceTPoC];
+
+        if (mode == "all") {
+            tpocs.push(tran.customerTPoC);
+        }
+
+        let flag = true;
+        for (const tpoc of tpocs) {
+            const curFlag = await proofClient.verifyTPoCProof(camId, tpoc.tComms, tpoc.tRs, tpoc.hashes, tpoc.key);
+            if (curFlag == false) {
+                flag = false;
+            }
+        }
+    }
+    console.dir(trans, {depth: null});
+    console.timeEnd("verify");
 }

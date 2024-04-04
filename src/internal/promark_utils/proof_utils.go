@@ -12,6 +12,7 @@ import (
 
 	ristretto "github.com/bwesterb/go-ristretto"
 	eutils "github.com/tuhoag/elliptic-curve-cryptography-go/utils"
+	// putils "internal/promark_utils"
 )
 
 func VerifyPoCSocket(campaign *Campaign, proof *PoCProof) (bool, error) {

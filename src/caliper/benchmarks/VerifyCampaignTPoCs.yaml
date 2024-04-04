@@ -11,7 +11,7 @@ test:
         rateControl:
           type: fixed-rate
           opts:
-            tps: 10
+            tps: 1
         workload:
           module: ./workloads/VerifyCampaignTPoCs.js
           arguments:
@@ -19,26 +19,26 @@ test:
             numOrgsPerType: 5
             numPeersPerOrgs: 3
             numVerifiers: 6
-            numCampaigns: 0
+            numCampaigns: 1
             mode: device
-            limit: 5000
-      - label: VerifyCampaignTPoCs(mode:full-5000)
-        description: VerifyCampaignTPoCs benchmark
-        txNumber: 1
-        rateControl:
-          type: fixed-rate
-          opts:
-            tps: 10
-        workload:
-          module: ./workloads/VerifyCampaignTPoCs.js
-          arguments:
-            contractId: proof
-            numOrgsPerType: 5
-            numPeersPerOrgs: 3
-            numVerifiers: 6
-            numCampaigns: 0
-            mode: all
-            limit: 5000
+            limit: 10000
+      # - label: VerifyCampaignTPoCs(mode:full-5000)
+      #   description: VerifyCampaignTPoCs benchmark
+      #   txNumber: 1
+      #   rateControl:
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 1
+      #   workload:
+      #     module: ./workloads/VerifyCampaignTPoCs.js
+      #     arguments:
+      #       contractId: proof
+      #       numOrgsPerType: 5
+      #       numPeersPerOrgs: 3
+      #       numVerifiers: 6
+      #       numCampaigns: 1
+      #       mode: all
+      #       limit: 10000
 
       # - label: VerifyCampaignTPoCs(mode:device-10000)
       #   description: VerifyCampaignTPoCs benchmark

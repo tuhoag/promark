@@ -621,7 +621,7 @@ func (s *ProofSmartContract) SimulateFindTokenTransactionsByCampaignId(ctx contr
 
 			err = json.Unmarshal(queryResult.Value, &tokenTransaction)
 			if err != nil {
-				return counts, err
+				continue
 			}
 			trans = append(trans, &tokenTransaction)
 		} else {
@@ -644,7 +644,7 @@ func (s *ProofSmartContract) SimulateFindTokenTransactionsByCampaignId(ctx contr
 			validity, err = putils.VerifyTPoCSocket(campaign, &tpoc)
 
 			if err != nil {
-				return counts, err
+				continue
 			}
 		}
 

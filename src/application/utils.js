@@ -1,4 +1,4 @@
-const { Wallets, Gateway } = require('fabric-network');
+const { Wallets, Gateway, DefaultEventHandlerStrategies, DefaultQueryHandlerStrategies } = require('fabric-network');
 const fs = require('fs');
 const yaml = require('js-yaml');
 const path = require('path');
@@ -67,8 +67,32 @@ exports.connectToGateway = async (userName, orgName, orgUserName) => {
     let connectionOptions = {
         identity: orgUserFullName,
         wallet: wallet,
-        discovery: { enabled: false, asLocalhost: false }
+        discovery: { enabled: false, asLocalhost: false },
+        eventHandlerOptions: {
+            commitTimeout: 6000,
+            endorseTimeout: 6000,
+            strategy: DefaultEventHandlerStrategies.PREFER_MSPID_SCOPE_ANYFORTX,
+          },
+        queryHandlerOptions: {
+            timeout: 6000,
+            strategy: DefaultQueryHandlerStrategies.PREFER_MSPID_SCOPE_ROUND_ROBIN,
+        }
     };
+
+    // const options = {
+    //     wallet,
+    //     identity,
+    //     discovery: { enabled: true, asLocalhost: config.asLocalHost },
+    //     eventHandlerOptions: {
+    //       commitTimeout: config.commitTimeOut,
+    //       endorseTimeout: config.endorseTimeOut,
+    //       strategy: DefaultEventHandlerStrategies.PREFER_MSPID_SCOPE_ANYFORTX,
+    //     },
+    //     queryHandlerOptions: {
+    //       timeout: config.queryTimeOut,
+    //       strategy: DefaultQueryHandlerStrategies.PREFER_MSPID_SCOPE_ROUND_ROBIN,
+    //     },
+    // };
 
     // Connect to gateway using application specified parameters
 

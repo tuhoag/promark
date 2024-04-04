@@ -146,7 +146,7 @@ exports.getTokenTransactionsByCampaignId = async (camId, mode) => {
 
 exports.simulateGetTokenTransactionsByCampaignId = async (camId, mode, limit) => {
     return utils.callChaincodeFn(async (network) => {
-        const contract = await network.getContract("proof");
+        const contract = await network.getContract("poc");
         logger.debug(`simulateGetTokenTransactionsByCampaignId: ${camId} - ${mode} - ${limit}`);
         return contract.submitTransaction("SimulateFindTokenTransactionsByCampaignId", camId, mode, limit);
     }, async (response) => {

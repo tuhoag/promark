@@ -184,16 +184,25 @@ const testCommandHandler = async argv => {
 
 
 const dataCommandHandler = async argv => {
-    logger.debug(`data handler args: ${argv}`);
+    logger.info(`data handler args: ${argv}`);
     const numOrgsPerType = argv[0];
     const numPeersPerOrg = argv[1];
-    const numVerifiers = argv[4];
-    const numTrans = argv[5];
-    const command = argv[3].trim();
 
-    if (command == "verify-cam-tpocs") {
+    const command = argv[3].trim();
+    const numTrans = argv[4];
+
+
+    if (command == "add") {
+        const numVerifiers = argv[5];
+
         return await dataClient.generateDataForBatchVerificationEvaluation(numOrgsPerType, numPeersPerOrg, numVerifiers, 2, numTrans);
-    } else {
+    } else if (command == "eval") {
+        const mode = argv[5];
+        return await dataClient.evaluateFindTPoCs(mode, numTrans);
+    } else if (command == "ceval") {
+        const mode = argv[5];
+        return await dataClient.evaluateFindTPoCs2(mode, numTrans);
+    }else {
         logger.error(`Unsupported data command ${command}`);
         throw `Unsupported data command ${command}`;
     }

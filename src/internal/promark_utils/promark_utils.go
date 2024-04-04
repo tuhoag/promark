@@ -183,6 +183,7 @@ func Hash(s string) string {
 }
 
 func SendLog(name, message string, logMode string) {
+	return
 	if logMode == "test" {
 		return
 	}
@@ -261,6 +262,10 @@ func SendResponse(conn net.Conn, errorStr string, data string) error {
 func ParseResponse(responseStr string) (*PromarkResponse, error) {
 	var response PromarkResponse
 	err := json.Unmarshal([]byte(responseStr), &response)
+
+	if err != nil {
+		fmt.Println("PARSE ERROR: " + err.Error())
+	}
 
 	return &response, err
 }
