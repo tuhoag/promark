@@ -14,13 +14,6 @@ SC_Token_Collection,10,3,3,fix-rate#50,40.0,62.27,0.18,38.77,26.3
 SC_Token_Collection,10,3,4,fix-rate#50,24.7,74.83,0.61,42.77,23.4
 SC_Token_Collection,10,3,5,fix-rate#50,26.1,78.36,10.71,44.74,22.7
 SC_Token_Collection,10,3,6,fix-rate#50,22.1,81.36,15.71,48.23,20.1
-SC_Initializatin,10,3,2,fix-rate#50,52.2,32.86,0.50,17.67,40.3
-SC_Initializatin,10,3,3,fix-rate#50,50.2,35.71,0.20,18.23,39.1
-SC_Initializatin,10,3,4,fix-rate#50,52.2,38.63,0.53,19.31,37.9
-SC_Initializatin,10,3,5,fix-rate#50,52.2,40.83,0.62,20.37,36.2
-SC_Initializatin,10,3,6,fix-rate#50,52.2,41.24,0.74,22.01,35.8
-
-
 SC_Initialization,10,3,2,fix-rate#150-200,86.5,11.93,1.01,7.49,30.8
 SC_Initialization,10,3,3,fix-rate#150-200,77.1,14.57,0.53,10.31,27.0
 SC_Initialization,10,3,4,fix-rate#150-200,79.6,21.03,0.48,14.63,25.3

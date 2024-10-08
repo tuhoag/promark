@@ -1,4 +1,4 @@
-contract,numOrgs,numPeers,numVerifiers,rawnumTrans,numTrans,avgLatency,
+contract,numOrgs,numPeers,numVerifiers,rawnumTrans,numTrans,latency
 SC_Verification#partial,10,3,2,2500,115750,32.546
 SC_Verification#partial,10,3,3,2500,115750,48.529
 SC_Verification#partial,10,3,4,2500,115750,64.614
