@@ -119,7 +119,7 @@ def visualize_line_chart2(df, x_name, y_name, hue_cat_name, style_cat_name, path
 FONT_SIZE = 15
 LABEL_SIZE = 15
 LEGEND_SIZE = 15
-MARKER_SIZE = 12
+MARKER_SIZE = 14
 
 def visualize_line_chart(df, x_name, y_name, cat_name, path):
     x_values = df[x_name].unique()
@@ -280,11 +280,12 @@ def categorise(row):
     return "463,000 (4 weeks)"
 
 def add_more_data(df):
-    df["numTransTitle"] = df.apply(lambda row: categorise(row), axis=1)
+    if "numTrans" in df.columns:
+        df["numTransTitle"] = df.apply(lambda row: categorise(row), axis=1)
 
-    df["latency-infer"] = df["latency"] / df["rawnumTrans"] * df["numTrans"]
-    df["latencyM"] = df["latency"] / 60
-    df["latency-inferM"] = df["latency-infer"] / 60
+        df["latency-infer"] = df["latency"] / df["rawnumTrans"] * df["numTrans"]
+        df["latencyM"] = df["latency"] / 60
+        df["latency-inferM"] = df["latency-infer"] / 60
 
     # df.loc[df["numTrans"] == 997260, "numTransTitle"] = "997,260 (1 week)"
     # df.loc[df["numTrans"] == 1994520, "numTransTitle"] = "1,994,520 (2 weeks)"
