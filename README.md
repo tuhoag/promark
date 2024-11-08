@@ -51,3 +51,14 @@ We export ProMark peers' ports to make it easier to debug ProMark. There are two
 - API of peer `<peerId>.<orgType><orgId>.promark.com`: Peer Port + 2.
 
 `docker.py` contains source codes to calculate the ports for the docker compose file.
+
+## Citation
+```
+@ARTICLE{promark,
+  author={Hoang, Anh-Tu and Carminati, Barbara and Ferrari, Elena},
+  journal={IEEE Transactions on Dependable and Secure Computing}, 
+  title={ProMark: Ensuring Transparency and Privacy-Awareness in Proximity Marketing Advertising Campaigns}, 
+  year={2024},
+  pages={1-12},
+  doi={10.1109/TDSC.2024.3478049}}
+```
